@@ -1,46 +1,46 @@
-# Banking Data Platform - Пилотный проект Cloudera
+# Banking Data Platform - Cloudera Pilot Project
 
-Проект демонстрирует современную архитектуру Data Lakehouse с использованием Cloudera Data Platform (CDP) на AWS для банковской предметной области.
+This project demonstrates a modern Data Lakehouse architecture using Cloudera Data Platform (CDP) on AWS for the banking domain.
 
-## Архитектура
+## Architecture
 
-Проект реализует **Medallion Architecture** (Bronze-Silver-Gold) для управления данными:
+The project implements **Medallion Architecture** (Bronze-Silver-Gold) for data management:
 
 ```
 ┌─────────────────┐
-│   Stage (test)  │  ← Исходные данные
+│   Stage (test)  │  ← Source data
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│  Bronze Layer   │  ← Сырые данные "как есть" + метаданные
+│  Bronze Layer   │  ← Raw data "as is" + metadata
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│  Silver Layer   │  ← Очищенные, валидированные данные
+│  Silver Layer   │  ← Cleaned, validated data
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│   Gold Layer    │  ← Агрегаты, витрины, бизнес-метрики
+│   Gold Layer    │  ← Aggregates, data marts, business metrics
 └─────────────────┘
 ```
 
-### Слои данных
+### Data Layers
 
-1. **Stage (test schema)** - Таблицы для первоначальной загрузки данных
-2. **Bronze** - Raw data с минимальной обработкой, технические метаданные
-3. **Silver** - Cleaned data с применением бизнес-правил и валидацией
-4. **Gold** - Aggregated data, dimensions, facts, аналитические витрины
+1. **Stage (test schema)** - Tables for initial data loading
+2. **Bronze** - Raw data with minimal processing, technical metadata
+3. **Silver** - Cleaned data with business rules applied and validation
+4. **Gold** - Aggregated data, dimensions, facts, analytical data marts
 
-## Структура проекта
+## Project Structure
 
 ```
 Coop/
 │
-├── DDL/                              # SQL скрипты создания таблиц
-│   ├── Create_Tables.sql            # Stage таблицы (test schema)
+├── DDL/                              # SQL scripts for table creation
+│   ├── Create_Tables.sql            # Stage tables (test schema)
 │   ├── 01_Create_Bronze_Layer.sql   # Bronze layer DDL
 │   ├── 02_Create_Silver_Layer.sql   # Silver layer DDL
 │   └── 03_Create_Gold_Layer.sql     # Gold layer DDL
@@ -52,52 +52,52 @@ Coop/
 │
 ├── Airflow/                          # Airflow DAGs
 │   └── dags/
-│       └── banking_etl_pipeline.py  # Оркестрация ETL процесса
+│       └── banking_etl_pipeline.py  # ETL process orchestration
 │
-├── Data/                             # Тестовые данные
-│   ├── clients.csv                  # Клиенты
-│   ├── accounts.csv                 # Счета
-│   ├── transactions.csv             # Транзакции
-│   ├── products.csv                 # Продукты
-│   ├── contracts.csv                # Договоры
-│   ├── account_balances.csv         # Остатки
-│   ├── cards.csv                    # Карты
-│   ├── branches.csv                 # Филиалы
-│   ├── employees.csv                # Сотрудники
-│   ├── loans.csv                    # Кредиты
-│   ├── credit_applications.csv      # Заявки на кредит
-│   └── quality_test/                # Данные с проблемами качества
+├── Data/                             # Test data
+│   ├── clients.csv                  # Clients
+│   ├── accounts.csv                 # Accounts
+│   ├── transactions.csv             # Transactions
+│   ├── products.csv                 # Products
+│   ├── contracts.csv                # Contracts
+│   ├── account_balances.csv         # Balances
+│   ├── cards.csv                    # Cards
+│   ├── branches.csv                 # Branches
+│   ├── employees.csv                # Employees
+│   ├── loans.csv                    # Loans
+│   ├── credit_applications.csv      # Credit applications
+│   └── quality_test/                # Data with quality issues
 │       ├── clients_bad_quality.csv
 │       ├── transactions_bad_quality.csv
 │       └── accounts_bad_quality.csv
 │
-├── Generator/                        # Утилиты генерации данных
-│   ├── generate_banking_data.py     # Генератор тестовых данных
-│   └── generate_bad_quality_data.py # Генератор данных с проблемами
+├── Generator/                        # Data generation utilities
+│   ├── generate_banking_data.py     # Test data generator
+│   └── generate_bad_quality_data.py # Bad quality data generator
 │
-├── SQL/                              # Аналитические SQL запросы
-│   └── Analyse_Queries.sql          # Примеры аналитических запросов
+├── SQL/                              # Analytical SQL queries
+│   └── Analyse_Queries.sql          # Sample analytical queries
 │
-└── CLOUDERA_SETUP_GUIDE.md          # Руководство по настройке
+└── CLOUDERA_SETUP_GUIDE.md          # Setup guide
 ```
 
-## Модель данных
+## Data Model
 
-### Основные сущности
+### Main Entities
 
-- **Clients** (Клиенты) - Физические лица
-- **Products** (Продукты) - Банковские продукты
-- **Contracts** (Договоры) - Договоры клиентов на продукты
-- **Accounts** (Счета) - Банковские счета
-- **Transactions** (Транзакции) - Финансовые операции
-- **Account Balances** (Остатки) - Текущие балансы счетов
-- **Cards** (Карты) - Банковские карты
-- **Branches** (Филиалы) - Отделения банка
-- **Employees** (Сотрудники) - Персонал банка
-- **Loans** (Кредиты) - Кредитные продукты
-- **Credit Applications** (Заявки) - Заявки на кредит
+- **Clients** - Individual persons
+- **Products** - Banking products
+- **Contracts** - Client contracts for products
+- **Accounts** - Bank accounts
+- **Transactions** - Financial operations
+- **Account Balances** - Current account balances
+- **Cards** - Bank cards
+- **Branches** - Bank branches
+- **Employees** - Bank staff
+- **Loans** - Loan products
+- **Credit Applications** - Credit applications
 
-### Связи между таблицами
+### Table Relationships
 
 ```
 Clients (1) ────┬──── (N) Accounts
@@ -123,152 +123,152 @@ Branches (1) ───┬──── (N) Accounts
                 └──── (N) Employees
 ```
 
-## Технологический стек
+## Technology Stack
 
-- **Cloudera Data Platform (CDP)** - Платформа для работы с большими данными
-- **Apache Hive** - Хранилище данных, метаданные
-- **Apache Spark** - Обработка данных (ETL)
-- **Apache Airflow** - Оркестрация пайплайнов
-- **Hue** - Web UI для работы с данными
-- **Apache NiFi** - Data Flow (опционально)
-- **AWS S3** - Объектное хранилище
-- **Python** - Язык программирования для ETL
+- **Cloudera Data Platform (CDP)** - Big data platform
+- **Apache Hive** - Data warehouse, metadata
+- **Apache Spark** - Data processing (ETL)
+- **Apache Airflow** - Pipeline orchestration
+- **Hue** - Web UI for data work
+- **Apache NiFi** - Data Flow (optional)
+- **AWS S3** - Object storage
+- **Python** - Programming language for ETL
 
-## Быстрый старт
+## Quick Start
 
-### 1. Подготовка окружения
+### 1. Environment Setup
 
 ```bash
-# Клонируйте репозиторий
+# Clone repository
 git clone <repo-url>
 cd Coop
 
-# Сгенерируйте тестовые данные (опционально)
+# Generate test data (optional)
 python3 Generator/generate_banking_data.py
 
-# Сгенерируйте данные с проблемами качества
+# Generate bad quality data
 python3 Generator/generate_bad_quality_data.py
 ```
 
-### 2. Создание структуры в Hive
+### 2. Create Structure in Hive
 
-Откройте Hue и выполните SQL скрипты по порядку:
+Open Hue and execute SQL scripts in order:
 
 ```sql
--- 1. Создайте stage таблицы
--- Выполните DDL/Create_Tables.sql
+-- 1. Create stage tables
+-- Execute DDL/Create_Tables.sql
 
--- 2. Создайте Bronze layer
--- Выполните DDL/01_Create_Bronze_Layer.sql
+-- 2. Create Bronze layer
+-- Execute DDL/01_Create_Bronze_Layer.sql
 
--- 3. Создайте Silver layer
--- Выполните DDL/02_Create_Silver_Layer.sql
+-- 3. Create Silver layer
+-- Execute DDL/02_Create_Silver_Layer.sql
 
--- 4. Создайте Gold layer
--- Выполните DDL/03_Create_Gold_Layer.sql
+-- 4. Create Gold layer
+-- Execute DDL/03_Create_Gold_Layer.sql
 
--- 5. Проверьте создание
+-- 5. Verify creation
 SHOW DATABASES;
 USE bronze;
 SHOW TABLES;
 ```
 
-### 3. Загрузка данных
+### 3. Load Data
 
-**Через Hue Importer:**
-1. Откройте Hue → Importer
-2. Загрузите CSV файлы из папки Data/
-3. Укажите destination: `test.<table_name>`
+**Via Hue Importer:**
+1. Open Hue → Importer
+2. Upload CSV files from Data/ folder
+3. Specify destination: `test.<table_name>`
 
-**Или через LOAD DATA (если данные в S3):**
+**Or via LOAD DATA (if data is in S3):**
 ```sql
 USE test;
 LOAD DATA INPATH 's3a://your-bucket/data/clients.csv'
 OVERWRITE INTO TABLE clients;
 ```
 
-### 4. Настройка Spark Jobs в CDE
+### 4. Configure Spark Jobs in CDE
 
-1. Откройте Cloudera Data Engineering
-2. Создайте Resource с Python файлами:
+1. Open Cloudera Data Engineering
+2. Create Resource with Python files:
    - `stage_to_bronze.py`
    - `bronze_to_silver.py`
    - `silver_to_gold.py`
 
-3. Создайте три Job'а для каждого скрипта
+3. Create three Jobs for each script
 
-### 5. Настройка Airflow
+### 5. Configure Airflow
 
-1. Загрузите DAG в CDE:
+1. Upload DAG to CDE:
    - `banking_etl_pipeline.py`
 
-2. Откройте Airflow UI
-3. Включите DAG `banking_etl_pipeline`
-4. Запустите первый run
+2. Open Airflow UI
+3. Enable DAG `banking_etl_pipeline`
+4. Run first execution
 
-## Процесс ETL
+## ETL Process
 
 ### Stage → Bronze
 
 ```python
 # Spark Job: stage_to_bronze.py
-# - Читает данные из test schema
-# - Добавляет технические поля (load_timestamp, source_file)
-# - Сохраняет в bronze слой
+# - Reads data from test schema
+# - Adds technical fields (load_timestamp, source_file)
+# - Saves to bronze layer
 ```
 
-Особенности:
-- Сохранение всех данных "как есть"
-- Добавление метаданных загрузки
-- Партиционирование транзакций по году/месяцу
+Features:
+- Preserves all data "as is"
+- Adds load metadata
+- Transaction partitioning by year/month
 
 ### Bronze → Silver
 
 ```python
 # Spark Job: bronze_to_silver.py
-# - Удаление дубликатов
-# - Очистка и нормализация данных
-# - Валидация бизнес-правил
-# - Стандартизация форматов
-# - Вычисление derived fields
-# - Оценка качества данных (DQ score)
+# - Removes duplicates
+# - Cleans and normalizes data
+# - Validates business rules
+# - Standardizes formats
+# - Calculates derived fields
+# - Evaluates data quality (DQ score)
 ```
 
-Применяемые трансформации:
-- Нормализация email, телефонов
-- Стандартизация статусов, категорий
-- Расчет возраста, tenure, и других метрик
-- Категоризация (возрастные группы, доходы, кредитные рейтинги)
-- Маскировка чувствительных данных (номера карт)
-- Флаги качества и подозрительных операций
+Applied transformations:
+- Email and phone normalization
+- Status and category standardization
+- Calculation of age, tenure, and other metrics
+- Categorization (age groups, income, credit ratings)
+- Sensitive data masking (card numbers)
+- Quality flags and suspicious operation flags
 
 ### Silver → Gold
 
 ```python
 # Spark Job: silver_to_gold.py
-# - Построение dimensions (SCD Type 2 ready)
-# - Создание facts (агрегированные метрики)
-# - Построение бизнес-витрин (Client 360, Product Performance)
+# - Builds dimensions (SCD Type 2 ready)
+# - Creates facts (aggregated metrics)
+# - Builds business data marts (Client 360, Product Performance)
 ```
 
-Создаваемые объекты:
+Created objects:
 - **Dimensions**: dim_client, dim_product, dim_branch, dim_date
 - **Facts**: fact_transactions_daily, fact_account_balance_daily, fact_loan_performance
 - **Business Views**: client_360_view, product_performance_summary, branch_performance_dashboard
 
-## Мониторинг и проверка качества
+## Monitoring and Quality Assurance
 
-### Проверка данных по слоям
+### Data Verification by Layers
 
 ```sql
--- Количество записей по слоям
+-- Record counts by layers
 SELECT 'bronze' as layer, COUNT(*) FROM bronze.clients
 UNION ALL
 SELECT 'silver' as layer, COUNT(*) FROM silver.clients
 UNION ALL
 SELECT 'gold' as layer, COUNT(*) FROM gold.dim_client;
 
--- Качество данных в Silver
+-- Data quality in Silver
 SELECT
     AVG(dq_score) as avg_quality,
     MIN(dq_score) as min_quality,
@@ -282,41 +282,41 @@ WHERE client_segment = 'VIP'
 LIMIT 10;
 ```
 
-### Мониторинг в Airflow
+### Monitoring in Airflow
 
-1. Откройте Airflow UI
-2. Проверьте статус DAG `banking_etl_pipeline`
-3. Посмотрите логи каждой задачи
-4. Проверьте метрики выполнения
+1. Open Airflow UI
+2. Check DAG status `banking_etl_pipeline`
+3. View logs for each task
+4. Check execution metrics
 
-### Мониторинг в CDE
+### Monitoring in CDE
 
-1. Откройте CDE UI
-2. Перейдите в Job Runs
-3. Проверьте статус и логи Spark jobs
-4. Посмотрите метрики потребления ресурсов
+1. Open CDE UI
+2. Go to Job Runs
+3. Check status and logs of Spark jobs
+4. View resource consumption metrics
 
-## Тестирование качества данных
+## Data Quality Testing
 
-### Загрузка тестовых данных с проблемами
+### Loading Test Data with Issues
 
 ```sql
--- Создайте временную таблицу
+-- Create temporary table
 USE test;
 CREATE TABLE clients_bad_quality LIKE clients;
 
--- Загрузите данные с проблемами
+-- Load data with issues
 LOAD DATA LOCAL INPATH 'Data/quality_test/clients_bad_quality.csv'
 INTO TABLE clients_bad_quality;
 
--- Запустите ETL и проверьте результаты в Silver
--- В Silver должны быть низкие DQ scores и заполнены dq_issues
+-- Run ETL and check results in Silver
+-- Silver should have low DQ scores and populated dq_issues
 ```
 
-### Проверка обработки проблем
+### Checking Issue Handling
 
 ```sql
--- Проблемные записи в Silver
+-- Problematic records in Silver
 SELECT
     client_id,
     full_name,
@@ -326,7 +326,7 @@ FROM silver.clients
 WHERE dq_score < 0.8
 ORDER BY dq_score ASC;
 
--- Статистика по проблемам
+-- Statistics by issues
 SELECT
     dq_issues,
     COUNT(*) as issue_count
@@ -336,56 +336,56 @@ GROUP BY dq_issues
 ORDER BY issue_count DESC;
 ```
 
-## Расширение функциональности
+## Extending Functionality
 
-### Добавление новой таблицы
+### Adding a New Table
 
-1. Создайте DDL во всех слоях (bronze, silver, gold)
-2. Обновите Spark jobs для обработки новой таблицы
-3. Добавьте новую задачу в Airflow DAG
-4. Протестируйте на тестовых данных
+1. Create DDL in all layers (bronze, silver, gold)
+2. Update Spark jobs to process the new table
+3. Add new task to Airflow DAG
+4. Test on test data
 
-### Добавление новых метрик в Gold
+### Adding New Metrics in Gold
 
-1. Обновите DDL в `03_Create_Gold_Layer.sql`
-2. Добавьте логику расчета в `silver_to_gold.py`
-3. Перезапустите ETL
+1. Update DDL in `03_Create_Gold_Layer.sql`
+2. Add calculation logic in `silver_to_gold.py`
+3. Restart ETL
 
-### Настройка Data Quality Rules
+### Configuring Data Quality Rules
 
-1. Обновите логику в `bronze_to_silver.py`
-2. Добавьте новые проверки в функцию расчета dq_score
-3. Добавьте описание проблем в dq_issues
+1. Update logic in `bronze_to_silver.py`
+2. Add new checks to dq_score calculation function
+3. Add issue descriptions to dq_issues
 
-## Производительность
+## Performance
 
-### Оптимизация Spark Jobs
+### Optimizing Spark Jobs
 
-- Используйте партиционирование для больших таблиц
-- Настройте `spark.sql.adaptive.enabled=true`
-- Используйте broadcast joins для маленьких таблиц
-- Кэшируйте часто используемые датафреймы
+- Use partitioning for large tables
+- Configure `spark.sql.adaptive.enabled=true`
+- Use broadcast joins for small tables
+- Cache frequently used dataframes
 
-### Оптимизация Hive таблиц
+### Optimizing Hive Tables
 
 ```sql
--- Включите статистику
+-- Enable statistics
 ANALYZE TABLE bronze.clients COMPUTE STATISTICS;
 ANALYZE TABLE bronze.clients COMPUTE STATISTICS FOR COLUMNS;
 
--- Используйте bucketing для часто джойнимых таблиц
+-- Use bucketing for frequently joined tables
 CREATE TABLE silver.clients_bucketed
 CLUSTERED BY (client_id) INTO 32 BUCKETS
 AS SELECT * FROM silver.clients;
 
--- Используйте ORC вместо Parquet для OLAP
--- (в данном проекте используется Parquet для совместимости с S3)
+-- Use ORC instead of Parquet for OLAP
+-- (this project uses Parquet for S3 compatibility)
 ```
 
-### Мониторинг производительности
+### Performance Monitoring
 
 ```sql
--- Размеры таблиц
+-- Table sizes
 SELECT
     table_name,
     num_rows,
@@ -394,10 +394,10 @@ FROM (
     SELECT 'bronze.clients' as table_name, COUNT(*) as num_rows FROM bronze.clients
 ) t;
 
--- Партиции транзакций
+-- Transaction partitions
 SHOW PARTITIONS silver.transactions;
 
--- Статистика по партициям
+-- Partition statistics
 SELECT
     transaction_year,
     transaction_month,
@@ -406,44 +406,44 @@ FROM silver.transactions
 GROUP BY transaction_year, transaction_month;
 ```
 
-## Дополнительная документация
+## Additional Documentation
 
-- [CLOUDERA_SETUP_GUIDE.md](./CLOUDERA_SETUP_GUIDE.md) - Подробное руководство по настройке Cloudera
-- [DDL/](./DDL/) - SQL скрипты создания таблиц
-- [SQL/Analyse_Queries.sql](./SQL/Analyse_Queries.sql) - Примеры аналитических запросов
+- [CLOUDERA_SETUP_GUIDE.md](./CLOUDERA_SETUP_GUIDE.md) - Detailed Cloudera configuration guide
+- [DDL/](./DDL/) - Table creation SQL scripts
+- [SQL/Analyse_Queries.sql](./SQL/Analyse_Queries.sql) - Sample analytical queries
 
 ## Roadmap
 
-- [ ] Добавить инкрементальную загрузку
-- [ ] Реализовать SCD Type 2 для dimensions
-- [ ] Добавить CDC (Change Data Capture)
-- [ ] Интегрировать с системой мониторинга (Grafana)
-- [ ] Добавить автоматические Data Quality checks
-- [ ] Реализовать Data Lineage tracking
-- [ ] Добавить ML модели для fraud detection
-- [ ] Создать BI дашборды (Tableau/PowerBI)
+- [ ] Add incremental loading
+- [ ] Implement SCD Type 2 for dimensions
+- [ ] Add CDC (Change Data Capture)
+- [ ] Integrate with monitoring system (Grafana)
+- [ ] Add automated Data Quality checks
+- [ ] Implement Data Lineage tracking
+- [ ] Add ML models for fraud detection
+- [ ] Create BI dashboards (Tableau/PowerBI)
 
 ## FAQ
 
-**Q: Как часто запускается ETL?**
-A: По умолчанию ежедневно в 2:00 UTC. Настраивается в Airflow DAG.
+**Q: How often does ETL run?**
+A: By default, daily at 2:00 UTC. Configurable in Airflow DAG.
 
-**Q: Сколько хранятся исторические данные?**
-A: В текущей версии все данные хранятся бессрочно. Retention policy можно настроить через HDFS.
+**Q: How long is historical data stored?**
+A: In the current version, all data is stored indefinitely. Retention policy can be configured via HDFS.
 
-**Q: Как добавить нового пользователя?**
-A: Через Cloudera Manager → Ranger → Policies
+**Q: How to add a new user?**
+A: Via Cloudera Manager → Ranger → Policies
 
-**Q: Как восстановить данные при ошибке?**
-A: Все слои сохраняют timestamp загрузки, можно восстановить из bronze или предыдущих партиций.
+**Q: How to recover data in case of error?**
+A: All layers preserve load timestamp, can restore from bronze or previous partitions.
 
-**Q: Поддерживается ли real-time обработка?**
-A: В текущей версии батчевая обработка. Для real-time можно добавить Kafka + Spark Streaming.
+**Q: Is real-time processing supported?**
+A: Current version has batch processing. For real-time, can add Kafka + Spark Streaming.
 
-## Лицензия
+## License
 
-Этот проект является пилотным и предназначен для демонстрационных целей.
+This project is a pilot and is intended for demonstration purposes.
 
-## Контакты
+## Contact
 
-Для вопросов по проекту обращайтесь к команде Data Engineering.
+For questions about the project, contact the Data Engineering team.

@@ -1,201 +1,201 @@
-# Руководство по настройке Cloudera Data Platform
+# Cloudera Data Platform Setup Guide
 
-## Оглавление
-1. [Получение параметров подключения](#получение-параметров-подключения)
-2. [Настройка Cloudera Data Engineering (CDE)](#настройка-cloudera-data-engineering)
-3. [Настройка Airflow](#настройка-airflow)
-4. [Настройка Hue для работы с таблицами](#настройка-hue)
-5. [Загрузка данных через Data Flow](#загрузка-данных-через-data-flow)
+## Table of Contents
+1. [Getting Connection Parameters](#getting-connection-parameters)
+2. [Setting up Cloudera Data Engineering (CDE)](#setting-up-cloudera-data-engineering)
+3. [Setting up Airflow](#setting-up-airflow)
+4. [Setting up Hue for Table Operations](#setting-up-hue)
+5. [Loading Data via Data Flow](#loading-data-via-data-flow)
 
 ---
 
-## Получение параметров подключения
+## Getting Connection Parameters
 
-### 1. Параметры подключения к Hive через Hue
+### 1. Hive Connection Parameters via Hue
 
-#### Через интерфейс Hue:
+#### Through Hue Interface:
 
-1. **Откройте Hue**
-   - Перейдите в ваш Cloudera Data Platform
-   - Найдите сервис **Hue** и откройте его
+1. **Open Hue**
+   - Navigate to your Cloudera Data Platform
+   - Find the **Hue** service and open it
 
-2. **Получите информацию о подключении**
+2. **Get connection information**
    ```sql
-   -- Выполните в редакторе Hive запросы:
+   -- Execute these queries in the Hive editor:
 
-   -- Текущая база данных
+   -- Current database
    SELECT current_database();
 
-   -- Список всех баз данных
+   -- List all databases
    SHOW DATABASES;
 
-   -- Информация о конфигурации Hive
+   -- Hive configuration information
    SET;
 
-   -- HDFS путь к warehouse
+   -- HDFS path to warehouse
    SET hive.metastore.warehouse.dir;
 
-   -- Информация о Metastore
+   -- Metastore information
    SET hive.metastore.uris;
    ```
 
-3. **Получите параметры JDBC**
+3. **Get JDBC parameters**
    ```sql
-   -- Версия Hive
+   -- Hive version
    SELECT version();
 
-   -- Параметры для JDBC подключения можно найти в:
+   -- JDBC connection parameters can be found in:
    -- Cloudera Manager -> Hive -> Configuration -> HiveServer2
    ```
 
-#### Через Cloudera Manager:
+#### Through Cloudera Manager:
 
-1. Откройте **Cloudera Manager**
-2. Перейдите в **Clusters** -> Ваш кластер
-3. Выберите **Hive** сервис
-4. Перейдите в **Configuration**
-5. Найдите параметры:
-   - `hive.metastore.uris` - адрес Hive Metastore
-   - `hive.server2.thrift.port` - порт HiveServer2 (по умолчанию 10000)
-   - `hive.metastore.warehouse.dir` - путь к HDFS warehouse
+1. Open **Cloudera Manager**
+2. Go to **Clusters** -> Your cluster
+3. Select **Hive** service
+4. Go to **Configuration**
+5. Find parameters:
+   - `hive.metastore.uris` - Hive Metastore address
+   - `hive.server2.thrift.port` - HiveServer2 port (default 10000)
+   - `hive.metastore.warehouse.dir` - HDFS warehouse path
 
-### 2. Параметры подключения для Spark
+### 2. Spark Connection Parameters
 
-#### Получение через Cloudera Data Engineering UI:
+#### Getting via Cloudera Data Engineering UI:
 
-1. **Откройте CDE (Cloudera Data Engineering)**
-   - Перейдите в CDP Home
-   - Выберите **Data Engineering**
-   - Выберите ваш Virtual Cluster
+1. **Open CDE (Cloudera Data Engineering)**
+   - Go to CDP Home
+   - Select **Data Engineering**
+   - Select your Virtual Cluster
 
-2. **Получите Spark Submit параметры**
-   - В CDE UI перейдите в раздел **Jobs**
-   - Нажмите **Create Job**
-   - В разделе Spark Configuration увидите доступные параметры:
+2. **Get Spark Submit parameters**
+   - In CDE UI go to **Jobs** section
+   - Click **Create Job**
+   - In Spark Configuration section you'll see available parameters:
      ```
      spark.master: yarn
      spark.submit.deployMode: cluster
      spark.dynamicAllocation.enabled: true
      ```
 
-3. **Получите информацию о ресурсах**
-   - Перейдите в **Virtual Clusters** -> Ваш кластер
-   - Посмотрите доступные ресурсы:
+3. **Get resource information**
+   - Go to **Virtual Clusters** -> Your cluster
+   - View available resources:
      - CPU Requests
      - Memory Requests
      - Executor instances
 
-#### SQL запросы для получения информации через Hue:
+#### SQL queries to get information via Hue:
 
 ```sql
--- Информация о Spark SQL
+-- Spark SQL information
 SET spark.sql.warehouse.dir;
 SET spark.master;
 
--- Проверка доступных баз данных
+-- Check available databases
 SHOW DATABASES;
 
--- Проверка таблиц в базе test
+-- Check tables in test database
 USE test;
 SHOW TABLES;
 
--- Информация о таблице
+-- Table information
 DESCRIBE EXTENDED clients;
 
--- Путь к данным таблицы
+-- Table data path
 DESCRIBE FORMATTED clients;
 ```
 
-### 3. Параметры для Airflow
+### 3. Airflow Parameters
 
-#### Получение через Cloudera Data Engineering:
+#### Getting via Cloudera Data Engineering:
 
-1. **Откройте CDE Virtual Cluster**
-2. **Перейдите в Airflow UI**
-   - В CDE найдите свой Virtual Cluster
-   - Нажмите на иконку **Airflow** (⚙️)
-   - Откроется Airflow Web UI
+1. **Open CDE Virtual Cluster**
+2. **Go to Airflow UI**
+   - In CDE find your Virtual Cluster
+   - Click on the **Airflow** icon (⚙️)
+   - Airflow Web UI will open
 
-3. **Получите Connection параметры**
-   - В Airflow UI перейдите: **Admin** -> **Connections**
-   - Найдите существующие подключения:
-     - `spark_default` - для Spark jobs
-     - `hive_cli_default` - для Hive
-     - `aws_default` - для S3 (если используется)
+3. **Get Connection parameters**
+   - In Airflow UI go to: **Admin** -> **Connections**
+   - Find existing connections:
+     - `spark_default` - for Spark jobs
+     - `hive_cli_default` - for Hive
+     - `aws_default` - for S3 (if used)
 
-4. **Создайте новое подключение для вашего проекта**
+4. **Create new connection for your project**
    - Connection Id: `banking_hive_connection`
    - Connection Type: `Hive Server 2 Thrift`
-   - Host: `<hiveserver2-host>` (можно получить из CDE или Cloudera Manager)
-   - Schema: `bronze` (или другая база по умолчанию)
-   - Login: ваш username
-   - Port: `10000` (или из Cloudera Manager)
+   - Host: `<hiveserver2-host>` (can get from CDE or Cloudera Manager)
+   - Schema: `bronze` (or other default database)
+   - Login: your username
+   - Port: `10000` (or from Cloudera Manager)
 
-### 4. Параметры AWS S3 (если используется)
+### 4. AWS S3 Parameters (if used)
 
-#### Через Cloudera Manager или CDP Environment:
+#### Through Cloudera Manager or CDP Environment:
 
-1. **Откройте CDP Environments**
-2. Найдите **Data Lake** настройки
-3. Посмотрите S3 параметры:
+1. **Open CDP Environments**
+2. Find **Data Lake** settings
+3. View S3 parameters:
    ```
    Bucket: s3://your-cdp-bucket/
    Data Location: s3://your-cdp-bucket/warehouse/
    Logs Location: s3://your-cdp-bucket/logs/
    ```
 
-#### Через Hue/Hive:
+#### Through Hue/Hive:
 
 ```sql
--- Проверка S3 location для таблиц
+-- Check S3 location for tables
 DESCRIBE FORMATTED bronze.clients;
 
--- Результат покажет location вида:
+-- Result will show location like:
 -- location: s3a://your-bucket/warehouse/bronze.db/clients
 ```
 
 ---
 
-## Настройка Cloudera Data Engineering
+## Setting up Cloudera Data Engineering
 
-### 1. Создание Virtual Cluster (если еще нет)
+### 1. Creating Virtual Cluster (if not already exists)
 
-1. Откройте **Data Engineering** в CDP
-2. Нажмите **Create Virtual Cluster**
-3. Заполните параметры:
+1. Open **Data Engineering** in CDP
+2. Click **Create Virtual Cluster**
+3. Fill in parameters:
    - Name: `banking-etl-cluster`
-   - Environment: выберите ваш environment
-   - CPU Quota: рекомендуется минимум 10 CPU
-   - Memory: рекомендуется минимум 40 GB
+   - Environment: select your environment
+   - CPU Quota: recommended minimum 10 CPU
+   - Memory: recommended minimum 40 GB
 
-### 2. Загрузка Spark Jobs в CDE
+### 2. Uploading Spark Jobs to CDE
 
-1. **Создайте Resource для Python файлов**
+1. **Create Resource for Python files**
    ```bash
-   # В CDE CLI (если установлен) или через UI
+   # In CDE CLI (if installed) or via UI
    ```
 
-2. **Через CDE UI:**
-   - Перейдите в **Resources**
-   - Нажмите **Create Resource**
-   - Выберите тип: `Files`
+2. **Via CDE UI:**
+   - Go to **Resources**
+   - Click **Create Resource**
+   - Select type: `Files`
    - Name: `banking-spark-jobs`
    - Upload files:
      - `stage_to_bronze.py`
      - `bronze_to_silver.py`
      - `silver_to_gold.py`
 
-3. **Создайте Spark Jobs**
-   - Перейдите в **Jobs**
-   - Нажмите **Create Job**
-   - Заполните параметры:
+3. **Create Spark Jobs**
+   - Go to **Jobs**
+   - Click **Create Job**
+   - Fill in parameters:
 
 **Job 1: Stage to Bronze**
 ```
 Name: stage_to_bronze_job
 Type: Spark
-Application File: stage_to_bronze.py (из Resources)
-Main Class: (оставьте пустым для Python)
+Application File: stage_to_bronze.py (from Resources)
+Main Class: (leave empty for Python)
 Arguments: --execution-date ${execution_date}
 
 Spark Configuration:
@@ -241,65 +241,65 @@ Resources:
 
 ---
 
-## Настройка Airflow
+## Setting up Airflow
 
-### 1. Загрузка DAG в CDE
+### 1. Uploading DAG to CDE
 
-1. **Создайте Resource для DAG**
-   - В CDE UI перейдите в **Resources**
-   - Создайте новый Resource типа `Files`
+1. **Create Resource for DAG**
+   - In CDE UI go to **Resources**
+   - Create new Resource of type `Files`
    - Name: `banking-airflow-dags`
-   - Upload файл: `banking_etl_pipeline.py`
+   - Upload file: `banking_etl_pipeline.py`
 
-2. **DAG автоматически подхватится Airflow**
-   - Перейдите в Airflow UI
-   - Найдите DAG: `banking_etl_pipeline`
-   - Включите его (toggle switch)
+2. **DAG will be automatically picked up by Airflow**
+   - Go to Airflow UI
+   - Find DAG: `banking_etl_pipeline`
+   - Enable it (toggle switch)
 
-### 2. Обновление DAG для CDE
+### 2. Updating DAG for CDE
 
-Обновите пути в DAG файле:
+Update paths in DAG file:
 
 ```python
-# В начале файла banking_etl_pipeline.py замените:
+# At the beginning of banking_etl_pipeline.py replace:
 SPARK_JOBS_PATH = "/path/to/spark/jobs"
 
-# На:
-SPARK_JOBS_PATH = "stage_to_bronze.py"  # CDE использует имена файлов напрямую
+# With:
+SPARK_JOBS_PATH = "stage_to_bronze.py"  # CDE uses file names directly
 ```
 
-Для CDE используйте `CDEJobRunOperator` вместо `SparkSubmitOperator`:
+For CDE use `CDEJobRunOperator` instead of `SparkSubmitOperator`:
 
 ```python
 from cloudera.cdp.airflow.operators.cde_operator import CDEJobRunOperator
 
-# Пример задачи
+# Example task
 load_stage_to_bronze = CDEJobRunOperator(
     task_id='load_stage_to_bronze',
-    job_name='stage_to_bronze_job',  # Имя созданного CDE Job
+    job_name='stage_to_bronze_job',  # Name of created CDE Job
     variables={
         'execution_date': '{{ ds }}'
     },
 )
 ```
 
-### 3. Настройка расписания
+### 3. Setting up Schedule
 
-В Airflow UI:
-1. Перейдите к DAG `banking_etl_pipeline`
-2. Нажмите **Edit** -> **Schedule**
-3. Настройте расписание (по умолчанию: ежедневно в 2:00 UTC)
+In Airflow UI:
+1. Go to DAG `banking_etl_pipeline`
+2. Click **Edit** -> **Schedule**
+3. Configure schedule (default: daily at 2:00 UTC)
 
 ---
 
-## Настройка Hue
+## Setting up Hue
 
-### 1. Создание баз данных
+### 1. Creating Databases
 
-Откройте Hue и выполните SQL скрипты:
+Open Hue and execute SQL scripts:
 
 ```sql
--- 1. Создайте базы данных
+-- 1. Create databases
 CREATE DATABASE IF NOT EXISTS bronze
 COMMENT 'Bronze layer - raw data'
 LOCATION '/user/hive/warehouse/bronze.db';
@@ -312,156 +312,156 @@ CREATE DATABASE IF NOT EXISTS gold
 COMMENT 'Gold layer - aggregated data'
 LOCATION '/user/hive/warehouse/gold.db';
 
--- 2. Проверьте создание
+-- 2. Verify creation
 SHOW DATABASES;
 
--- 3. Загрузите DDL скрипты из репозитория
--- Скопируйте и выполните содержимое файлов:
+-- 3. Load DDL scripts from repository
+-- Copy and execute contents of files:
 -- - DDL/01_Create_Bronze_Layer.sql
 -- - DDL/02_Create_Silver_Layer.sql
 -- - DDL/03_Create_Gold_Layer.sql
 ```
 
-### 2. Проверка таблиц
+### 2. Checking Tables
 
 ```sql
--- Проверьте таблицы в bronze
+-- Check tables in bronze
 USE bronze;
 SHOW TABLES;
 
--- Проверьте структуру таблицы
+-- Check table structure
 DESCRIBE FORMATTED clients;
 
--- Проверьте данные (если загружены)
+-- Check data (if loaded)
 SELECT * FROM clients LIMIT 10;
 
--- Проверьте количество записей
+-- Check record count
 SELECT COUNT(*) FROM clients;
 ```
 
-### 3. Права доступа
+### 3. Access Rights
 
 ```sql
--- Дайте права на базы данных (если нужно)
+-- Grant rights to databases (if needed)
 GRANT ALL ON DATABASE bronze TO USER your_username;
 GRANT ALL ON DATABASE silver TO USER your_username;
 GRANT ALL ON DATABASE gold TO USER your_username;
 
--- Проверьте права
+-- Check rights
 SHOW GRANT USER your_username ON DATABASE bronze;
 ```
 
 ---
 
-## Загрузка данных через Data Flow
+## Loading Data via Data Flow
 
-### Вариант 1: Загрузка через Hue
+### Option 1: Loading via Hue
 
-1. **Создайте таблицы в схеме test** (из DDL/Create_Tables.sql)
+1. **Create tables in test schema** (from DDL/Create_Tables.sql)
 
-2. **Загрузите CSV через Hue**:
-   - Откройте Hue
-   - Перейдите в **Importer**
-   - Выберите файл (например, `Data/clients.csv`)
-   - Выберите destination: `test.clients`
-   - Настройте delimiter: `,`
-   - Нажмите **Submit**
+2. **Load CSV via Hue**:
+   - Open Hue
+   - Go to **Importer**
+   - Select file (e.g., `Data/clients.csv`)
+   - Select destination: `test.clients`
+   - Configure delimiter: `,`
+   - Click **Submit**
 
-### Вариант 2: Загрузка через NiFi (Cloudera Data Flow)
+### Option 2: Loading via NiFi (Cloudera Data Flow)
 
-1. **Откройте DataFlow**
-   - В CDP перейдите в **DataFlow**
-   - Создайте новый Flow Definition
+1. **Open DataFlow**
+   - In CDP go to **DataFlow**
+   - Create new Flow Definition
 
-2. **Создайте простой flow для загрузки CSV**:
+2. **Create simple flow for CSV loading**:
    ```
    GetFile -> SplitRecord -> ConvertRecord -> PutHiveStreaming
    ```
 
-3. **Настройте процессоры**:
-   - **GetFile**: укажите путь к Data/
-   - **SplitRecord**: укажите CSV Reader
+3. **Configure processors**:
+   - **GetFile**: specify path to Data/
+   - **SplitRecord**: specify CSV Reader
    - **ConvertRecord**: CSV -> Avro
    - **PutHiveStreaming**:
-     - Hive Metastore URI: (из Cloudera Manager)
+     - Hive Metastore URI: (from Cloudera Manager)
      - Database: test
      - Table: clients
 
-### Вариант 3: Загрузка через S3 и LOAD DATA
+### Option 3: Loading via S3 and LOAD DATA
 
 ```sql
--- 1. Загрузите CSV в S3 bucket
--- (через AWS Console или AWS CLI)
+-- 1. Upload CSV to S3 bucket
+-- (via AWS Console or AWS CLI)
 
--- 2. Загрузите данные в Hive
+-- 2. Load data into Hive
 USE test;
 
 LOAD DATA INPATH 's3a://your-bucket/data/clients.csv'
 OVERWRITE INTO TABLE clients;
 
--- 3. Проверьте загрузку
+-- 3. Verify loading
 SELECT COUNT(*) FROM clients;
 ```
 
 ---
 
-## Полный процесс развертывания
+## Complete Deployment Process
 
-### Шаг 1: Подготовка
+### Step 1: Preparation
 
 ```bash
-# 1. Загрузите весь репозиторий в ваш S3 bucket или локально
+# 1. Upload entire repository to your S3 bucket or locally
 git clone <your-repo>
 cd Coop
 
-# 2. Загрузите данные в S3 (если используется)
+# 2. Upload data to S3 (if using)
 aws s3 cp Data/ s3://your-bucket/banking-data/Data/ --recursive
 aws s3 cp Spark/ s3://your-bucket/banking-data/Spark/ --recursive
 aws s3 cp Airflow/ s3://your-bucket/banking-data/Airflow/ --recursive
 ```
 
-### Шаг 2: Создание структуры в Hive
+### Step 2: Creating Structure in Hive
 
-1. Откройте Hue
-2. Выполните DDL скрипты в порядке:
-   - `DDL/Create_Tables.sql` (для test схемы)
+1. Open Hue
+2. Execute DDL scripts in order:
+   - `DDL/Create_Tables.sql` (for test schema)
    - `DDL/01_Create_Bronze_Layer.sql`
    - `DDL/02_Create_Silver_Layer.sql`
    - `DDL/03_Create_Gold_Layer.sql`
 
-### Шаг 3: Загрузка данных в test схему
+### Step 3: Loading Data into test Schema
 
-Выберите один из вариантов загрузки (см. раздел "Загрузка данных")
+Choose one of the loading options (see "Loading Data" section)
 
-### Шаг 4: Настройка CDE Jobs
+### Step 4: Setting up CDE Jobs
 
-1. Создайте Resource в CDE с Spark jobs
-2. Создайте три Job'а (stage_to_bronze, bronze_to_silver, silver_to_gold)
-3. Протестируйте каждый job вручную
+1. Create Resource in CDE with Spark jobs
+2. Create three Jobs (stage_to_bronze, bronze_to_silver, silver_to_gold)
+3. Test each job manually
 
-### Шаг 5: Настройка Airflow
+### Step 5: Setting up Airflow
 
-1. Загрузите DAG в CDE
-2. Обновите DAG для использования CDEJobRunOperator
-3. Включите DAG в Airflow UI
-4. Запустите первый run вручную
+1. Upload DAG to CDE
+2. Update DAG to use CDEJobRunOperator
+3. Enable DAG in Airflow UI
+4. Run first execution manually
 
-### Шаг 6: Мониторинг
+### Step 6: Monitoring
 
-1. Проверьте выполнение в Airflow UI
-2. Проверьте логи в CDE UI
-3. Проверьте данные в Hue:
+1. Check execution in Airflow UI
+2. Check logs in CDE UI
+3. Check data in Hue:
 
 ```sql
--- Проверка bronze
+-- Check bronze
 USE bronze;
 SELECT COUNT(*) FROM clients;
 
--- Проверка silver
+-- Check silver
 USE silver;
 SELECT COUNT(*) FROM clients;
 
--- Проверка gold
+-- Check gold
 USE gold;
 SELECT COUNT(*) FROM dim_client;
 SELECT COUNT(*) FROM client_360_view;
@@ -471,52 +471,52 @@ SELECT COUNT(*) FROM client_360_view;
 
 ## Troubleshooting
 
-### Проблема: Не могу найти Hive Metastore URI
+### Problem: Cannot find Hive Metastore URI
 
-**Решение через Hue:**
+**Solution via Hue:**
 ```sql
 SET hive.metastore.uris;
 ```
 
-**Решение через Cloudera Manager:**
+**Solution via Cloudera Manager:**
 1. Cloudera Manager -> Hive -> Configuration
 2. Search: "metastore.uris"
 
-### Проблема: Spark job не может найти таблицы
+### Problem: Spark job cannot find tables
 
-**Решение:**
-Убедитесь что в Spark используется правильная конфигурация:
+**Solution:**
+Ensure Spark uses correct configuration:
 ```python
 spark = SparkSession.builder \
     .appName("your_app") \
-    .enableHiveSupport() \  # ВАЖНО!
+    .enableHiveSupport() \  # IMPORTANT!
     .getOrCreate()
 ```
 
-### Проблема: Ошибки прав доступа
+### Problem: Access rights errors
 
-**Решение через Hue:**
+**Solution via Hue:**
 ```sql
--- Дайте права на все базы
+-- Grant rights to all databases
 GRANT ALL ON DATABASE test TO USER your_username;
 GRANT ALL ON DATABASE bronze TO USER your_username;
 GRANT ALL ON DATABASE silver TO USER your_username;
 GRANT ALL ON DATABASE gold TO USER your_username;
 ```
 
-### Проблема: DAG не появляется в Airflow
+### Problem: DAG doesn't appear in Airflow
 
-**Решение:**
-1. Проверьте что файл загружен в CDE Resource
-2. Проверьте синтаксис DAG файла
-3. Проверьте логи Airflow Scheduler в CDE
+**Solution:**
+1. Check that file is uploaded to CDE Resource
+2. Check DAG file syntax
+3. Check Airflow Scheduler logs in CDE
 
 ---
 
-## Полезные SQL запросы для мониторинга
+## Useful SQL Queries for Monitoring
 
 ```sql
--- Статистика по всем слоям
+-- Statistics across all layers
 SELECT
     'bronze' as layer,
     'clients' as table_name,
@@ -535,7 +535,7 @@ SELECT
     COUNT(*) as record_count
 FROM gold.dim_client;
 
--- Проверка качества данных в silver
+-- Check data quality in silver
 SELECT
     AVG(dq_score) as avg_dq_score,
     MIN(dq_score) as min_dq_score,
@@ -543,7 +543,7 @@ SELECT
     SUM(CASE WHEN dq_score < 0.8 THEN 1 ELSE 0 END) as low_quality_records
 FROM silver.clients;
 
--- Статистика по транзакциям
+-- Transaction statistics
 SELECT
     transaction_year,
     transaction_month,
@@ -556,7 +556,7 @@ ORDER BY transaction_year DESC, transaction_month DESC;
 
 ---
 
-## Дополнительные ресурсы
+## Additional Resources
 
 - [Cloudera Data Engineering Documentation](https://docs.cloudera.com/data-engineering/cloud/)
 - [Cloudera Data Flow Documentation](https://docs.cloudera.com/dataflow/cloud/)
@@ -565,6 +565,6 @@ ORDER BY transaction_year DESC, transaction_month DESC;
 
 ---
 
-## Контакты и поддержка
+## Contact and Support
 
-Для вопросов по проекту обращайтесь к команде Data Engineering.
+For questions about the project, contact the Data Engineering team.

@@ -1,0 +1,13 @@
+product_id,product_name,product_type,currency,active
+1,Debit Card,CARD,USD,True
+2,Credit Card Standard,CARD,USD,True
+3,Credit Card Premium,CARD,USD,True
+4,Personal Loan,LOAN,USD,True
+5,Mortgage,LOAN,USD,True
+6,Auto Loan,LOAN,USD,True
+7,Savings Account,DEPOSIT,USD,True
+8,Checking Account,DEPOSIT,USD,True
+9,Time Deposit,DEPOSIT,USD,True
+10,Investment Account,INVESTMENT,USD,True
+11,Business Account,ACCOUNT,USD,True
+12,Student Loan,LOAN,USD,True

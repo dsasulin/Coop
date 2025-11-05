@@ -1,0 +1,51 @@
+branch_id,branch_code,branch_name,address,city,state,zip_code,phone,manager_name,opening_date
+1,BR001,North Sarahhaven Branch,"93593 Robyn Street Apt. 894, New Marissaside, SC 16070",Mosesstad,Indiana,91152,(657)828-1674x3209,Richard Ramos,2017-09-21
+2,BR002,Stanleyton Branch,"6977 Santiago Street Apt. 150, East Nicole, HI 03922",Luisshire,Vermont,54482,+1-826-319-7767x115,Daniel Macdonald,2009-10-20
+3,BR003,Belltown Branch,"66234 Joseph Station, Port Jenniferland, MN 37997",Davidhaven,Kentucky,02470,+1-289-512-1379x549,Heidi Green,2014-08-22
+4,BR004,New Thomastown Branch,"5631 Jacob Turnpike, Lake Cynthia, NV 95002",Amandaborough,North Dakota,38416,001-378-254-0628x894,Margaret Scott,2016-09-19
+5,BR005,New Katherine Branch,"USCGC Knight, FPO AE 91258",Lake Marvinfurt,Indiana,94191,(500)822-8675x7567,Tracy Savage,2010-06-03
+6,BR006,Jasonside Branch,"7826 Tiffany Keys Apt. 614, Michaelfurt, VI 49083",South Rebecca,Michigan,03843,(369)728-1520,Anthony Stevens,2007-12-29
+7,BR007,Bethanyport Branch,"6740 Kevin Ports Apt. 074, Cartershire, NC 61295",Johnfurt,New Mexico,45377,+1-377-328-3152x53567,Jennifer Miller,2019-02-16
+8,BR008,Kevinborough Branch,"8362 Michael Road, Joshuaview, CA 56288",Rachelside,Arkansas,10229,+1-237-659-1441x6595,Tiffany Parks,2017-12-11
+9,BR009,Garciahaven Branch,"47556 Brandon Centers, North Bethany, MN 19771",New Natasha,New Jersey,64609,901.648.3184x139,Brian Johnson,2012-11-07
+10,BR010,Elliottland Branch,"675 Lisa Course, Leeborough, UT 83701",Stephanieshire,Virginia,50472,404-688-3049,Maria Lopez,2008-07-21
+11,BR011,Marioville Branch,"76562 Cynthia Road, East Heatherfurt, MT 84988",West Timothytown,West Virginia,11327,(438)541-4226x2289,Samuel Cameron,2007-04-11
+12,BR012,Jacobport Branch,"583 Johnson Haven Suite 047, Lake Bridgetmouth, FL 26063",New Emilyport,South Dakota,43714,(838)838-0719x8705,Shelby Boyer,2014-02-03
+13,BR013,Port Barbarahaven Branch,"90047 Hill Mews, Lake Patricia, WA 07921",Hudsonchester,Alaska,45261,(209)259-5128x20290,Benjamin Ramirez,2021-02-11
+14,BR014,East Nicolemouth Branch,"52424 Victoria Brook, South Seanport, NM 12893",Smithmouth,Mississippi,87910,875-397-4876x869,Jennifer Bowman,2011-04-03
+15,BR015,West Barryburgh Branch,"25036 Long Row, West Morgan, DC 85255",North Michael,Missouri,75003,913.315.7167x25114,Austin Garcia,2008-09-24
+16,BR016,Joshuaport Branch,"710 Jasmine Knoll Apt. 779, North Anthonyberg, NV 48700",Jamesport,New York,25823,203-220-6873x4754,James Davis,2014-11-14
+17,BR017,New Robertberg Branch,"3822 Brandon Mountain, East Kyle, DE 22750",Palmerbury,West Virginia,09336,+1-489-287-3223x8857,Robert Dorsey,2021-12-21
+18,BR018,North Rebeccabury Branch,"USNV Leblanc, FPO AE 50666",Joycehaven,Arkansas,20770,2458841564,John Holt,2020-01-09
+19,BR019,Stevenport Branch,"589 Clark Ranch, Wernershire, AL 93279",North Felicia,California,70815,001-248-718-8312,Brandy Thornton,2023-08-25
+20,BR020,North Sean Branch,"5593 Parks Canyon Apt. 937, Port Louishaven, IA 96812",West Ricardo,Connecticut,37135,+1-890-439-2899x85575,James Thompson,2013-02-14
+21,BR021,Allenburgh Branch,"1112 Schneider Court, North Ericborough, CO 53552",Lake Stephaniemouth,Kansas,21087,658.923.5610x989,Melissa Fisher,2023-08-05
+22,BR022,Brianburgh Branch,"961 Kevin Summit, New Tonya, DE 07951",West Jodi,New Jersey,80626,(523)258-6156x49955,Joseph Barker,2025-03-14
+23,BR023,East Tracymouth Branch,"99579 Ramirez Loop, Lake George, WI 76347",Stevenville,New Hampshire,17887,+1-943-253-2482,David Lee,2018-01-22
+24,BR024,Knightland Branch,"944 Timothy Lane Suite 067, Nguyenport, IA 28739",Cohenside,Montana,85243,(727)475-4099x0950,Randall Johnson,2011-05-25
+25,BR025,South Erik Branch,"033 Horne Key, East Sarahfurt, MD 74767",New Tammyside,New Jersey,08499,778-250-6354x392,Samuel Garcia,2006-01-06
+26,BR026,Lake Danielle Branch,"USNS Phillips, FPO AE 93550",Williamstown,Nebraska,23634,651.651.7996,Sally Johnson,2018-10-27
+27,BR027,Andersonport Branch,"7837 Melissa Estates, Lake Jon, VI 35413",Juliaberg,New York,30874,001-386-596-8365x21884,Amanda Robinson,2006-08-17
+28,BR028,Rachelview Branch,"PSC 8924, Box 1873, APO AE 08086",Carrville,Nevada,64715,001-225-622-1162x46225,Aaron Vasquez,2015-12-30
+29,BR029,Lihaven Branch,"421 Smith Crossroad, South Ericport, DE 89766",Baldwinton,Arkansas,61360,722-621-8635x8284,Mark Smith,2013-10-25
+30,BR030,Lisamouth Branch,"6936 Osborne Oval Apt. 985, Jonesburgh, OR 85324",Port Helen,Indiana,53747,(712)553-1151x68402,Darryl Rios,2011-05-14
+31,BR031,Sanchezport Branch,"48027 James Lakes Apt. 572, Stephensville, AS 62360",Waltonton,Minnesota,54645,860-233-7950,Dominique Carter,2019-09-09
+32,BR032,Virginiatown Branch,"870 Bradley Plains Apt. 516, North Jason, KS 22268",Juarezchester,Michigan,79849,+1-327-619-9395x82927,Margaret Henderson,2020-11-22
+33,BR033,Jonesstad Branch,"Unit 8055 Box 6005, DPO AP 02070",Kiddburgh,Idaho,83123,001-221-572-8547x9647,Ronald Olsen,2011-09-17
+34,BR034,Hickston Branch,"USNV Garcia, FPO AA 65236",Dennisview,Hawaii,79548,916.640.7286x6915,Michael Cox,2021-11-24
+35,BR035,Krystaltown Branch,"855 Pierce Garden, Port Carrieshire, OH 05232",Edwardsshire,Alabama,12285,4094190923,Joseph Wilson,2007-01-12
+36,BR036,North John Branch,"2802 Weaver Divide Apt. 700, West Andrew, RI 29604",West Elizabethport,South Dakota,03581,(653)855-4306,Erik Ward,2012-10-25
+37,BR037,Port Tammyview Branch,"9441 Powell Plains, Johnfurt, CT 64475",Simston,New York,62441,001-409-623-0253x84075,Steve Lara,2015-03-01
+38,BR038,Cervantesport Branch,"27218 Tracy Courts Suite 060, Booneview, ME 31764",South Amy,Kansas,00656,+1-704-333-9433,John Prince,2009-04-23
+39,BR039,South Andresville Branch,"6072 Stephenson Canyon, Port Josephberg, MT 08800",Lake Patriciachester,Delaware,79681,(534)712-2071,Heather Delgado,2015-02-08
+40,BR040,Stephaniemouth Branch,"6403 David Summit, Lake Deborahbury, CA 89923",Vincentstad,West Virginia,13833,698-291-0433,John Watson Jr.,2013-03-17
+41,BR041,South Aprilchester Branch,"Unit 9224 Box 1640, DPO AP 61882",East Rodneyland,New Mexico,86138,(515)240-9180,David Greer,2009-12-09
+42,BR042,West Steven Branch,"13119 Martinez Harbor, Patelport, CA 29123",Lake Michaelchester,California,75275,805-514-1178x3154,Nicholas Harris,2012-07-29
+43,BR043,North Michael Branch,"56818 Guzman Place, Aguilarport, IN 41959",South Paul,Mississippi,30352,+1-538-652-7525x98363,William Long,2007-12-30
+44,BR044,South Jasonchester Branch,"175 Hernandez Highway Apt. 257, New Curtisfurt, OR 73248",Terriborough,Massachusetts,67303,+1-811-450-3614,Jacob Ali,2011-10-09
+45,BR045,West George Branch,"33445 Shannon Land Apt. 943, South Rogerstad, MH 60812",Rodgersberg,Maine,82358,(795)705-0101,Rodney Mason,2015-04-07
+46,BR046,Perezside Branch,"774 Foley Spurs Suite 786, East Cindy, WY 87147",Saraside,North Carolina,83066,+1-672-563-5930x522,Bethany Brown,2020-08-24
+47,BR047,Port Staceyhaven Branch,"885 Heather Ports, South Jacob, MO 40310",Berryshire,Delaware,16635,+1-553-722-4473,Logan Wolfe,2021-01-20
+48,BR048,West Paula Branch,"85615 Lauren Club, Lake Anna, IL 38214",Evansfort,Florida,05886,392.565.8435,Russell Anderson,2013-07-25
+49,BR049,South Thomasshire Branch,"2781 James Fields, Lake Colleenville, MT 63525",Michaeltown,Ohio,71540,(497)880-1581x401,Tyler Benson,2012-04-02
+50,BR050,Josephshire Branch,"8509 Jeffery Lock, South Charles, UT 19915",South Jim,Oklahoma,13789,630.834.6779x223,Daniel Moore,2014-09-13

@@ -1,0 +1,23 @@
+client_id,first_name,last_name,email,phone,birth_date,registration_date,address,city,country,risk_category,credit_score,employment_status,annual_income
+1,,Smith,john.smith@example.com,555-0101,1980-01-15,2020-01-01,123 Main St,New York,US,LOW,750,EMPLOYED,75000.0
+2,Jane,,jane@example.com,555-0102,1985-03-20,2020-02-01,456 Oak Ave,Boston,US,MEDIUM,680,EMPLOYED,65000.0
+3,Bob,Wilson,,555-0103,1990-06-10,2020-03-01,789 Elm St,Chicago,US,HIGH,620,SELF_EMPLOYED,45000.0
+4,Alice,Brown,alice@example.com,,1975-09-25,2020-04-01,321 Pine Rd,Seattle,US,LOW,800,EMPLOYED,95000.0
+5,Charlie,Davis,charlie@example.com,555-0105,,2020-05-01,654 Maple Dr,Portland,US,MEDIUM,700,EMPLOYED,70000.0
+6,David,Miller,invalid-email,555-0106,1982-11-05,2020-06-01,987 Cedar Ln,Denver,US,LOW,720,EMPLOYED,80000.0
+7,Emma,Garcia,emma@@example.com,555-0107,1988-02-14,2020-07-01,147 Birch St,Austin,US,MEDIUM,690,EMPLOYED,62000.0
+8,Frank,Martinez,frank@,555-0108,1979-07-30,2020-08-01,258 Spruce Ave,Phoenix,US,HIGH,640,UNEMPLOYED,0.0
+9,Grace,Rodriguez,grace@example.com,NOT-A-PHONE,1992-04-18,2020-09-01,369 Willow Ct,Miami,US,MEDIUM,710,EMPLOYED,68000.0
+10,Henry,Lopez,henry@example.com,12345,1986-12-22,2020-10-01,741 Aspen Way,Dallas,US,LOW,760,EMPLOYED,85000.0
+11,Ivy,Hernandez,ivy@example.com,555-0111,2030-01-01,2020-11-01,852 Oak Park,Houston,US,LOW,730,EMPLOYED,72000.0
+12,Jack,Gonzalez,jack@example.com,555-0112,1985-05-15,2019-01-01,963 Pine Plaza,Atlanta,US,INVALID,740,EMPLOYED,78000.0
+13,Kate,Wilson,kate@example.com,555-0113,1990-08-20,2021-03-01,159 Elm Circle,San Diego,US,MEDIUM,-50,EMPLOYED,66000.0
+14,Leo,Anderson,leo@example.com,555-0114,1983-03-12,2021-04-01,357 Maple Heights,Las Vegas,US,HIGH,1200,EMPLOYED,55000.0
+15,Mia,Thomas,mia@example.com,555-0115,1987-10-08,2021-05-01,486 Cedar Ridge,Nashville,US,LOW,750,UNKNOWN_STATUS,-10000.0
+16,Noah,Taylor,noah@example.com,555-0116,1991-06-30,2021-06-01,597 Birch Valley,Detroit,US,MEDIUM,695,EMPLOYED,64000.0
+16,Noah,Taylor,noah@example.com,555-0116,1991-06-30,2021-06-01,597 Birch Valley,Detroit,US,MEDIUM,695,EMPLOYED,64000.0
+17,Olivia,Moore,olivia@example.com,555-0117,1984-09-17,2021-07-01,681 Spruce Point,Memphis,US,LOW,780,EMPLOYED,88000.0
+17,Olivia,Moore,olivia.moore@example.com,555-9999,1984-09-17,2021-07-05,681 Spruce Point,Memphis,US,LOW,780,EMPLOYED,88000.0
+18,Peter,Jackson,peter@example.com,555-0118,1920-01-01,2021-08-01,792 Willow Creek,Baltimore,US,LOW,800,RETIRED,35000.0
+19,,,,,,2021-09-01,,,,,,,
+20,A,B,a@b.c,1,2000-01-01,2021-10-01,X,Y,ZZ,LOW,300,E,1.0

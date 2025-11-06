@@ -1,4 +1,4 @@
--- Анализ клиентской базы и финансовых показателей
+-- Client base and financial metrics analysis
 SELECT 
     risk_category,
     employment_status,
@@ -12,7 +12,7 @@ FROM clients
 GROUP BY risk_category, employment_status
 ORDER BY risk_category, total_annual_income DESC;
 
--- Ежемесячный анализ транзакционной активности
+-- Monthly transaction activity analysis
 SELECT 
     YEAR(transaction_date) as year,
     MONTH(transaction_date) as month,
@@ -27,7 +27,7 @@ WHERE status = 'COMPLETED'
 GROUP BY YEAR(transaction_date), MONTH(transaction_date), category, transaction_type
 ORDER BY year DESC, month DESC, total_amount DESC;
 
--- Эффективность банковских продуктов
+-- Banking products effectiveness
 SELECT 
     p.product_name,
     p.product_type,
@@ -45,7 +45,7 @@ WHERE p.active = true
 GROUP BY p.product_name, p.product_type
 ORDER BY total_contract_amount DESC;
 
--- Детальный анализ кредитов и рисков
+-- Detailed loan and risk analysis
 SELECT 
     l.delinquency_status,
     COUNT(*) as loan_count,
@@ -60,7 +60,7 @@ JOIN contracts c ON l.contract_id = c.contract_id
 GROUP BY l.delinquency_status
 ORDER BY total_outstanding DESC;
 
--- Распределение средств по типам счетов
+-- Balance distribution by account types
 SELECT 
     a.account_type,
     a.status,
@@ -77,7 +77,7 @@ WHERE a.status = 'ACTIVE'
 GROUP BY a.account_type, a.status
 ORDER BY total_balance DESC;
 
--- Сравнение показателей по отделениям
+-- Branch performance comparison
 SELECT 
     b.branch_code,
     b.city,
@@ -99,7 +99,7 @@ LEFT JOIN transactions t ON a.account_id = t.from_account_id AND t.status = 'COM
 GROUP BY b.branch_code, b.city, b.state
 ORDER BY total_deposits DESC;
 
--- Статистика по кредитным заявкам и approval rate
+-- Credit application statistics and approval rate
 SELECT 
     purpose,
     status,
@@ -114,7 +114,7 @@ FROM credit_applications
 GROUP BY purpose, status
 ORDER BY purpose, application_count DESC;
 
--- Активность клиентов по месяцам
+-- Client activity by month
 SELECT 
     YEAR(t.transaction_date) as year,
     MONTH(t.transaction_date) as month,
@@ -131,7 +131,7 @@ WHERE t.status = 'COMPLETED'
 GROUP BY YEAR(t.transaction_date), MONTH(t.transaction_date)
 ORDER BY year DESC, month DESC;
 
--- Сегментация клиентов по рискам и доходности
+-- Client segmentation by risk and profitability
 SELECT 
     c.risk_category,
     c.employment_status,
@@ -160,7 +160,7 @@ GROUP BY c.risk_category, c.employment_status,
     END
 ORDER BY c.risk_category, avg_income DESC;
 
--- Анализ карточных продуктов и транзакций
+-- Card products and transactions analysis
 SELECT 
     card.card_type,
     card.card_level,
@@ -182,7 +182,7 @@ LEFT JOIN transactions t ON a.account_id = t.from_account_id
 GROUP BY card.card_type, card.card_level, card.status
 ORDER BY card.card_type, total_spent DESC;
 
--- Data Quality Check - для демонстрации profiling capabilities
+-- Data Quality Check - for profiling capabilities demonstration
 SELECT 
     'clients' as table_name,
     COUNT(*) as total_records,

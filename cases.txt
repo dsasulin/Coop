@@ -1,0 +1,23 @@
+1. Showcase built-in data transformation (e.g filtering, enrichment,Merging different Dataset, format conversion and others) and comprehensive error handling—automatic retries, dead-letter queuing, and alerting.
+2. Showcase scheduling of batch jobs, real-time streaming, and trigger based/event-driven jobs. 
+3. Showcase  MPP SQL Engine  capability of caching tables and partitions metadata to reuse for future queries against the same tables / partitions.
+4. Showcase distributed file system that provides scalable, fault-tolerant and reliable data storage that can work efficiently with a wide variety of concurrent data access applications including but not limited to Java-based and open-source systems. 
+5. Run a profiling job at ingestion and transformation between layers, registering missing values, duplicates, outliers and inconsistent formats. This should be done for both structured and non-structured data. 
+6. Showcase version controlling of validation rules
+7. Showcase how the platform enforces governance policies around version retention archival and purging.
+8. Data Platform to Showcase a centralized framework for collecting access audit history and reporting data.
+9. The MPP SQL Engine must be capable of caching tables and partitions metadata to reuse for future queries against the same tables / partitions.
+10. The Auditing service / component must provide enriched audit information obtained from the data platform's components and provide insights through a centralized reporting capability.
+11. Machine Learning and AI Integration: Model training using distributed frameworks (e.g., TensorFlow on Spark, Ray, PyTorch on Kubernetes), On-prem GPU support and cloud auto-scaling for ML workloads, and MLOps pipelines using Kubeflow, MLFlow, or Seldon.
+12. The data platform must incorporate a heterogeneous set of data storage solutions tailored to distinct data workloads and access patterns, NoSQL databases (including file based, document, graph, time series and columnar stores), vector databases optimized for similarity search, and other specialized storage engines to support diverse data models and query paradigms and must integrate with the existing relational database management system (RDBMS). A list of supported storage components
+13. Must provide Kerberos for authentication with the capability of storing and managing Kerberos credentials in LDAP-compliant identity service, such as OpenLDAP and Microsoft Active Directory.
+14. The proposed Data Platform must provide the ability of assigning Role-Based Access to authorized users and groups defined in the Active Directory
+15. "The platform must provide automated data profiling at multiple points i.e. ingestion, transformation, and delivery, to detect missing values, duplicates, inconsistent formats, and outliers across all data assets including structured, 
+semi-structured, and unstructured data."
+16. "The platform should provide access to a curated library of pretrained AI models specifically relevant to the banking and financial services sector, enabling rapid development and deployment of intelligent applications. 
+These should include models for use cases such as fraud detection, credit risk scoring, customer segmentation, document classification (e.g., KYC/AML forms), sentiment analysis on customer interactions, and churn prediction."
+17. "The solution should facilitate efficient model optimization through automated 
+hyperparameter tuning techniques such as grid search, random search, or Bayesian optimization."
+18. The platform must offer robust experiment tracking and version control capabilities i.e. GitHub, capturing key information including model parameters, metrics, datasets, and versions to support reproducibility and audit requirements.
+19. The platform should provide flexible options to deploy both open-source and proprietary LLMs, support fine-tuning on domain-specific data, and enable scalable inference with low latency.
+20. The platform should have the capability to deploy and manage multiple models simultaneously, including A/B testing, champion/challenger models, and canary deployments.

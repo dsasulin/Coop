@@ -530,6 +530,121 @@ All files now match the actual schema defined in `DDL/Create_Tables.sql`.
 
 ---
 
+## Additional Fixes - Session 2 (2025-01-06)
+
+After initial schema corrections, additional runtime errors were discovered and fixed:
+
+### Issue 1: Column Count Mismatch in Silver Layer
+
+**Error**:
+```
+Error while compiling statement: FAILED: SemanticException [Error 10044]:
+Cannot insert into target table because column number/types are different 'clients':
+Table insclause-0 has 27 columns, but query has 29 columns.
+```
+
+**Root Cause**: INSERT statements in `02_Load_Bronze_to_Silver.sql` had wrong number of columns compared to DDL definitions.
+
+**Resolution**: Completely recreated all 12 INSERT statements to match exact DDL structure:
+
+| Table | DDL Columns | Original INSERT | Fixed INSERT |
+|-------|-------------|-----------------|--------------|
+| clients | 27 | 29 | 27 ✅ |
+| products | 9 | 11 | 9 ✅ |
+| contracts | 19 | 21 | 19 ✅ |
+| accounts | 18 | 19 | 18 ✅ |
+| client_products | 13 | 14 | 13 ✅ |
+| transactions | 27 | 31 | 27 ✅ |
+| account_balances | 13 | 17 | 13 ✅ |
+| cards | 18 | 20 | 18 ✅ |
+| branches | 16 | 17 | 16 ✅ |
+| employees | 24 | 22 | 24 ✅ |
+| loans | 21 | 26 | 21 ✅ |
+| credit_applications | 22 | 22* | 22 ✅ |
+
+*\*credit_applications had correct count but missing partition column*
+
+**Common Issues Fixed**:
+- Removed extra field `source_file` (should only use `source_system`)
+- Added missing original fields before normalized versions (e.g., `status` before `status_normalized`)
+- Fixed field names to match DDL exactly (e.g., `amount_abs` not `absolute_amount`)
+- Added missing fields like `phone_normalized`, `is_active`, `reserved_amount`
+
+---
+
+### Issue 2: Ambiguous Column References in Gold Layer
+
+**Error**:
+```
+Error while compiling statement: FAILED: SemanticException
+Column product_id Found in more than One Tables/Subqueries
+```
+
+**Root Cause**: Queries with JOINs referenced columns without explicit table aliases.
+
+**Resolution**: Added explicit table aliases to all columns from main tables:
+
+**Fixed Tables**:
+
+1. **dim_product** (lines 161-201)
+   - Added `p.` prefix to all columns: `p.product_id`, `p.product_name`, `p.product_type`, etc.
+
+2. **dim_branch** (lines 210-267)
+   - Added `b.` prefix to all columns: `b.branch_id`, `b.branch_code`, `b.branch_name`, etc.
+
+**Example Fix**:
+```sql
+-- BEFORE (ERROR):
+SELECT
+    product_id,
+    product_name
+FROM silver.products p
+LEFT JOIN (...) cp ON p.product_id = cp.product_id
+
+-- AFTER (FIXED):
+SELECT
+    p.product_id,
+    p.product_name
+FROM silver.products p
+LEFT JOIN (...) cp ON p.product_id = cp.product_id
+```
+
+**Verified Tables** (already had correct aliases):
+- ✅ dim_client
+- ✅ dim_date
+- ✅ fact_transactions_daily
+- ✅ fact_account_balance_daily
+- ✅ fact_loan_performance
+- ✅ client_360_view
+- ✅ product_performance_summary
+- ✅ branch_performance_dashboard
+
+---
+
+### Issue 3: ParseException in dim_date
+
+**Error**:
+```
+Error while compiling statement: FAILED: ParseException
+line 84:65 missing KW_END at 's Day' near 's Day'
+```
+
+**Root Cause**: Apostrophe in string `'New Year''s Day'` caused parsing error in Hive.
+
+**Resolution**: Changed holiday name from `'New Year''s Day'` to `'New Year Day'` (line 362)
+
+---
+
+## Updated Summary of Changes
+
+| Script | Issue Type | Tables/Queries Fixed | Status |
+|--------|-----------|---------------------|--------|
+| 01_Load_Stage_to_Bronze.sql | Schema mismatch | 12 tables | ✅ Fixed |
+| 02_Load_Bronze_to_Silver.sql | Column count mismatch | 12 tables | ✅ Fixed |
+| 03_Load_Silver_to_Gold.sql | Ambiguous columns, ParseException | 3 queries | ✅ Fixed |
+
+---
+
 ## Support
 
 If you encounter any issues:
@@ -541,5 +656,5 @@ If you encounter any issues:
 ---
 
 **Last Updated**: 2025-01-06
-**Version**: 2.0 (Schema Corrected)
-**Validated Against**: DDL/Create_Tables.sql
+**Version**: 3.0 (Runtime Errors Fixed)
+**Validated Against**: DDL/Create_Tables.sql + Runtime Testing

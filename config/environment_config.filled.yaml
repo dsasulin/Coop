@@ -1,0 +1,674 @@
+# ========================================
+# Environment Configuration - FILLED
+# Cloudera Data Warehouse on Kubernetes (EKS)
+# ========================================
+#
+# This configuration is filled with actual values from your cluster
+# Extracted from: config/current.txt (Hue SQL results)
+# Date: 2025-01-06
+#
+# IMPORTANT: This is a Kubernetes-based CDP environment, not traditional YARN
+# - Spark jobs run on Kubernetes, not YARN
+# - Storage is S3, not HDFS
+# - Metastore is a K8s service
+# ========================================
+
+# ========================================
+# Section 1: CDP Cluster Configuration
+# ========================================
+cdp:
+  cluster:
+    # Cluster name from hive.cluster.id
+    name: "compute-1762150223-2jsh"
+
+    # CDP Environment name (from S3 path analysis)
+    environment: "production"  # Change to staging/development as needed
+
+    # AWS region (inferred from S3 bucket, verify in Cloudera Manager)
+    region: "us-east-1"  # TODO: Verify actual region
+
+    # Cluster type: k8s (Kubernetes-based CDP Data Warehouse)
+    cluster_type: "k8s"  # NOT traditional YARN cluster
+
+  # Storage Configuration (S3, not HDFS)
+  storage:
+    # Primary storage is S3
+    type: "s3a"
+
+    # S3 bucket name (extracted from hive.metastore.warehouse.dir)
+    bucket: "co-op-buk-39d7d9df"
+
+    # S3 base path
+    base_path: "s3a://co-op-buk-39d7d9df"
+
+    # Managed tables location
+    managed_path: "s3a://co-op-buk-39d7d9df/data/warehouse/tablespace/managed/hive"
+
+    # External tables location
+    external_path: "s3a://co-op-buk-39d7d9df/data/warehouse/tablespace/external/hive"
+
+  # Hive Metastore Configuration
+  hive:
+    # Metastore Thrift URI (Kubernetes service endpoint)
+    metastore_uri: "thrift://metastore-service.warehouse-1761913838-c49g.svc.cluster.local:9083"
+
+    # Warehouse directories (from SET commands)
+    warehouse_dir: "s3a://co-op-buk-39d7d9df/data/warehouse/tablespace/managed/hive"
+    warehouse_external_dir: "s3a://co-op-buk-39d7d9df/data/warehouse/tablespace/external/hive"
+
+    # Hive version
+    version: "3.1.3000.2025.0.20.0-249"
+
+  # Kubernetes Configuration (replaces YARN)
+  kubernetes:
+    # Kubernetes namespace (from metastore service name)
+    namespace: "warehouse-1761913838-c49g"
+
+    # Cluster domain
+    cluster_domain: "svc.cluster.local"
+
+    # ZooKeeper service (for coordination)
+    zookeeper_uri: "zookeeper.cluster.svc.cluster.local:2181"
+
+    # ZooKeeper namespace
+    zk_namespace: "/compute-1762150223-2jsh"
+
+  # Security Configuration
+  security:
+    # Kerberos enabled (from env:USE_KERBEROS)
+    kerberos_enabled: true
+
+    # Authentication method
+    auth_method: "kerberos"
+
+    # Principal (TODO: Get from admin)
+    principal: "hive@REALM.COM"  # TODO: Update with actual principal
+
+    # Keytab path (if using keytab authentication)
+    keytab: "/etc/security/keytabs/hive.keytab"  # TODO: Update if needed
+
+  # Paths
+  paths:
+    # Hadoop home (from env:HADOOP_HOME)
+    hadoop_home: "/usr/lib/hadoop"
+
+    # Hive home
+    hive_home: "/usr/lib/hive"
+
+    # Java home (from env:JAVA_HOME)
+    java_home: "/usr/lib/jvm/java-11-openjdk/jre"
+
+    # Tez configuration
+    tez_conf: "/etc/tez/conf"
+
+# ========================================
+# Section 2: Database Configuration
+# ========================================
+databases:
+  # Test/Staging database (external)
+  test:
+    name: "test"
+    description: "test"
+    location: "s3a://co-op-buk-39d7d9df/data/warehouse/tablespace/external/hive/test.db"
+    owner: "user001"
+    owner_type: "USER"
+    table_type: "EXTERNAL"
+
+  # Bronze layer - raw data from source systems (managed)
+  bronze:
+    name: "bronze"
+    description: "Bronze layer - raw data from source systems"
+    location: "s3a://co-op-buk-39d7d9df/user/hive/warehouse/bronze.db"
+    owner: "user001"
+    owner_type: "USER"
+    table_type: "MANAGED"
+
+    # Tables in bronze layer (from SHOW TABLES IN bronze)
+    tables:
+      - account_balances
+      - accounts
+      - branches
+      - cards
+      - client_products
+      - clients
+      - contracts
+      - credit_applications
+      - employees
+      - loans
+      - products
+      - transactions
+
+  # Silver layer - cleaned and validated data (managed)
+  silver:
+    name: "silver"
+    description: "Silver layer - cleaned and validated data"
+    location: "s3a://co-op-buk-39d7d9df/user/hive/warehouse/silver.db"
+    owner: "user001"
+    owner_type: "USER"
+    table_type: "MANAGED"
+
+  # Gold layer - business aggregates and analytics-ready data (managed)
+  gold:
+    name: "gold"
+    description: "Gold layer - business aggregates and analytics-ready data"
+    location: "s3a://co-op-buk-39d7d9df/user/hive/warehouse/gold.db"
+    owner: "user001"
+    owner_type: "USER"
+    table_type: "MANAGED"
+
+# ========================================
+# Section 3: Data Sources Configuration
+# ========================================
+data_sources:
+  # CSV input files (assumption: stored in S3)
+  csv_input:
+    # Base path for CSV files (TODO: Update with actual CSV location)
+    base_path: "s3a://co-op-buk-39d7d9df/data/input/banking"
+
+    # File format
+    format: "csv"
+
+    # CSV options
+    options:
+      header: true
+      delimiter: ","
+      quote: "\""
+      escape: "\\"
+      encoding: "UTF-8"
+
+  # Individual file paths
+  files:
+    # Client data
+    clients: "s3a://co-op-buk-39d7d9df/data/input/banking/clients.csv"
+
+    # Product data
+    products: "s3a://co-op-buk-39d7d9df/data/input/banking/products.csv"
+
+    # Transaction data
+    transactions: "s3a://co-op-buk-39d7d9df/data/input/banking/transactions.csv"
+
+    # Account data
+    accounts: "s3a://co-op-buk-39d7d9df/data/input/banking/accounts.csv"
+
+    # Branch data
+    branches: "s3a://co-op-buk-39d7d9df/data/input/banking/branches.csv"
+
+    # Card data
+    cards: "s3a://co-op-buk-39d7d9df/data/input/banking/cards.csv"
+
+    # Loan data
+    loans: "s3a://co-op-buk-39d7d9df/data/input/banking/loans.csv"
+
+    # Contract data
+    contracts: "s3a://co-op-buk-39d7d9df/data/input/banking/contracts.csv"
+
+    # Employee data
+    employees: "s3a://co-op-buk-39d7d9df/data/input/banking/employees.csv"
+
+    # Client-Product relationship
+    client_products: "s3a://co-op-buk-39d7d9df/data/input/banking/client_products.csv"
+
+    # Credit application data
+    credit_applications: "s3a://co-op-buk-39d7d9df/data/input/banking/credit_applications.csv"
+
+    # Account balance data
+    account_balances: "s3a://co-op-buk-39d7d9df/data/input/banking/account_balances.csv"
+
+# ========================================
+# Section 4: Spark Configuration (Kubernetes)
+# ========================================
+# NOTE: This is Spark-on-Kubernetes, not Spark-on-YARN
+spark:
+  # Spark master (kubernetes instead of yarn)
+  master: "k8s://https://kubernetes.default.svc.cluster.local:443"
+
+  # Deploy mode for Kubernetes
+  deploy_mode: "cluster"
+
+  # Spark version (inferred from Scala version)
+  version: "3.x"
+
+  # Application name prefix
+  app_name_prefix: "banking_etl"
+
+  # Driver configuration (runs in Kubernetes pod)
+  driver:
+    memory: "4g"
+    cores: 2
+
+    # Kubernetes-specific driver options
+    k8s:
+      container_image: "cloudera/spark:latest"  # TODO: Update with actual image
+      service_account: "spark"
+
+  # Executor configuration (runs in Kubernetes pods)
+  executor:
+    # Resource allocation per executor
+    memory: "8g"
+    cores: 4
+    instances: 5  # Start with 5, scale as needed
+
+    # Kubernetes-specific executor options
+    k8s:
+      container_image: "cloudera/spark:latest"  # TODO: Update with actual image
+
+  # Spark configuration properties
+  conf:
+    # Parallelism settings
+    spark.default.parallelism: 40  # executors × cores × 2
+    spark.sql.shuffle.partitions: 200
+
+    # S3A configuration
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    spark.hadoop.fs.s3a.bucket.co-op-buk-39d7d9df.endpoint: "s3.us-east-1.amazonaws.com"  # TODO: Update region
+    spark.hadoop.fs.s3a.fast.upload: "true"
+    spark.hadoop.fs.s3a.multipart.size: "104857600"  # 100MB
+
+    # Hive integration
+    spark.sql.catalogImplementation: "hive"
+    spark.sql.hive.metastore.version: "3.1.3000"
+    spark.sql.hive.metastore.jars: "builtin"
+
+    # Performance tuning
+    spark.sql.adaptive.enabled: "true"
+    spark.sql.adaptive.coalescePartitions.enabled: "true"
+    spark.sql.autoBroadcastJoinThreshold: "10485760"  # 10MB
+
+    # Serialization
+    spark.serializer: "org.apache.spark.serializer.KryoSerializer"
+    spark.kryoserializer.buffer.max: "512m"
+
+    # Dynamic allocation (Kubernetes)
+    spark.dynamicAllocation.enabled: "true"
+    spark.dynamicAllocation.shuffleTracking.enabled: "true"
+    spark.dynamicAllocation.minExecutors: "2"
+    spark.dynamicAllocation.maxExecutors: "10"
+    spark.dynamicAllocation.initialExecutors: "5"
+
+    # Kubernetes-specific configurations
+    spark.kubernetes.namespace: "warehouse-1761913838-c49g"
+    spark.kubernetes.authenticate.driver.serviceAccountName: "spark"
+    spark.kubernetes.container.image.pullPolicy: "Always"
+
+    # Memory management
+    spark.memory.fraction: "0.8"
+    spark.memory.storageFraction: "0.3"
+
+    # Compression
+    spark.io.compression.codec: "snappy"
+    spark.sql.parquet.compression.codec: "snappy"
+
+# ========================================
+# Section 5: Airflow Configuration
+# ========================================
+airflow:
+  # DAG default arguments
+  default_args:
+    owner: "data_engineering"
+    email: ["user001@company.com"]  # TODO: Update with actual email
+    email_on_failure: true
+    email_on_retry: false
+    retries: 2
+    retry_delay_minutes: 5
+    execution_timeout_minutes: 120  # 2 hours
+    depends_on_past: false
+    wait_for_downstream: false
+
+  # Schedule intervals (cron format)
+  schedules:
+    # Full ETL pipeline (all layers)
+    full_etl: "@once"  # TODO: Change to "0 2 * * *" for daily at 2 AM
+
+    # Individual layer schedules
+    stage_to_bronze: "@once"  # Load raw data from test to bronze
+    bronze_to_silver: "@once"  # Transform and clean to silver
+    silver_to_gold: "@once"   # Aggregate to gold
+
+    # Data quality checks
+    data_quality_check: "@once"
+
+  # DAG configuration
+  dag_config:
+    max_active_runs: 1  # Only one DAG run at a time
+    concurrency: 16     # Max parallel tasks
+    catchup: false      # Don't backfill
+
+  # Spark job submission (for Kubernetes)
+  spark_submit:
+    # Kubernetes API server
+    master: "k8s://https://kubernetes.default.svc.cluster.local:443"
+
+    # Deploy mode
+    deploy_mode: "cluster"
+
+    # Kubernetes namespace
+    namespace: "warehouse-1761913838-c49g"
+
+    # Service account
+    service_account: "spark"
+
+    # Container image
+    container_image: "cloudera/spark:latest"  # TODO: Update
+
+# ========================================
+# Section 6: NiFi Configuration
+# ========================================
+# NOTE: NiFi configuration for reference
+# NiFi flows must be configured manually in NiFi UI
+nifi:
+  # NiFi instance URL (TODO: Get from admin)
+  url: "https://nifi.co-op-cdp-env.cloudera.com:8443"  # TODO: Update
+
+  # NiFi API URL
+  api_url: "https://nifi.co-op-cdp-env.cloudera.com:8443/nifi-api"  # TODO: Update
+
+  # Processor configurations (reference only)
+  processors:
+    # Get files from source
+    get_file:
+      source_directory: "/data/incoming/banking"  # TODO: Update
+      file_filter: ".*\\.csv"
+      polling_interval: "60 sec"
+
+    # Put files to S3
+    put_s3:
+      bucket: "co-op-buk-39d7d9df"
+      folder: "data/input/banking"
+      region: "us-east-1"  # TODO: Verify
+
+    # Invoke Hive query (via Beeline)
+    execute_sql:
+      database_connection: "jdbc:hive2://metastore-service.warehouse-1761913838-c49g.svc.cluster.local:10000"
+      database_driver: "org.apache.hive.jdbc.HiveDriver"
+
+# ========================================
+# Section 7: Data Quality Configuration
+# ========================================
+data_quality:
+  # Quality thresholds
+  thresholds:
+    # Minimum data quality score (0-1)
+    min_data_quality_score: 0.85  # 85% quality required
+
+    # Maximum null percentage allowed
+    max_null_percentage: 0.10  # Max 10% nulls
+
+    # Maximum duplicate percentage allowed
+    max_duplicate_percentage: 0.02  # Max 2% duplicates
+
+    # Minimum row count thresholds
+    min_row_counts:
+      clients: 1000
+      products: 10
+      transactions: 5000
+      accounts: 1000
+      branches: 10
+
+  # Data quality rules (applied in silver layer)
+  rules:
+    # Client validation rules
+    clients:
+      - field: "email"
+        rule: "not_null"
+      - field: "email"
+        rule: "regex"
+        pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+      - field: "credit_score"
+        rule: "range"
+        min: 300
+        max: 850
+      - field: "annual_income"
+        rule: "not_negative"
+
+    # Transaction validation rules
+    transactions:
+      - field: "amount"
+        rule: "not_null"
+      - field: "amount"
+        rule: "not_zero"
+      - field: "transaction_type"
+        rule: "in_list"
+        values: ["DEPOSIT", "WITHDRAWAL", "TRANSFER", "PAYMENT"]
+
+# ========================================
+# Section 8: Monitoring and Logging
+# ========================================
+monitoring:
+  # Logging configuration
+  logging:
+    # Log level
+    level: "INFO"
+
+    # Log location (S3)
+    log_dir: "s3a://co-op-buk-39d7d9df/logs/banking_etl"
+
+    # Log retention (days)
+    retention_days: 30
+
+    # Log format
+    format: "json"
+
+  # Metrics collection
+  metrics:
+    # Enable metrics
+    enabled: true
+
+    # Metrics backend (Cloudera Manager)
+    backend: "cloudera_manager"
+
+    # Metrics to track
+    track:
+      - job_duration
+      - row_counts
+      - data_quality_scores
+      - error_rates
+
+# ========================================
+# Section 9: Notification Configuration
+# ========================================
+notifications:
+  # Email notifications
+  email:
+    enabled: false  # TODO: Enable and configure SMTP
+
+    # SMTP configuration (TODO: Get from IT)
+    smtp_host: "smtp.company.com"  # TODO: Update
+    smtp_port: 587
+    smtp_user: "etl-alerts@company.com"  # TODO: Update
+    smtp_password: "${SMTP_PASSWORD}"  # Use environment variable
+    use_tls: true
+
+    # Recipients by event type
+    recipients:
+      success: ["user001@company.com"]
+      failure: ["user001@company.com", "oncall@company.com"]
+      data_quality_issues: ["user001@company.com", "dq-team@company.com"]
+
+  # Slack notifications
+  slack:
+    enabled: false  # TODO: Enable if using Slack
+    webhook_url: "${SLACK_WEBHOOK_URL}"  # Use environment variable
+    channel: "#etl-alerts"
+
+# ========================================
+# Section 10: Performance Tuning
+# ========================================
+performance:
+  # Parallelism settings
+  parallelism:
+    # Number of parallel Spark jobs
+    max_parallel_jobs: 3
+
+    # Number of parallel SQL statements
+    max_parallel_sql: 5
+
+  # Caching strategy
+  caching:
+    # Enable DataFrame caching
+    enable_caching: true
+
+    # Cache storage level
+    storage_level: "MEMORY_AND_DISK"
+
+  # Optimization flags
+  optimization:
+    # Enable cost-based optimization
+    enable_cbo: true
+
+    # Enable predicate pushdown
+    enable_predicate_pushdown: true
+
+    # Enable partition pruning
+    enable_partition_pruning: true
+
+# ========================================
+# Section 11: Security Configuration
+# ========================================
+security:
+  # Encryption
+  encryption:
+    # Encrypt data at rest (S3)
+    at_rest:
+      enabled: true
+      type: "SSE-S3"  # S3-managed encryption
+
+    # Encrypt data in transit
+    in_transit:
+      enabled: true
+      protocol: "TLS"
+
+  # Access control
+  access_control:
+    # Use Apache Ranger for authorization
+    use_ranger: true  # TODO: Verify if Ranger is enabled
+
+    # Default permissions
+    default_permissions:
+      databases: "0770"
+      tables: "0770"
+
+# ========================================
+# Section 12: Backup and Recovery
+# ========================================
+backup:
+  # Backup strategy
+  strategy:
+    # Backup frequency
+    frequency: "daily"
+
+    # Backup location
+    location: "s3a://co-op-buk-39d7d9df/backups/banking_etl"
+
+    # Retention policy
+    retention_days: 90
+
+    # What to backup
+    include:
+      - metadata  # Hive metastore
+      - configurations  # This config file
+      - scripts  # SQL and PySpark scripts
+
+  # Recovery procedures
+  recovery:
+    # Recovery point objective (hours)
+    rpo_hours: 24
+
+    # Recovery time objective (hours)
+    rto_hours: 4
+
+# ========================================
+# Section 13: Testing Configuration
+# ========================================
+testing:
+  # Test environment settings
+  test_env:
+    # Use test database for unit tests
+    database: "test"
+
+    # Sample data size (rows)
+    sample_size: 1000
+
+    # Enable dry-run mode
+    dry_run: false
+
+  # Test data paths
+  test_data:
+    base_path: "s3a://co-op-buk-39d7d9df/data/test/banking"
+
+# ========================================
+# Section 14: Environment-Specific Overrides
+# ========================================
+environments:
+  # Development environment
+  development:
+    cdp.cluster.environment: "development"
+    spark.executor.instances: 2
+    spark.executor.memory: "4g"
+    spark.dynamicAllocation.maxExecutors: 3
+    airflow.schedules.full_etl: "@once"
+    data_quality.thresholds.min_data_quality_score: 0.70
+
+  # Staging environment
+  staging:
+    cdp.cluster.environment: "staging"
+    spark.executor.instances: 3
+    spark.executor.memory: "6g"
+    spark.dynamicAllocation.maxExecutors: 5
+    airflow.schedules.full_etl: "0 3 * * *"  # Daily at 3 AM
+    data_quality.thresholds.min_data_quality_score: 0.80
+
+  # Production environment
+  production:
+    cdp.cluster.environment: "production"
+    spark.executor.instances: 5
+    spark.executor.memory: "8g"
+    spark.dynamicAllocation.maxExecutors: 10
+    airflow.schedules.full_etl: "0 2 * * *"  # Daily at 2 AM
+    data_quality.thresholds.min_data_quality_score: 0.90
+    monitoring.logging.level: "WARN"
+
+# ========================================
+# Additional Configuration Notes
+# ========================================
+#
+# IMPORTANT DIFFERENCES FROM TRADITIONAL YARN CLUSTER:
+#
+# 1. No HDFS NameNode - Storage is S3
+#    - Use s3a:// protocol instead of hdfs://
+#    - No need for hdfs.namenode parameter
+#
+# 2. No YARN ResourceManager - Compute is Kubernetes
+#    - Spark master is k8s:// instead of yarn
+#    - No yarn.resource_manager parameter
+#    - Use Kubernetes-specific Spark configuration
+#
+# 3. Metastore is a Kubernetes Service
+#    - Service name: metastore-service.warehouse-1761913838-c49g.svc.cluster.local
+#    - Port: 9083 (Thrift)
+#
+# 4. Authentication uses Kerberos
+#    - Principal and keytab required
+#    - Service account authentication for K8s
+#
+# 5. Execution Engine is Tez (for Hive queries)
+#    - Config location: /etc/tez/conf
+#    - JARs in classpath
+#
+# TODO ITEMS:
+#
+# [ ] Verify AWS region for S3 bucket
+# [ ] Get actual SMTP server details for email alerts
+# [ ] Get NiFi instance URL
+# [ ] Get Spark container image name/version
+# [ ] Update email addresses with actual team emails
+# [ ] Verify Kerberos principal
+# [ ] Set up Slack webhook (optional)
+# [ ] Verify CSV input file locations in S3
+# [ ] Test Spark job submission to Kubernetes
+# [ ] Verify Ranger is enabled for access control
+#
+# ========================================
+# Last Updated: 2025-01-06
+# Version: 1.0
+# Extracted From: config/current.txt
+# ========================================

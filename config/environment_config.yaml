@@ -1,0 +1,482 @@
+# ============================================================================
+# ENVIRONMENT CONFIGURATION FILE
+# ============================================================================
+# Purpose: Central configuration for Spark Jobs, Airflow DAGs, and NiFi flows
+# Usage: Fill in all parameters marked with <FILL_IN> or <PLACEHOLDER>
+# Date Created: 2025-01-06
+# ============================================================================
+
+# ============================================================================
+# SECTION 1: CLOUDERA DATA PLATFORM (CDP) CONFIGURATION
+# ============================================================================
+cdp:
+  cluster:
+    name: <FILL_IN>                           # e.g., "production-cluster"
+    environment: <FILL_IN>                    # e.g., "production", "staging", "development"
+    region: <FILL_IN>                         # e.g., "us-east-1", "eu-west-1"
+
+  hdfs:
+    namenode: <FILL_IN>                       # e.g., "hdfs://namenode.example.com:8020"
+    base_path: <FILL_IN>                      # e.g., "/user/hive/warehouse"
+    temp_path: <FILL_IN>                      # e.g., "/tmp/etl_temp"
+
+  hive:
+    metastore_uri: <FILL_IN>                  # e.g., "thrift://hive-metastore.example.com:9083"
+    database_location: <FILL_IN>              # e.g., "/user/hive/warehouse"
+
+  yarn:
+    resource_manager: <FILL_IN>               # e.g., "yarn-rm.example.com:8032"
+    queue: <FILL_IN>                          # e.g., "default", "production"
+
+  kerberos:
+    enabled: false                             # true/false
+    principal: <FILL_IN>                       # e.g., "hive/hostname@REALM.COM"
+    keytab: <FILL_IN>                          # e.g., "/etc/security/keytabs/hive.keytab"
+
+# ============================================================================
+# SECTION 2: DATABASE CONFIGURATION
+# ============================================================================
+databases:
+  test:
+    name: "test"
+    description: "Stage/Landing layer - raw CSV data"
+    location: <FILL_IN>                        # e.g., "/user/hive/warehouse/test.db"
+
+  bronze:
+    name: "bronze"
+    description: "Bronze layer - raw historical data"
+    location: <FILL_IN>                        # e.g., "/user/hive/warehouse/bronze.db"
+
+  silver:
+    name: "silver"
+    description: "Silver layer - cleaned and validated data"
+    location: <FILL_IN>                        # e.g., "/user/hive/warehouse/silver.db"
+
+  gold:
+    name: "gold"
+    description: "Gold layer - aggregated analytics data"
+    location: <FILL_IN>                        # e.g., "/user/hive/warehouse/gold.db"
+
+# ============================================================================
+# SECTION 3: DATA SOURCES AND PATHS
+# ============================================================================
+data_sources:
+  csv_input:
+    base_path: <FILL_IN>                       # e.g., "s3a://my-bucket/data/input" or "/data/input"
+    format: "csv"
+    delimiter: ","
+    header: true
+    encoding: "UTF-8"
+
+  files:
+    clients: <FILL_IN>                         # e.g., "s3a://bucket/data/clients.csv"
+    products: <FILL_IN>                        # e.g., "s3a://bucket/data/products.csv"
+    contracts: <FILL_IN>                       # e.g., "s3a://bucket/data/contracts.csv"
+    accounts: <FILL_IN>                        # e.g., "s3a://bucket/data/accounts.csv"
+    client_products: <FILL_IN>                 # e.g., "s3a://bucket/data/client_products.csv"
+    transactions: <FILL_IN>                    # e.g., "s3a://bucket/data/transactions.csv"
+    account_balances: <FILL_IN>                # e.g., "s3a://bucket/data/account_balances.csv"
+    cards: <FILL_IN>                           # e.g., "s3a://bucket/data/cards.csv"
+    branches: <FILL_IN>                        # e.g., "s3a://bucket/data/branches.csv"
+    employees: <FILL_IN>                       # e.g., "s3a://bucket/data/employees.csv"
+    loans: <FILL_IN>                           # e.g., "s3a://bucket/data/loans.csv"
+    credit_applications: <FILL_IN>             # e.g., "s3a://bucket/data/credit_applications.csv"
+
+  archive:
+    enabled: true
+    path: <FILL_IN>                            # e.g., "s3a://bucket/archive/processed"
+    retention_days: 90
+
+# ============================================================================
+# SECTION 4: SPARK CONFIGURATION
+# ============================================================================
+spark:
+  app_name_prefix: "banking_etl"               # Prefix for Spark application names
+
+  # Spark Submit Parameters
+  master: <FILL_IN>                            # e.g., "yarn", "local[*]"
+  deploy_mode: <FILL_IN>                       # e.g., "cluster", "client"
+
+  # Driver Configuration
+  driver:
+    memory: <FILL_IN>                          # e.g., "4g", "8g"
+    cores: <FILL_IN>                           # e.g., 2, 4
+    max_result_size: <FILL_IN>                 # e.g., "2g"
+
+  # Executor Configuration
+  executor:
+    memory: <FILL_IN>                          # e.g., "8g", "16g"
+    cores: <FILL_IN>                           # e.g., 4, 8
+    instances: <FILL_IN>                       # e.g., 10, 20
+    memory_overhead: <FILL_IN>                 # e.g., "2g"
+
+  # Spark Configuration Properties
+  conf:
+    # Memory Management
+    spark.memory.fraction: "0.8"
+    spark.memory.storageFraction: "0.3"
+
+    # Shuffle Configuration
+    spark.sql.shuffle.partitions: <FILL_IN>    # e.g., 200, 400
+    spark.default.parallelism: <FILL_IN>       # e.g., 200, 400
+
+    # Dynamic Allocation
+    spark.dynamicAllocation.enabled: <FILL_IN> # true/false
+    spark.dynamicAllocation.minExecutors: <FILL_IN>
+    spark.dynamicAllocation.maxExecutors: <FILL_IN>
+    spark.dynamicAllocation.initialExecutors: <FILL_IN>
+
+    # Serialization
+    spark.serializer: "org.apache.spark.serializer.KryoSerializer"
+    spark.kryoserializer.buffer.max: "512m"
+
+    # SQL Configuration
+    spark.sql.adaptive.enabled: "true"
+    spark.sql.adaptive.coalescePartitions.enabled: "true"
+    spark.sql.adaptive.skewJoin.enabled: "true"
+
+    # Hive Integration
+    spark.sql.catalogImplementation: "hive"
+    spark.sql.warehouse.dir: <FILL_IN>         # e.g., "/user/hive/warehouse"
+
+    # S3 Configuration (if using S3)
+    spark.hadoop.fs.s3a.access.key: <FILL_IN>  # Optional, leave blank if using IAM roles
+    spark.hadoop.fs.s3a.secret.key: <FILL_IN>  # Optional, leave blank if using IAM roles
+    spark.hadoop.fs.s3a.endpoint: <FILL_IN>    # e.g., "s3.amazonaws.com"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+
+  # Logging
+  log_level: <FILL_IN>                         # e.g., "INFO", "WARN", "ERROR"
+
+  # Python Version (for PySpark)
+  python_version: <FILL_IN>                    # e.g., "3.8", "3.9", "3.10"
+
+# ============================================================================
+# SECTION 5: AIRFLOW CONFIGURATION
+# ============================================================================
+airflow:
+  # DAG Default Arguments
+  default_args:
+    owner: <FILL_IN>                           # e.g., "data_engineering_team"
+    email: <FILL_IN>                           # e.g., ["etl-alerts@company.com"]
+    email_on_failure: true
+    email_on_retry: false
+    retries: <FILL_IN>                         # e.g., 2, 3
+    retry_delay_minutes: <FILL_IN>             # e.g., 5, 10
+    execution_timeout_minutes: <FILL_IN>       # e.g., 120 (2 hours)
+    depends_on_past: false
+    wait_for_downstream: false
+
+  # Scheduling
+  schedules:
+    full_etl: <FILL_IN>                        # e.g., "0 2 * * *" (daily at 2 AM)
+    stage_to_bronze: <FILL_IN>                 # e.g., "0 1 * * *"
+    bronze_to_silver: <FILL_IN>                # e.g., "30 1 * * *"
+    silver_to_gold: <FILL_IN>                  # e.g., "0 2 * * *"
+
+  # Concurrency
+  max_active_runs: <FILL_IN>                   # e.g., 1, 2
+  concurrency: <FILL_IN>                       # e.g., 16, 32
+
+  # Connections
+  connections:
+    spark:
+      conn_id: <FILL_IN>                       # e.g., "spark_default"
+      conn_type: "spark"
+      host: <FILL_IN>                          # e.g., "yarn://resource-manager:8032"
+
+    hive:
+      conn_id: <FILL_IN>                       # e.g., "hive_default"
+      conn_type: "hiveserver2"
+      host: <FILL_IN>                          # e.g., "hiveserver2.example.com"
+      port: <FILL_IN>                          # e.g., 10000
+      schema: "default"
+
+    smtp:
+      conn_id: <FILL_IN>                       # e.g., "smtp_default"
+      host: <FILL_IN>                          # e.g., "smtp.gmail.com"
+      port: <FILL_IN>                          # e.g., 587
+      login: <FILL_IN>                         # e.g., "alerts@company.com"
+
+  # File Paths
+  dags_folder: <FILL_IN>                       # e.g., "/opt/airflow/dags"
+  spark_scripts_folder: <FILL_IN>              # e.g., "/opt/airflow/spark_jobs"
+  logs_folder: <FILL_IN>                       # e.g., "/opt/airflow/logs"
+
+  # SLA and Alerting
+  sla_hours: <FILL_IN>                         # e.g., 4 (alert if task takes > 4 hours)
+
+  # Variables (can be set in Airflow UI or here)
+  variables:
+    environment: <FILL_IN>                     # e.g., "production"
+    data_quality_threshold: <FILL_IN>          # e.g., 0.95 (95% quality score)
+
+# ============================================================================
+# SECTION 6: NIFI CONFIGURATION
+# ============================================================================
+nifi:
+  # NiFi Instance
+  url: <FILL_IN>                               # e.g., "https://nifi.example.com:8443"
+  api_url: <FILL_IN>                           # e.g., "https://nifi.example.com:8443/nifi-api"
+
+  # Authentication
+  username: <FILL_IN>                          # Optional
+  password: <FILL_IN>                          # Optional
+  use_ssl: <FILL_IN>                           # true/false
+
+  # Process Groups
+  process_groups:
+    banking_etl:
+      name: "Banking_ETL_Pipeline"
+      description: "Data ingestion pipeline for banking data"
+
+  # Processor Configuration
+  processors:
+    # File Ingestion
+    get_file:
+      source_directory: <FILL_IN>              # e.g., "/data/incoming"
+      file_filter: <FILL_IN>                   # e.g., ".*\\.csv"
+      polling_interval: <FILL_IN>              # e.g., "60 sec"
+
+    # Data Validation
+    validate_record:
+      schema_registry: <FILL_IN>               # e.g., "http://schema-registry:8081"
+
+    # HDFS/S3 Output
+    put_hdfs:
+      hdfs_url: <FILL_IN>                      # e.g., "hdfs://namenode:8020"
+      directory: <FILL_IN>                     # e.g., "/data/landing"
+
+    put_s3:
+      bucket: <FILL_IN>                        # e.g., "my-data-bucket"
+      region: <FILL_IN>                        # e.g., "us-east-1"
+      access_key: <FILL_IN>                    # Optional if using IAM
+      secret_key: <FILL_IN>                    # Optional if using IAM
+
+  # Flow File Repository
+  flowfile_repository:
+    max_size: <FILL_IN>                        # e.g., "10 GB"
+
+  # Content Repository
+  content_repository:
+    max_size: <FILL_IN>                        # e.g., "50 GB"
+
+  # Provenance Repository
+  provenance_repository:
+    max_size: <FILL_IN>                        # e.g., "20 GB"
+    max_storage_time: <FILL_IN>                # e.g., "30 days"
+
+# ============================================================================
+# SECTION 7: DATA QUALITY CONFIGURATION
+# ============================================================================
+data_quality:
+  # Validation Rules
+  enabled: true
+
+  # Thresholds
+  thresholds:
+    min_data_quality_score: <FILL_IN>          # e.g., 0.80 (80%)
+    max_null_percentage: <FILL_IN>             # e.g., 0.10 (10%)
+    max_duplicate_percentage: <FILL_IN>        # e.g., 0.05 (5%)
+
+  # Quarantine
+  quarantine:
+    enabled: true
+    path: <FILL_IN>                            # e.g., "/data/quarantine"
+
+  # Alerts
+  alerts:
+    email_on_quality_failure: true
+    email_recipients: <FILL_IN>                # e.g., ["dq-team@company.com"]
+
+# ============================================================================
+# SECTION 8: MONITORING AND LOGGING
+# ============================================================================
+monitoring:
+  # Logging
+  log_level: <FILL_IN>                         # e.g., "INFO", "DEBUG"
+  log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+  # Metrics
+  metrics:
+    enabled: true
+    prometheus_enabled: <FILL_IN>              # true/false
+    prometheus_port: <FILL_IN>                 # e.g., 9090
+
+  # Application Monitoring
+  apm:
+    enabled: <FILL_IN>                         # true/false
+    service_name: <FILL_IN>                    # e.g., "banking-etl"
+    environment: <FILL_IN>                     # e.g., "production"
+
+# ============================================================================
+# SECTION 9: NOTIFICATION CONFIGURATION
+# ============================================================================
+notifications:
+  # Email
+  email:
+    enabled: true
+    smtp_host: <FILL_IN>                       # e.g., "smtp.gmail.com"
+    smtp_port: <FILL_IN>                       # e.g., 587
+    smtp_user: <FILL_IN>                       # e.g., "etl-alerts@company.com"
+    smtp_password: <FILL_IN>
+    use_tls: true
+
+    # Recipients
+    recipients:
+      success: <FILL_IN>                       # e.g., ["team@company.com"]
+      failure: <FILL_IN>                       # e.g., ["team@company.com", "oncall@company.com"]
+      data_quality_issues: <FILL_IN>           # e.g., ["dq-team@company.com"]
+
+  # Slack (Optional)
+  slack:
+    enabled: <FILL_IN>                         # true/false
+    webhook_url: <FILL_IN>                     # e.g., "https://hooks.slack.com/services/..."
+    channel: <FILL_IN>                         # e.g., "#etl-alerts"
+
+  # PagerDuty (Optional)
+  pagerduty:
+    enabled: <FILL_IN>                         # true/false
+    integration_key: <FILL_IN>
+
+# ============================================================================
+# SECTION 10: PERFORMANCE TUNING
+# ============================================================================
+performance:
+  # Partitioning Strategy
+  partitioning:
+    transactions:
+      columns: ["transaction_year", "transaction_month"]
+      strategy: "dynamic"
+
+    clients:
+      columns: ["registration_year"]
+      strategy: "dynamic"
+
+    accounts:
+      columns: ["open_year"]
+      strategy: "dynamic"
+
+  # File Format
+  file_format:
+    bronze: "parquet"
+    silver: "parquet"
+    gold: "parquet"
+
+  compression:
+    codec: <FILL_IN>                           # e.g., "snappy", "gzip", "lz4"
+
+  # Coalesce/Repartition
+  repartition:
+    enabled: true
+    default_partitions: <FILL_IN>              # e.g., 200
+
+  # Broadcast Join Threshold
+  broadcast_threshold_mb: <FILL_IN>            # e.g., 10 (10 MB)
+
+# ============================================================================
+# SECTION 11: SECURITY CONFIGURATION
+# ============================================================================
+security:
+  # Encryption
+  encryption:
+    at_rest: <FILL_IN>                         # true/false
+    in_transit: <FILL_IN>                      # true/false
+
+  # Data Masking
+  data_masking:
+    enabled: true
+    fields_to_mask:
+      - "card_number"
+      - "cvv"
+      - "ssn"                                  # If applicable
+
+  # Access Control
+  access_control:
+    enabled: <FILL_IN>                         # true/false
+    ranger_enabled: <FILL_IN>                  # true/false
+    sentry_enabled: <FILL_IN>                  # true/false
+
+# ============================================================================
+# SECTION 12: BACKUP AND RECOVERY
+# ============================================================================
+backup:
+  enabled: true
+
+  # Backup Schedule
+  schedule: <FILL_IN>                          # e.g., "0 3 * * 0" (weekly on Sunday at 3 AM)
+
+  # Backup Location
+  location: <FILL_IN>                          # e.g., "s3a://backup-bucket/banking-etl"
+
+  # Retention
+  retention_days: <FILL_IN>                    # e.g., 30, 90
+
+  # Recovery Point Objective (RPO)
+  rpo_hours: <FILL_IN>                         # e.g., 24 (daily backups)
+
+  # Recovery Time Objective (RTO)
+  rto_hours: <FILL_IN>                         # e.g., 4 (4 hours to restore)
+
+# ============================================================================
+# SECTION 13: TESTING CONFIGURATION
+# ============================================================================
+testing:
+  # Test Data
+  test_data_path: <FILL_IN>                    # e.g., "/data/test"
+
+  # Unit Tests
+  unit_tests:
+    enabled: true
+    framework: "pytest"                        # or "unittest"
+
+  # Integration Tests
+  integration_tests:
+    enabled: true
+    test_database: "test_banking_dwh"
+
+  # Data Validation Tests
+  validation_tests:
+    enabled: true
+    sample_size: <FILL_IN>                     # e.g., 1000 (rows to validate)
+
+# ============================================================================
+# SECTION 14: ENVIRONMENT-SPECIFIC OVERRIDES
+# ============================================================================
+environments:
+  development:
+    spark.executor.instances: 2
+    spark.executor.memory: "4g"
+    airflow.schedules.full_etl: "@once"        # Run manually
+    data_quality.thresholds.min_data_quality_score: 0.70
+
+  staging:
+    spark.executor.instances: 5
+    spark.executor.memory: "8g"
+    airflow.schedules.full_etl: "0 4 * * *"    # Daily at 4 AM
+    data_quality.thresholds.min_data_quality_score: 0.85
+
+  production:
+    spark.executor.instances: <FILL_IN>
+    spark.executor.memory: <FILL_IN>
+    airflow.schedules.full_etl: <FILL_IN>
+    data_quality.thresholds.min_data_quality_score: 0.95
+
+# ============================================================================
+# NOTES AND INSTRUCTIONS
+# ============================================================================
+#
+# 1. Fill in all fields marked with <FILL_IN>
+# 2. Remove <FILL_IN> placeholders after filling
+# 3. Adjust values based on your cluster size and workload
+# 4. Test in development environment first
+# 5. Use environment-specific overrides for different environments
+# 6. Keep sensitive data (passwords, keys) in secrets management system
+# 7. Version control this file (exclude sensitive data)
+# 8. Update this file when infrastructure changes
+#
+# For questions or issues, contact: <YOUR_TEAM_EMAIL>
+#
+# ============================================================================
+# END OF CONFIGURATION
+# ============================================================================

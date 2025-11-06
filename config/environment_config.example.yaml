@@ -1,0 +1,929 @@
+# ============================================================================
+# EXAMPLE ENVIRONMENT CONFIGURATION WITH COMMANDS
+# ============================================================================
+# This example shows how to get each parameter value
+# Commands are provided for: Hue SQL, Linux CLI, Cloudera Manager
+# ============================================================================
+
+# ============================================================================
+# SECTION 1: CDP CLUSTER CONFIGURATION
+# ============================================================================
+cdp:
+  cluster:
+    # Cluster name
+    # HOW TO GET: Cloudera Manager → Clusters → Cluster name
+    # LINUX: hostname | cut -d'-' -f1
+    name: "banking-prod-cluster"
+
+    # Environment type
+    # HOW TO GET: Manual - define based on your deployment
+    environment: "production"  # production/staging/development
+
+    # AWS region or datacenter location
+    # HOW TO GET (AWS): curl -s http://169.254.169.254/latest/meta-data/placement/region
+    # HOW TO GET (Manual): Check Cloudera Manager → Administration → Settings
+    region: "us-east-1"
+
+  hdfs:
+    # HDFS NameNode URI
+    # HOW TO GET (Hue SQL):
+    #   SET hive.metastore.warehouse.dir;
+    # HOW TO GET (Linux):
+    #   hdfs getconf -confKey fs.defaultFS
+    # HOW TO GET (Cloudera Manager):
+    #   CM → HDFS → Configuration → search "fs.defaultFS"
+    # HOW TO GET (XML):
+    #   grep -A1 'fs.defaultFS' /etc/hadoop/conf/core-site.xml
+    namenode: "hdfs://ip-10-0-1-100.ec2.internal:8020"
+
+    # HDFS base path for Hive warehouse
+    # HOW TO GET (Hue SQL):
+    #   SET hive.metastore.warehouse.dir;
+    # HOW TO GET (Linux):
+    #   hdfs getconf -confKey hive.metastore.warehouse.dir
+    # HOW TO GET (Default): /user/hive/warehouse
+    base_path: "/user/hive/warehouse"
+
+    # Temporary directory for ETL operations
+    # HOW TO GET: Check available space
+    # LINUX: df -h /tmp
+    # CREATE: hdfs dfs -mkdir -p /tmp/banking_etl
+    temp_path: "/tmp/banking_etl"
+
+  hive:
+    # Hive Metastore Thrift URI
+    # HOW TO GET (Hue SQL):
+    #   SET hive.metastore.uris;
+    # HOW TO GET (Linux):
+    #   grep 'hive.metastore.uris' /etc/hive/conf/hive-site.xml -A1 | grep -oP '(?<=<value>).*(?=</value>)'
+    # HOW TO GET (Beeline):
+    #   beeline -u "jdbc:hive2://localhost:10000" -e "SET hive.metastore.uris;"
+    # HOW TO GET (Cloudera Manager):
+    #   CM → Hive → Configuration → search "hive.metastore.uris"
+    metastore_uri: "thrift://ip-10-0-1-101.ec2.internal:9083"
+
+    # Database storage location (same as HDFS base_path usually)
+    database_location: "/user/hive/warehouse"
+
+  yarn:
+    # YARN ResourceManager address
+    # HOW TO GET (Linux):
+    #   yarn rmadmin -getServiceState rm1
+    #   grep 'yarn.resourcemanager.address' /etc/hadoop/conf/yarn-site.xml -A1
+    # HOW TO GET (Cloudera Manager):
+    #   CM → YARN → Instances → ResourceManager → Hostname:8032
+    # HOW TO GET (Check connectivity):
+    #   telnet <rm-host> 8032
+    resource_manager: "ip-10-0-1-100.ec2.internal:8032"
+
+    # YARN queue name for job submission
+    # HOW TO GET (Linux):
+    #   yarn queue -list
+    # HOW TO GET (Cloudera Manager):
+    #   CM → YARN → Configuration → search "yarn.scheduler.capacity"
+    # HOW TO GET (Check queues):
+    #   curl http://<rm-host>:8088/ws/v1/cluster/scheduler
+    queue: "production"
+
+  kerberos:
+    # Kerberos authentication enabled
+    # HOW TO GET (Linux):
+    #   klist  # If Kerberos is enabled, this will show tickets
+    #   grep -r "kerberos" /etc/hadoop/conf/*.xml
+    # HOW TO GET (Check):
+    #   hadoop.security.authentication in core-site.xml
+    enabled: false
+
+    # Kerberos principal
+    # HOW TO GET (Linux - if enabled):
+    #   klist -kt /etc/security/keytabs/*.keytab
+    principal: ""
+
+    # Keytab file location
+    # HOW TO GET (Linux - if enabled):
+    #   ls -la /etc/security/keytabs/
+    keytab: ""
+
+# ============================================================================
+# SECTION 2: DATABASE CONFIGURATION
+# ============================================================================
+databases:
+  test:
+    name: "test"
+    description: "Stage/Landing layer - raw CSV data"
+
+    # Database location in HDFS
+    # HOW TO GET (Hue SQL):
+    #   DESCRIBE DATABASE test;
+    # HOW TO GET (Linux):
+    #   hdfs dfs -ls /user/hive/warehouse/ | grep test.db
+    # HOW TO CHECK IF EXISTS:
+    #   beeline -u "jdbc:hive2://localhost:10000" -e "SHOW DATABASES LIKE 'test';"
+    location: "/user/hive/warehouse/test.db"
+
+  bronze:
+    name: "bronze"
+    description: "Bronze layer - raw historical data"
+
+    # HOW TO GET (Hue SQL):
+    #   DESCRIBE DATABASE bronze;
+    location: "/user/hive/warehouse/bronze.db"
+
+  silver:
+    name: "silver"
+    description: "Silver layer - cleaned and validated data"
+
+    # HOW TO GET (Hue SQL):
+    #   DESCRIBE DATABASE silver;
+    location: "/user/hive/warehouse/silver.db"
+
+  gold:
+    name: "gold"
+    description: "Gold layer - aggregated analytics data"
+
+    # HOW TO GET (Hue SQL):
+    #   DESCRIBE DATABASE gold;
+    location: "/user/hive/warehouse/gold.db"
+
+# ============================================================================
+# SECTION 3: DATA SOURCES AND PATHS
+# ============================================================================
+data_sources:
+  csv_input:
+    # Base path for input CSV files
+    # HOW TO GET (S3):
+    #   aws s3 ls s3://banking-data-prod/input/
+    # HOW TO GET (HDFS):
+    #   hdfs dfs -ls /data/banking/input/
+    # HOW TO CHECK ACCESS:
+    #   hdfs dfs -ls <path>
+    #   aws s3 ls <s3-path>
+    base_path: "s3a://banking-data-prod/input"
+
+    format: "csv"
+    delimiter: ","
+    header: true
+    encoding: "UTF-8"
+
+  files:
+    # Individual file locations
+    # HOW TO GET (S3):
+    #   aws s3 ls s3://banking-data-prod/input/ --recursive | grep .csv
+    # HOW TO GET (HDFS):
+    #   hdfs dfs -ls /data/banking/input/*.csv
+    # HOW TO CHECK FILE SIZE:
+    #   aws s3 ls s3://banking-data-prod/input/clients.csv --human-readable
+    #   hdfs dfs -du -h /data/banking/input/clients.csv
+    clients: "s3a://banking-data-prod/input/clients.csv"
+    products: "s3a://banking-data-prod/input/products.csv"
+    contracts: "s3a://banking-data-prod/input/contracts.csv"
+    accounts: "s3a://banking-data-prod/input/accounts.csv"
+    client_products: "s3a://banking-data-prod/input/client_products.csv"
+    transactions: "s3a://banking-data-prod/input/transactions.csv"
+    account_balances: "s3a://banking-data-prod/input/account_balances.csv"
+    cards: "s3a://banking-data-prod/input/cards.csv"
+    branches: "s3a://banking-data-prod/input/branches.csv"
+    employees: "s3a://banking-data-prod/input/employees.csv"
+    loans: "s3a://banking-data-prod/input/loans.csv"
+    credit_applications: "s3a://banking-data-prod/input/credit_applications.csv"
+
+  archive:
+    enabled: true
+
+    # Archive path for processed files
+    # HOW TO CREATE (S3):
+    #   aws s3 mb s3://banking-data-prod/archive
+    # HOW TO CREATE (HDFS):
+    #   hdfs dfs -mkdir -p /data/banking/archive/processed
+    path: "s3a://banking-data-prod/archive/processed"
+
+    retention_days: 90
+
+# ============================================================================
+# SECTION 4: SPARK CONFIGURATION
+# ============================================================================
+spark:
+  app_name_prefix: "banking_etl"
+
+  # Spark master
+  # HOW TO GET: Always "yarn" for CDP clusters
+  master: "yarn"
+
+  # Deploy mode
+  # OPTIONS: "cluster" (production) or "client" (development/debugging)
+  deploy_mode: "cluster"
+
+  driver:
+    # Driver memory allocation
+    # HOW TO CALCULATE:
+    #   - Small jobs: 4g
+    #   - Medium jobs: 8g
+    #   - Large jobs: 16g
+    # HOW TO CHECK AVAILABLE:
+    #   free -h  # On driver node
+    memory: "8g"
+
+    # Driver CPU cores
+    # HOW TO GET:
+    #   nproc  # On driver node
+    #   lscpu | grep "^CPU(s):"
+    cores: 4
+
+    # Max result size (should be < driver memory)
+    max_result_size: "4g"
+
+  executor:
+    # Executor memory per executor
+    # HOW TO CALCULATE:
+    #   - Get node memory: free -h
+    #   - Use 60-70% of node memory
+    #   - Example: 32GB node → 16-20GB executor memory
+    # HOW TO GET NODE MEMORY (YARN):
+    #   yarn node -list -showDetails | grep "Total Memory"
+    # HOW TO GET (Cloudera Manager):
+    #   CM → YARN → Configuration → "yarn.nodemanager.resource.memory-mb"
+    memory: "16g"
+
+    # CPU cores per executor
+    # HOW TO CALCULATE:
+    #   - Typical: 4-8 cores
+    #   - More cores = better parallelism
+    # HOW TO GET NODE CORES:
+    #   yarn node -list -showDetails | grep "Total vCores"
+    #   nproc --all  # On worker node
+    cores: 4
+
+    # Number of executor instances
+    # HOW TO CALCULATE:
+    #   - Total cluster cores / cores per executor
+    #   - Example: 20 nodes × 16 cores = 320 cores / 4 cores = 80 executors
+    # HOW TO GET CLUSTER INFO:
+    #   yarn node -list -showDetails
+    #   curl http://<rm-host>:8088/ws/v1/cluster/metrics
+    instances: 20
+
+    # Memory overhead (typically 10-20% of executor memory)
+    memory_overhead: "2g"
+
+  conf:
+    # Memory management
+    spark.memory.fraction: "0.8"
+    spark.memory.storageFraction: "0.3"
+
+    # Shuffle partitions
+    # HOW TO CALCULATE:
+    #   - Rule: 2-4× (executors × cores)
+    #   - Example: 20 executors × 4 cores × 2 = 160 → round to 200
+    #   - Small data: 100-200
+    #   - Medium data: 200-400
+    #   - Large data: 400-800
+    spark.sql.shuffle.partitions: 400
+
+    # Default parallelism (same as shuffle partitions usually)
+    spark.default.parallelism: 400
+
+    # Dynamic allocation
+    # HOW TO ENABLE (Cloudera Manager):
+    #   CM → Spark → Configuration → "Dynamic Allocation Enabled"
+    spark.dynamicAllocation.enabled: true
+    spark.dynamicAllocation.minExecutors: 5
+    spark.dynamicAllocation.maxExecutors: 50
+    spark.dynamicAllocation.initialExecutors: 10
+
+    # Serialization
+    spark.serializer: "org.apache.spark.serializer.KryoSerializer"
+    spark.kryoserializer.buffer.max: "512m"
+
+    # Adaptive Query Execution (AQE)
+    spark.sql.adaptive.enabled: "true"
+    spark.sql.adaptive.coalescePartitions.enabled: "true"
+    spark.sql.adaptive.skewJoin.enabled: "true"
+
+    # Hive integration
+    spark.sql.catalogImplementation: "hive"
+
+    # Warehouse directory
+    # HOW TO GET: Same as hive.metastore.warehouse.dir
+    spark.sql.warehouse.dir: "/user/hive/warehouse"
+
+    # S3 Configuration (if using S3)
+    # HOW TO GET AWS CREDENTIALS:
+    #   aws configure get aws_access_key_id
+    #   aws configure get aws_secret_access_key
+    # RECOMMENDED: Use IAM roles instead of hardcoded credentials
+    # HOW TO CHECK IAM ROLE:
+    #   curl http://169.254.169.254/latest/meta-data/iam/security-credentials/
+    spark.hadoop.fs.s3a.access.key: ""  # Use IAM role
+    spark.hadoop.fs.s3a.secret.key: ""  # Use IAM role
+    spark.hadoop.fs.s3a.endpoint: "s3.amazonaws.com"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+
+  # Log level
+  # OPTIONS: DEBUG, INFO, WARN, ERROR
+  log_level: "WARN"
+
+  # Python version
+  # HOW TO GET:
+  #   python3 --version
+  #   which python3
+  python_version: "3.9"
+
+# ============================================================================
+# SECTION 5: AIRFLOW CONFIGURATION
+# ============================================================================
+airflow:
+  default_args:
+    # Owner of DAGs
+    # HOW TO GET: Your team name or username
+    owner: "data_engineering"
+
+    # Email for alerts
+    # HOW TO GET: Your team's email distribution list
+    # HOW TO TEST:
+    #   echo "Test" | mail -s "Test" etl-alerts@company.com
+    email: ["etl-alerts@company.com", "data-team@company.com"]
+
+    email_on_failure: true
+    email_on_retry: false
+
+    # Number of retries on failure
+    retries: 3
+
+    # Delay between retries (in minutes)
+    retry_delay_minutes: 10
+
+    # Maximum execution time (in minutes)
+    # HOW TO CALCULATE:
+    #   - Run test ETL and measure time
+    #   - Add 50% buffer
+    #   - Example: ETL takes 120min → set 180min
+    execution_timeout_minutes: 180
+
+    depends_on_past: false
+    wait_for_downstream: false
+
+  schedules:
+    # Cron schedule for full ETL
+    # HOW TO TEST CRON:
+    #   # Use https://crontab.guru/ to validate
+    # EXAMPLES:
+    #   "0 2 * * *"     - Daily at 2 AM UTC
+    #   "0 */6 * * *"   - Every 6 hours
+    #   "0 2 * * 1-5"   - Weekdays at 2 AM
+    #   "@daily"        - Daily at midnight
+    #   "@once"         - Manual trigger only
+    # HOW TO GET CURRENT TIMEZONE:
+    #   timedatectl | grep "Time zone"
+    full_etl: "0 2 * * *"              # Daily at 2 AM UTC
+    stage_to_bronze: "0 1 * * *"       # Daily at 1 AM UTC
+    bronze_to_silver: "30 1 * * *"     # Daily at 1:30 AM UTC
+    silver_to_gold: "0 2 * * *"        # Daily at 2 AM UTC
+
+  # Maximum active DAG runs
+  max_active_runs: 1
+
+  # Maximum concurrent tasks
+  # HOW TO CALCULATE:
+  #   - Based on Airflow worker resources
+  #   - Typical: 8-32 for medium cluster
+  concurrency: 16
+
+  connections:
+    spark:
+      # Spark connection ID in Airflow
+      # HOW TO SET:
+      #   Airflow UI → Admin → Connections → Add Connection
+      #   - Conn Id: spark_default
+      #   - Conn Type: Spark
+      #   - Host: yarn://resource-manager:8032
+      conn_id: "spark_default"
+      conn_type: "spark"
+
+      # YARN ResourceManager address
+      # HOW TO GET: Same as cdp.yarn.resource_manager
+      host: "yarn://ip-10-0-1-100.ec2.internal:8032"
+
+    hive:
+      # Hive connection ID in Airflow
+      # HOW TO SET:
+      #   Airflow UI → Admin → Connections → Add Connection
+      #   - Conn Id: hive_default
+      #   - Conn Type: Hiveserver2
+      #   - Host: hiveserver2-host
+      #   - Port: 10000
+      conn_id: "hive_default"
+      conn_type: "hiveserver2"
+
+      # HiveServer2 host
+      # HOW TO GET (Cloudera Manager):
+      #   CM → Hive → Instances → HiveServer2 → Hostname
+      # HOW TO TEST:
+      #   beeline -u "jdbc:hive2://<host>:10000" -e "SHOW DATABASES;"
+      host: "ip-10-0-1-101.ec2.internal"
+
+      # HiveServer2 port (default 10000)
+      port: 10000
+      schema: "default"
+
+    smtp:
+      # SMTP connection for email alerts
+      # HOW TO SET:
+      #   Airflow UI → Admin → Connections → Add Connection
+      #   - Conn Id: smtp_default
+      #   - Conn Type: Email
+      conn_id: "smtp_default"
+
+      # SMTP server hostname
+      # HOW TO GET:
+      #   - Ask IT department
+      #   - Check /etc/postfix/main.cf (if using Postfix)
+      # HOW TO TEST:
+      #   telnet <smtp-host> 587
+      #   openssl s_client -connect <smtp-host>:587 -starttls smtp
+      host: "smtp.company.com"
+
+      # SMTP port
+      # COMMON PORTS:
+      #   - 25: Unencrypted (legacy)
+      #   - 587: TLS/STARTTLS (recommended)
+      #   - 465: SSL (deprecated)
+      port: 587
+
+      # SMTP credentials
+      login: "etl-alerts@company.com"
+
+  # File paths
+  # HOW TO GET:
+  #   echo $AIRFLOW_HOME
+  #   cat /etc/airflow/airflow.cfg | grep dags_folder
+  dags_folder: "/opt/airflow/dags"
+  spark_scripts_folder: "/opt/spark_jobs"
+  logs_folder: "/opt/airflow/logs"
+
+  # SLA in hours
+  # HOW TO CALCULATE:
+  #   - Expected ETL duration + buffer
+  #   - Example: ETL takes 2h → set SLA to 4h
+  sla_hours: 4
+
+  variables:
+    # Environment name
+    environment: "production"
+
+    # Data quality threshold (0-1 scale)
+    data_quality_threshold: 0.95
+
+# ============================================================================
+# SECTION 6: NIFI CONFIGURATION
+# ============================================================================
+nifi:
+  # NiFi web UI URL
+  # HOW TO GET (Cloudera Manager):
+  #   CM → NiFi → Web UI → URL
+  # HOW TO GET (Manual):
+  #   grep nifi.web.https.port /etc/nifi/conf/nifi.properties
+  #   https://<nifi-host>:<port>/nifi
+  # HOW TO TEST:
+  #   curl -k https://<nifi-host>:8443/nifi
+  url: "https://nifi.company.com:8443"
+
+  # NiFi REST API URL
+  api_url: "https://nifi.company.com:8443/nifi-api"
+
+  # Authentication (if required)
+  # HOW TO GET:
+  #   - Check NiFi login credentials
+  #   - May use LDAP/Kerberos/Certificate auth
+  username: ""
+  password: ""
+  use_ssl: true
+
+  process_groups:
+    banking_etl:
+      name: "Banking_ETL_Pipeline"
+      description: "Data ingestion pipeline for banking data"
+
+  processors:
+    get_file:
+      # Source directory for file ingestion
+      # HOW TO CHECK:
+      #   ls -la /data/incoming/banking/
+      #   hdfs dfs -ls /data/incoming/banking/
+      source_directory: "/data/incoming/banking"
+
+      # File pattern filter (regex)
+      file_filter: ".*\\.csv"
+
+      # Polling interval
+      polling_interval: "60 sec"
+
+    validate_record:
+      # Schema Registry URL (if using)
+      # HOW TO GET (Cloudera Manager):
+      #   CM → Schema Registry → Web UI
+      # HOW TO TEST:
+      #   curl http://<schema-registry>:8081/api/v1/schemaregistry/schemas
+      schema_registry: "http://schema-registry:8081"
+
+    put_hdfs:
+      # HDFS NameNode URL
+      # HOW TO GET: Same as cdp.hdfs.namenode
+      hdfs_url: "hdfs://ip-10-0-1-100.ec2.internal:8020"
+
+      # Target directory in HDFS
+      # HOW TO CREATE:
+      #   hdfs dfs -mkdir -p /data/landing/banking
+      #   hdfs dfs -chmod 777 /data/landing/banking
+      directory: "/data/landing/banking"
+
+    put_s3:
+      # S3 bucket name
+      # HOW TO GET:
+      #   aws s3 ls
+      # HOW TO CHECK ACCESS:
+      #   aws s3 ls s3://banking-data-prod/
+      bucket: "banking-data-prod"
+
+      # AWS region
+      # HOW TO GET:
+      #   aws configure get region
+      region: "us-east-1"
+
+      # AWS credentials (prefer IAM role)
+      # HOW TO CHECK IAM ROLE:
+      #   curl http://169.254.169.254/latest/meta-data/iam/security-credentials/
+      access_key: ""  # Use IAM role
+      secret_key: ""  # Use IAM role
+
+  flowfile_repository:
+    # Max size for FlowFile repository
+    # HOW TO CHECK AVAILABLE SPACE:
+    #   df -h /opt/nifi/
+    max_size: "10 GB"
+
+  content_repository:
+    # Max size for Content repository
+    max_size: "50 GB"
+
+  provenance_repository:
+    # Max size for Provenance repository
+    max_size: "20 GB"
+    max_storage_time: "30 days"
+
+# ============================================================================
+# SECTION 7: DATA QUALITY CONFIGURATION
+# ============================================================================
+data_quality:
+  enabled: true
+
+  thresholds:
+    # Minimum data quality score (0-1 scale)
+    # HOW TO CALCULATE:
+    #   - Run test ETL and check dq_score in silver.clients
+    #   - Set threshold based on acceptable quality
+    # HOW TO CHECK (Hue SQL):
+    #   SELECT AVG(dq_score), MIN(dq_score), MAX(dq_score)
+    #   FROM silver.clients;
+    min_data_quality_score: 0.95
+
+    # Maximum percentage of NULL values allowed
+    # HOW TO CHECK (Hue SQL):
+    #   SELECT
+    #     (COUNT(*) - COUNT(email)) / COUNT(*) * 100 as null_pct
+    #   FROM silver.clients;
+    max_null_percentage: 0.05
+
+    # Maximum percentage of duplicate records allowed
+    # HOW TO CHECK (Hue SQL):
+    #   SELECT
+    #     (COUNT(*) - COUNT(DISTINCT client_id)) / COUNT(*) * 100 as dup_pct
+    #   FROM silver.clients;
+    max_duplicate_percentage: 0.02
+
+  quarantine:
+    enabled: true
+
+    # Quarantine path for bad records
+    # HOW TO CREATE:
+    #   hdfs dfs -mkdir -p /data/quarantine/banking
+    #   aws s3 mb s3://banking-data-prod/quarantine
+    path: "/data/quarantine/banking"
+
+  alerts:
+    email_on_quality_failure: true
+    email_recipients: ["dq-team@company.com"]
+
+# ============================================================================
+# SECTION 8: MONITORING AND LOGGING
+# ============================================================================
+monitoring:
+  # Log level
+  # OPTIONS: DEBUG, INFO, WARN, ERROR, CRITICAL
+  log_level: "INFO"
+
+  log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+  metrics:
+    enabled: true
+
+    # Prometheus monitoring
+    # HOW TO CHECK IF INSTALLED:
+    #   curl http://localhost:9090/metrics
+    #   systemctl status prometheus
+    prometheus_enabled: true
+
+    # Prometheus port
+    # HOW TO GET:
+    #   netstat -tlnp | grep prometheus
+    prometheus_port: 9090
+
+  apm:
+    # Application Performance Monitoring
+    enabled: false
+    service_name: "banking-etl"
+    environment: "production"
+
+# ============================================================================
+# SECTION 9: NOTIFICATION CONFIGURATION
+# ============================================================================
+notifications:
+  email:
+    enabled: true
+
+    # SMTP server hostname
+    # HOW TO GET:
+    #   - Corporate: Ask IT department
+    #   - Gmail: smtp.gmail.com
+    #   - Office365: smtp.office365.com
+    # HOW TO TEST:
+    #   telnet smtp.company.com 587
+    smtp_host: "smtp.company.com"
+
+    # SMTP port
+    # COMMON PORTS:
+    #   - 587: TLS (recommended)
+    #   - 465: SSL
+    #   - 25: Unencrypted
+    smtp_port: 587
+
+    # SMTP username
+    smtp_user: "etl-alerts@company.com"
+
+    # SMTP password
+    # RECOMMENDED: Use environment variable
+    # HOW TO SET:
+    #   export SMTP_PASSWORD="your_password"
+    # FOR GMAIL: Use App Password
+    #   https://myaccount.google.com/apppasswords
+    smtp_password: "${SMTP_PASSWORD}"
+
+    use_tls: true
+
+    recipients:
+      success: ["data-team@company.com"]
+      failure: ["data-team@company.com", "oncall@company.com"]
+      data_quality_issues: ["dq-team@company.com"]
+
+  slack:
+    enabled: true
+
+    # Slack webhook URL
+    # HOW TO GET:
+    #   1. Go to https://api.slack.com/apps
+    #   2. Create app → Incoming Webhooks
+    #   3. Activate Incoming Webhooks
+    #   4. Add New Webhook to Workspace
+    #   5. Copy Webhook URL
+    # HOW TO TEST:
+    #   curl -X POST -H 'Content-type: application/json' \
+    #     --data '{"text":"Test message"}' \
+    #     <webhook_url>
+    webhook_url: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX"
+
+    # Slack channel
+    channel: "#etl-alerts"
+
+  pagerduty:
+    enabled: false
+
+    # PagerDuty integration key
+    # HOW TO GET:
+    #   1. PagerDuty → Services → Your Service
+    #   2. Integrations → Add Integration
+    #   3. Integration Type: Events API V2
+    #   4. Copy Integration Key
+    integration_key: ""
+
+# ============================================================================
+# SECTION 10: PERFORMANCE TUNING
+# ============================================================================
+performance:
+  partitioning:
+    transactions:
+      columns: ["transaction_year", "transaction_month"]
+      strategy: "dynamic"
+
+    clients:
+      columns: ["registration_year"]
+      strategy: "dynamic"
+
+    accounts:
+      columns: ["open_year"]
+      strategy: "dynamic"
+
+  file_format:
+    # File format for each layer
+    # OPTIONS: parquet, orc, avro
+    # RECOMMENDED: parquet (best for analytics)
+    bronze: "parquet"
+    silver: "parquet"
+    gold: "parquet"
+
+  compression:
+    # Compression codec
+    # OPTIONS: snappy, gzip, lz4, zstd
+    # HOW TO COMPARE:
+    #   - snappy: Fast, medium compression (recommended)
+    #   - gzip: Slower, high compression
+    #   - lz4: Very fast, low compression
+    # HOW TO CHECK FILE SIZE:
+    #   hdfs dfs -du -h /user/hive/warehouse/bronze.db/clients
+    codec: "snappy"
+
+  repartition:
+    enabled: true
+
+    # Default number of partitions for repartitioning
+    # HOW TO CALCULATE:
+    #   - Similar to shuffle partitions
+    #   - 2-4× (executors × cores)
+    default_partitions: 200
+
+  # Broadcast join threshold (in MB)
+  # HOW TO TUNE:
+  #   - Small dimension tables: 10-50 MB
+  #   - Medium tables: 50-100 MB
+  #   - Large: increase to 100-200 MB
+  # HOW TO CHECK TABLE SIZE (Hue SQL):
+  #   ANALYZE TABLE products COMPUTE STATISTICS;
+  #   DESCRIBE EXTENDED products;
+  broadcast_threshold_mb: 10
+
+# ============================================================================
+# SECTION 11: SECURITY CONFIGURATION
+# ============================================================================
+security:
+  encryption:
+    # Encryption at rest (HDFS)
+    # HOW TO CHECK (Linux):
+    #   hdfs crypto -listZones
+    #   hadoop key list
+    at_rest: true
+
+    # Encryption in transit (TLS/SSL)
+    # HOW TO CHECK:
+    #   grep ssl /etc/hadoop/conf/core-site.xml
+    in_transit: true
+
+  data_masking:
+    enabled: true
+    fields_to_mask:
+      - "card_number"
+      - "cvv"
+
+  access_control:
+    enabled: true
+
+    # Apache Ranger enabled
+    # HOW TO CHECK (Cloudera Manager):
+    #   CM → Ranger → Service Status
+    # HOW TO CHECK (Linux):
+    #   curl -u admin:admin http://<ranger-host>:6080/service/public/v2/api/service
+    ranger_enabled: true
+
+    # Apache Sentry enabled (legacy, replaced by Ranger)
+    sentry_enabled: false
+
+# ============================================================================
+# SECTION 12: BACKUP AND RECOVERY
+# ============================================================================
+backup:
+  enabled: true
+
+  # Backup schedule (cron format)
+  schedule: "0 3 * * 0"  # Weekly on Sunday at 3 AM
+
+  # Backup location
+  # HOW TO CREATE:
+  #   aws s3 mb s3://banking-backups/etl
+  #   hdfs dfs -mkdir -p /backups/banking_etl
+  location: "s3a://banking-backups/etl"
+
+  # Retention period in days
+  retention_days: 90
+
+  # Recovery Point Objective (hours)
+  # HOW TO DEFINE: Maximum acceptable data loss
+  rpo_hours: 24
+
+  # Recovery Time Objective (hours)
+  # HOW TO DEFINE: Maximum acceptable downtime
+  rto_hours: 4
+
+# ============================================================================
+# SECTION 13: TESTING CONFIGURATION
+# ============================================================================
+testing:
+  # Test data path
+  # HOW TO CREATE:
+  #   hdfs dfs -mkdir -p /data/test/banking
+  #   aws s3 mb s3://banking-test-data
+  test_data_path: "/data/test/banking"
+
+  unit_tests:
+    enabled: true
+
+    # Test framework
+    # OPTIONS: pytest, unittest
+    # HOW TO CHECK INSTALLED:
+    #   pip list | grep pytest
+    framework: "pytest"
+
+  integration_tests:
+    enabled: true
+
+    # Test database name
+    # HOW TO CREATE (Hue SQL):
+    #   CREATE DATABASE test_banking_dwh;
+    test_database: "test_banking_dwh"
+
+  validation_tests:
+    enabled: true
+
+    # Sample size for validation
+    sample_size: 1000
+
+# ============================================================================
+# SECTION 14: ENVIRONMENT-SPECIFIC OVERRIDES
+# ============================================================================
+# These override the above settings based on environment
+environments:
+  development:
+    # Development settings (lower resources)
+    spark.executor.instances: 2
+    spark.executor.memory: "4g"
+    airflow.schedules.full_etl: "@once"  # Manual trigger only
+    data_quality.thresholds.min_data_quality_score: 0.70
+
+  staging:
+    # Staging settings (medium resources)
+    spark.executor.instances: 10
+    spark.executor.memory: "8g"
+    airflow.schedules.full_etl: "0 4 * * *"  # Daily at 4 AM
+    data_quality.thresholds.min_data_quality_score: 0.85
+
+  production:
+    # Production settings (full resources)
+    spark.executor.instances: 20
+    spark.executor.memory: "16g"
+    airflow.schedules.full_etl: "0 2 * * *"  # Daily at 2 AM
+    data_quality.thresholds.min_data_quality_score: 0.95
+
+# ============================================================================
+# QUICK REFERENCE: COMMON COMMANDS
+# ============================================================================
+#
+# GET HDFS NAMENODE:
+#   hdfs getconf -confKey fs.defaultFS
+#
+# GET HIVE METASTORE:
+#   grep 'hive.metastore.uris' /etc/hive/conf/hive-site.xml -A1 | grep value
+#
+# GET YARN RESOURCEMANAGER:
+#   grep 'yarn.resourcemanager.address' /etc/hadoop/conf/yarn-site.xml -A1
+#
+# LIST YARN QUEUES:
+#   yarn queue -list
+#
+# CHECK CLUSTER RESOURCES:
+#   yarn node -list -showDetails
+#
+# CHECK HDFS SPACE:
+#   hdfs dfs -df -h
+#
+# CHECK DATABASE LOCATION:
+#   beeline -u "jdbc:hive2://localhost:10000" -e "DESCRIBE DATABASE bronze;"
+#
+# TEST S3 ACCESS:
+#   aws s3 ls s3://your-bucket/
+#
+# TEST HIVE CONNECTION:
+#   beeline -u "jdbc:hive2://localhost:10000" -e "SHOW DATABASES;"
+#
+# CHECK SPARK VERSION:
+#   spark-submit --version
+#
+# CHECK PYTHON VERSION:
+#   python3 --version
+#
+# ============================================================================

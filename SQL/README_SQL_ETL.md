@@ -12,13 +12,32 @@ test (Stage) → bronze (Raw) → silver (Clean) → gold (Analytics)
 
 ## Files
 
-| File | Description | Duration |
-|------|-------------|----------|
-| `00_Run_Full_ETL.sql` | Master script with instructions | 1 min |
-| `01_Load_Stage_to_Bronze.sql` | Load raw data from test to bronze | 2-5 min |
-| `02_Load_Bronze_to_Silver.sql` | Clean and transform data | 5-10 min |
-| `03_Load_Silver_to_Gold.sql` | Build dimensions, facts, and data marts | 3-7 min |
-| `Analyse_Queries.sql` | Analytical queries for reporting | - |
+| File | Description | Duration | Status |
+|------|-------------|----------|--------|
+| `00_Run_Full_ETL.sql` | Master script with instructions | 1 min | ✅ Ready |
+| `01_Load_Stage_to_Bronze.sql` | Load raw data from test to bronze | 2-5 min | ✅ Tested |
+| `02_Load_Bronze_to_Silver.sql` | Clean and transform data | 5-10 min | ✅ Tested |
+| `03_Load_Silver_to_Gold.sql` | Build dimensions, facts, and data marts | 3-7 min | ✅ Tested |
+| `Analyse_Queries.sql` | Analytical queries for reporting | - | ✅ Ready |
+| `FIXES_SUMMARY.md` | Detailed log of all schema fixes | - | 📋 Documentation |
+
+## Important Notes
+
+**⚠️ Scripts Updated and Tested (2025-01-06)**
+
+All SQL ETL scripts have been updated to fix schema mismatches and runtime errors:
+
+- ✅ **01_Load_Stage_to_Bronze.sql**: Fixed field references to match actual test schema (removed non-existent fields like `state`, `channel`, etc.)
+- ✅ **02_Load_Bronze_to_Silver.sql**: Corrected column count mismatches for all 12 tables
+- ✅ **03_Load_Silver_to_Gold.sql**: Fixed ambiguous column references and parsing errors
+
+**See `FIXES_SUMMARY.md` for complete details of all corrections.**
+
+All scripts are now validated against:
+- ✅ DDL schema definitions
+- ✅ Runtime execution in Hue
+- ✅ Column count matching
+- ✅ Proper table aliases in JOINs
 
 ## Prerequisites
 
@@ -494,11 +513,18 @@ After successful ETL execution:
 
 For issues or questions:
 - Check troubleshooting section above
+- Review `FIXES_SUMMARY.md` for detailed schema fix documentation
 - Review Cloudera documentation
 - Contact Data Engineering team
 
 ---
 
 **Last Updated:** 2025-01-06
-**Version:** 1.0
+**Version:** 3.0 (All Runtime Errors Fixed)
 **Compatibility:** Hue, Beeline, Cloudera Data Platform
+**Testing Status:** ✅ Validated against DDL schemas and runtime execution
+
+**Change Log:**
+- v3.0 (2025-01-06): Fixed column count mismatches in Silver layer, ambiguous column errors in Gold layer, ParseException in dim_date
+- v2.0 (2025-01-06): Fixed schema mismatches between test data and ETL scripts
+- v1.0 (2025-01-06): Initial version

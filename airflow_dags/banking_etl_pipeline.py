@@ -3,7 +3,7 @@ Airflow DAG: Banking ETL Pipeline
 Description: Orchestrates the complete ETL pipeline from test -> bronze -> silver -> gold
 Author: Data Engineering Team
 Date: 2025-01-06
-Version: 2.0 (Updated to use SparkSubmitOperator)
+Version: 1.1 (Fixed Hive version compatibility)
 
 This DAG:
 1. Loads data from test (stage) to bronze layer
@@ -13,17 +13,13 @@ This DAG:
 5. Sends notifications on success/failure
 
 Schedule: Configurable (default: @once for manual trigger)
-
-Requirements:
-    pip install apache-airflow-providers-apache-spark
 """
 
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.operators.dummy import DummyOperator
-from airflow.operators.bash import BashOperator
 from airflow.utils.dates import days_ago
 
 # ============================================================================
@@ -60,6 +56,7 @@ dag = DAG(
 
 # Paths (update these based on your deployment)
 SPARK_JOBS_DIR = "/opt/spark_jobs"  # TODO: Update with actual path
+SPARK_SUBMIT = "spark-submit"
 
 # Spark configuration for Kubernetes-based CDP
 SPARK_MASTER = "k8s://https://kubernetes.default.svc.cluster.local:443"
@@ -79,41 +76,56 @@ EXECUTOR_MEMORY = "8g"
 EXECUTOR_CORES = "4"
 EXECUTOR_INSTANCES = "5"
 
-# Spark connection ID (configured in Airflow Connections)
-# To configure: Airflow UI -> Admin -> Connections -> Add Connection
-# Connection ID: spark_k8s
-# Connection Type: Spark
-# Host: k8s://https://kubernetes.default.svc.cluster.local:443
-SPARK_CONN_ID = "spark_default"  # Use "spark_default" or create "spark_k8s"
-
-# Common Spark configuration
-SPARK_CONF = {
-    # Kubernetes configuration
-    "spark.kubernetes.container.image": SPARK_CONTAINER_IMAGE,
-    "spark.kubernetes.namespace": SPARK_NAMESPACE,
-    "spark.kubernetes.authenticate.driver.serviceAccountName": SPARK_SERVICE_ACCOUNT,
-
-    # Hive and S3 configuration
-    "spark.sql.catalogImplementation": "hive",
-    "spark.sql.hive.metastore.version": "3.1.3000",
-    "hive.metastore.uris": METASTORE_URI,
-    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem",
-    "spark.sql.warehouse.dir": f"s3a://{S3_BUCKET}/user/hive/warehouse",
-
-    # Performance tuning
-    "spark.sql.adaptive.enabled": "true",
-    "spark.sql.adaptive.coalescePartitions.enabled": "true",
-}
-
 # ============================================================================
 # Helper Functions
 # ============================================================================
+
+def build_spark_submit_command(script_name, job_name):
+    """
+    Build spark-submit command for Kubernetes-based CDP.
+
+    Args:
+        script_name: Name of the PySpark script (e.g., '01_stage_to_bronze.py')
+        job_name: Name for the Spark application (e.g., 'stage_to_bronze')
+
+    Returns:
+        str: Complete spark-submit command
+    """
+    cmd = f"""
+{SPARK_SUBMIT} \\
+  --master {SPARK_MASTER} \\
+  --deploy-mode {SPARK_DEPLOY_MODE} \\
+  --name banking_etl_{job_name} \\
+  --conf spark.kubernetes.container.image={SPARK_CONTAINER_IMAGE} \\
+  --conf spark.kubernetes.namespace={SPARK_NAMESPACE} \\
+  --conf spark.kubernetes.authenticate.driver.serviceAccountName={SPARK_SERVICE_ACCOUNT} \\
+  --conf spark.driver.memory={DRIVER_MEMORY} \\
+  --conf spark.driver.cores={DRIVER_CORES} \\
+  --conf spark.executor.memory={EXECUTOR_MEMORY} \\
+  --conf spark.executor.cores={EXECUTOR_CORES} \\
+  --conf spark.executor.instances={EXECUTOR_INSTANCES} \\
+  --conf spark.sql.catalogImplementation=hive \\
+  --conf hive.metastore.uris={METASTORE_URI} \\
+  --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \\
+  --conf spark.sql.warehouse.dir=s3a://{S3_BUCKET}/user/hive/warehouse \\
+  --conf spark.sql.adaptive.enabled=true \\
+  --conf spark.sql.adaptive.coalescePartitions.enabled=true \\
+  {SPARK_JOBS_DIR}/{script_name}
+"""
+    return cmd.strip()
+
 
 def check_data_quality(**context):
     """
     Check data quality scores in silver layer.
     Fails the task if average DQ score is below threshold.
     """
+    # This is a placeholder - in real implementation, you would:
+    # 1. Connect to Hive/Spark
+    # 2. Query silver.clients for AVG(dq_score)
+    # 3. Check against threshold (e.g., 0.85)
+    # 4. Raise AirflowException if below threshold
+
     from airflow.exceptions import AirflowException
 
     dq_threshold = 0.80  # 80% minimum quality score
@@ -154,26 +166,9 @@ start = DummyOperator(
 )
 
 # Stage 1: Load data from test to bronze
-stage_to_bronze = SparkSubmitOperator(
+stage_to_bronze = BashOperator(
     task_id='01_stage_to_bronze',
-    application=f"{SPARK_JOBS_DIR}/01_stage_to_bronze.py",
-    name='banking_etl_stage_to_bronze',
-    conn_id=SPARK_CONN_ID,
-    verbose=True,
-
-    # Spark configuration
-    conf=SPARK_CONF,
-
-    # Resources
-    driver_memory=DRIVER_MEMORY,
-    driver_cores=DRIVER_CORES,
-    executor_memory=EXECUTOR_MEMORY,
-    executor_cores=EXECUTOR_CORES,
-    num_executors=EXECUTOR_INSTANCES,
-
-    # Kubernetes specific (if using k8s:// master)
-    deploy_mode=SPARK_DEPLOY_MODE,
-
+    bash_command=build_spark_submit_command('01_stage_to_bronze.py', 'stage_to_bronze'),
     dag=dag,
 )
 
@@ -182,33 +177,16 @@ check_bronze = BashOperator(
     task_id='check_bronze_data',
     bash_command="""
     echo "Checking bronze layer data..."
-    # TODO: Add actual check (e.g., query row counts via beeline)
+    # TODO: Add actual check (e.g., query row counts)
     echo "✅ Bronze layer check passed"
     """,
     dag=dag,
 )
 
 # Stage 2: Transform data from bronze to silver
-bronze_to_silver = SparkSubmitOperator(
+bronze_to_silver = BashOperator(
     task_id='02_bronze_to_silver',
-    application=f"{SPARK_JOBS_DIR}/02_bronze_to_silver.py",
-    name='banking_etl_bronze_to_silver',
-    conn_id=SPARK_CONN_ID,
-    verbose=True,
-
-    # Spark configuration
-    conf=SPARK_CONF,
-
-    # Resources
-    driver_memory=DRIVER_MEMORY,
-    driver_cores=DRIVER_CORES,
-    executor_memory=EXECUTOR_MEMORY,
-    executor_cores=EXECUTOR_CORES,
-    num_executors=EXECUTOR_INSTANCES,
-
-    # Kubernetes specific
-    deploy_mode=SPARK_DEPLOY_MODE,
-
+    bash_command=build_spark_submit_command('02_bronze_to_silver.py', 'bronze_to_silver'),
     dag=dag,
 )
 
@@ -221,26 +199,9 @@ check_data_quality_task = PythonOperator(
 )
 
 # Stage 3: Build gold layer (dimensions, facts, aggregates)
-silver_to_gold = SparkSubmitOperator(
+silver_to_gold = BashOperator(
     task_id='03_silver_to_gold',
-    application=f"{SPARK_JOBS_DIR}/03_silver_to_gold.py",
-    name='banking_etl_silver_to_gold',
-    conn_id=SPARK_CONN_ID,
-    verbose=True,
-
-    # Spark configuration
-    conf=SPARK_CONF,
-
-    # Resources
-    driver_memory=DRIVER_MEMORY,
-    driver_cores=DRIVER_CORES,
-    executor_memory=EXECUTOR_MEMORY,
-    executor_cores=EXECUTOR_CORES,
-    num_executors=EXECUTOR_INSTANCES,
-
-    # Kubernetes specific
-    deploy_mode=SPARK_DEPLOY_MODE,
-
+    bash_command=build_spark_submit_command('03_silver_to_gold.py', 'silver_to_gold'),
     dag=dag,
 )
 
@@ -279,97 +240,4 @@ check_bronze >> bronze_to_silver >> check_data_quality_task
 check_data_quality_task >> silver_to_gold >> check_gold
 check_gold >> notify_success >> end
 
-# ============================================================================
-# Documentation
-# ============================================================================
 
-"""
-DAG Execution Flow:
-==================
-
-start
-  |
-  v
-01_stage_to_bronze (SparkSubmitOperator)
-  |
-  v
-check_bronze_data (Validation)
-  |
-  v
-02_bronze_to_silver (SparkSubmitOperator)
-  |
-  v
-check_data_quality (Python function)
-  |
-  v
-03_silver_to_gold (SparkSubmitOperator)
-  |
-  v
-check_gold_data (Validation)
-  |
-  v
-notify_success (Notification)
-  |
-  v
-end
-
-Configuration:
---------------
-Before running this DAG:
-
-1. Install Spark provider:
-   pip install apache-airflow-providers-apache-spark
-
-2. Configure Spark connection in Airflow UI:
-   Admin -> Connections -> Add Connection
-   - Connection ID: spark_default (or spark_k8s)
-   - Connection Type: Spark
-   - Host: k8s://https://kubernetes.default.svc.cluster.local:443
-   - Extra: {"deploy-mode": "cluster"}
-
-3. Update configuration in this file:
-   - SPARK_JOBS_DIR: Path to PySpark scripts
-   - SPARK_CONTAINER_IMAGE: Docker image for Spark
-   - Update email addresses in default_args
-
-4. If NOT using Kubernetes:
-   - Change SPARK_MASTER to "yarn" or "local[*]"
-   - Remove Kubernetes-specific configurations
-
-Manual Testing:
----------------
-# Test DAG syntax:
-python /opt/airflow/dags/banking_etl_pipeline.py
-
-# Test in Airflow:
-airflow dags test banking_etl_pipeline 2025-01-06
-
-# Trigger manually:
-airflow dags trigger banking_etl_pipeline
-
-Monitoring:
------------
-- Airflow UI: http://<airflow-host>:8080
-- Check logs in: /opt/airflow/logs/banking_etl_pipeline/
-- Monitor Spark jobs in Kubernetes dashboard or Cloudera Manager
-
-Troubleshooting:
-----------------
-1. "Connection not found":
-   - Configure spark_default connection in Airflow UI
-   - Or update SPARK_CONN_ID variable
-
-2. "Application file not found":
-   - Check SPARK_JOBS_DIR path is correct
-   - Verify .py files exist in that directory
-
-3. "Image pull failed":
-   - Update SPARK_CONTAINER_IMAGE with correct image
-   - Check image exists in registry
-
-4. "Permission denied":
-   - Verify Kubernetes service account has permissions
-   - Check RBAC settings
-
-For help: Contact data engineering team
-"""

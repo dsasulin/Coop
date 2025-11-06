@@ -37,7 +37,6 @@ def create_spark_session(app_name="Banking_ETL_Bronze_to_Silver"):
     spark = SparkSession.builder \
         .appName(app_name) \
         .config("spark.sql.catalogImplementation", "hive") \
-        .config("spark.sql.hive.metastore.version", "3.1.3000") \
         .config("hive.metastore.uris", "thrift://metastore-service.warehouse-1761913838-c49g.svc.cluster.local:9083") \
         .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
         .config("spark.sql.warehouse.dir", "s3a://co-op-buk-39d7d9df/user/hive/warehouse") \

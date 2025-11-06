@@ -41,33 +41,40 @@ SELECT
         ELSE NULL
     END AS email_domain,
 
-    -- Phone normalization (remove special characters)
-    REGEXP_REPLACE(phone, '[^0-9+]', '') AS phone,
+    -- Phone (original)
+    phone,
+
+    -- Phone normalized (remove special characters)
+    REGEXP_REPLACE(phone, '[^0-9+]', '') AS phone_normalized,
 
     birth_date,
 
     -- Age calculation
     CAST(FLOOR(DATEDIFF(CURRENT_DATE, birth_date) / 365.25) AS INT) AS age,
 
-    -- Age group
-    CASE
-        WHEN DATEDIFF(CURRENT_DATE, birth_date) / 365.25 < 25 THEN '18-24'
-        WHEN DATEDIFF(CURRENT_DATE, birth_date) / 365.25 < 35 THEN '25-34'
-        WHEN DATEDIFF(CURRENT_DATE, birth_date) / 365.25 < 45 THEN '35-44'
-        WHEN DATEDIFF(CURRENT_DATE, birth_date) / 365.25 < 55 THEN '45-54'
-        WHEN DATEDIFF(CURRENT_DATE, birth_date) / 365.25 < 65 THEN '55-64'
-        ELSE '65+'
-    END AS age_group,
-
     registration_date,
-
-    -- Customer tenure
-    DATEDIFF(CURRENT_DATE, registration_date) AS customer_tenure_days,
 
     -- Address fields
     TRIM(address) AS address,
     TRIM(city) AS city,
     UPPER(TRIM(country)) AS country,
+
+    -- Risk category
+    UPPER(TRIM(risk_category)) AS risk_category,
+
+    -- Credit score
+    credit_score,
+
+    -- Credit score category
+    CASE
+        WHEN credit_score IS NULL THEN 'UNKNOWN'
+        WHEN credit_score < 580 THEN 'POOR'
+        WHEN credit_score >= 580 AND credit_score < 670 THEN 'FAIR'
+        WHEN credit_score >= 670 AND credit_score < 740 THEN 'GOOD'
+        WHEN credit_score >= 740 AND credit_score < 800 THEN 'VERY_GOOD'
+        WHEN credit_score >= 800 THEN 'EXCELLENT'
+        ELSE 'UNKNOWN'
+    END AS credit_score_category,
 
     -- Employment and income
     UPPER(TRIM(employment_status)) AS employment_status,
@@ -83,29 +90,13 @@ SELECT
         ELSE 'UNKNOWN'
     END AS income_category,
 
-    credit_score,
-
-    -- Credit score category
+    -- Is active (client has recent activity)
     CASE
-        WHEN credit_score IS NULL THEN 'UNKNOWN'
-        WHEN credit_score < 580 THEN 'POOR'
-        WHEN credit_score >= 580 AND credit_score < 670 THEN 'FAIR'
-        WHEN credit_score >= 670 AND credit_score < 740 THEN 'GOOD'
-        WHEN credit_score >= 740 AND credit_score < 800 THEN 'VERY_GOOD'
-        WHEN credit_score >= 800 THEN 'EXCELLENT'
-        ELSE 'UNKNOWN'
-    END AS credit_score_category,
-
-    -- Risk category (derived from credit score and income)
-    UPPER(TRIM(risk_category)) AS risk_category,
-
-    -- Enhanced risk scoring
-    CASE
-        WHEN credit_score >= 740 AND annual_income >= 75000 THEN 'LOW_RISK'
-        WHEN credit_score >= 670 AND annual_income >= 50000 THEN 'MEDIUM_RISK'
-        WHEN credit_score >= 580 THEN 'HIGH_RISK'
-        ELSE 'VERY_HIGH_RISK'
-    END AS calculated_risk_category,
+        WHEN registration_date IS NOT NULL
+             AND DATEDIFF(CURRENT_DATE, registration_date) <= 365
+        THEN TRUE
+        ELSE FALSE
+    END AS is_active,
 
     -- Data Quality Score (0-1 scale)
     ROUND(
@@ -137,7 +128,6 @@ SELECT
 
     -- Metadata
     load_timestamp,
-    source_file,
     CURRENT_TIMESTAMP AS process_timestamp,
     'bronze.clients' AS source_system,
 
@@ -180,15 +170,8 @@ SELECT
     UPPER(TRIM(currency)) AS currency,
     COALESCE(active, FALSE) AS active,
 
-    -- Status based on active flag
-    CASE
-        WHEN COALESCE(active, FALSE) = TRUE THEN 'ACTIVE'
-        ELSE 'INACTIVE'
-    END AS status,
-
     -- Metadata
     load_timestamp,
-    source_file,
     CURRENT_TIMESTAMP AS process_timestamp,
     'bronze.products' AS source_system
 
@@ -203,6 +186,7 @@ SELECT COUNT(*) AS silver_products_count FROM silver.products;
 TRUNCATE TABLE silver.contracts;
 
 INSERT INTO TABLE silver.contracts
+PARTITION (start_year)
 SELECT
     -- Primary Key
     contract_id,
@@ -215,7 +199,15 @@ SELECT
     TRIM(contract_number) AS contract_number,
     start_date,
     end_date,
-    created_date,
+
+    -- Derived: Contract duration in days
+    DATEDIFF(COALESCE(end_date, CURRENT_DATE), start_date) AS contract_duration_days,
+
+    contract_amount,
+    ROUND(interest_rate, 4) AS interest_rate,
+
+    -- Original status
+    status,
 
     -- Status normalization
     CASE
@@ -226,45 +218,28 @@ SELECT
         ELSE 'UNKNOWN'
     END AS status_normalized,
 
-    contract_amount,
-    ROUND(interest_rate, 4) AS interest_rate,
-
-    -- Interest rate category
-    CASE
-        WHEN interest_rate < 3 THEN 'LOW'
-        WHEN interest_rate >= 3 AND interest_rate < 6 THEN 'MEDIUM'
-        WHEN interest_rate >= 6 AND interest_rate < 10 THEN 'HIGH'
-        ELSE 'VERY_HIGH'
-    END AS interest_rate_category,
-
     monthly_payment,
+    created_date,
 
-    -- Derived: Contract duration in days
-    DATEDIFF(COALESCE(end_date, CURRENT_DATE), start_date) AS contract_duration_days,
-
-    -- Days since created
-    DATEDIFF(CURRENT_DATE, created_date) AS days_since_created,
-
-    -- Estimated payment count
+    -- Is expired flag
     CASE
-        WHEN monthly_payment IS NOT NULL AND monthly_payment > 0
-        THEN ROUND(contract_amount / monthly_payment, 2)
-        ELSE NULL
-    END AS estimated_payments_count,
-
-    -- Is active flag
-    CASE
-        WHEN UPPER(TRIM(status)) IN ('ACTIVE', 'ACTIVATED', 'OPEN')
-             AND (end_date IS NULL OR end_date >= CURRENT_DATE)
-        THEN TRUE
+        WHEN end_date IS NOT NULL AND end_date < CURRENT_DATE THEN TRUE
         ELSE FALSE
-    END AS is_active,
+    END AS is_expired,
+
+    -- Days to expiry
+    CASE
+        WHEN end_date IS NOT NULL THEN DATEDIFF(end_date, CURRENT_DATE)
+        ELSE NULL
+    END AS days_to_expiry,
 
     -- Metadata
     load_timestamp,
-    source_file,
     CURRENT_TIMESTAMP AS process_timestamp,
-    'bronze.contracts' AS source_system
+    'bronze.contracts' AS source_system,
+
+    -- Partition
+    YEAR(start_date) AS start_year
 
 FROM bronze.contracts
 WHERE contract_id IS NOT NULL;
@@ -274,8 +249,9 @@ SELECT COUNT(*) AS silver_contracts_count FROM silver.contracts;
 -- ============================================================================
 -- 4. ACCOUNTS - Transform to Silver
 -- ============================================================================
+TRUNCATE TABLE silver.accounts;
 
-INSERT OVERWRITE TABLE silver.accounts
+INSERT INTO TABLE silver.accounts
 PARTITION (open_year)
 SELECT
     -- Primary Key
@@ -287,6 +263,9 @@ SELECT
 
     TRIM(account_number) AS account_number,
 
+    -- Original account_type
+    account_type,
+
     -- Account type normalization
     CASE
         WHEN UPPER(TRIM(account_type)) IN ('CHECKING', 'CURRENT', 'CHK') THEN 'CHECKING'
@@ -296,18 +275,15 @@ SELECT
         ELSE 'OTHER'
     END AS account_type_normalized,
 
-    -- Account category
-    CASE
-        WHEN UPPER(TRIM(account_type)) IN ('CHECKING', 'CURRENT') THEN 'TRANSACTIONAL'
-        WHEN UPPER(TRIM(account_type)) IN ('SAVINGS', 'DEPOSIT') THEN 'SAVINGS'
-        WHEN UPPER(TRIM(account_type)) IN ('INVESTMENT', 'BROKERAGE') THEN 'INVESTMENT'
-        WHEN UPPER(TRIM(account_type)) IN ('LOAN', 'CREDIT') THEN 'CREDIT'
-        ELSE 'OTHER'
-    END AS account_category,
-
     UPPER(TRIM(currency)) AS currency,
     open_date,
     close_date,
+
+    -- Account age in days
+    DATEDIFF(COALESCE(close_date, CURRENT_DATE), open_date) AS account_age_days,
+
+    -- Original status
+    status,
 
     -- Status normalization
     CASE
@@ -328,18 +304,8 @@ SELECT
         ELSE FALSE
     END AS is_active,
 
-    -- Is open flag
-    CASE
-        WHEN close_date IS NULL OR close_date > CURRENT_DATE THEN TRUE
-        ELSE FALSE
-    END AS is_open,
-
-    -- Account age in days
-    DATEDIFF(COALESCE(close_date, CURRENT_DATE), open_date) AS account_age_days,
-
     -- Metadata
     load_timestamp,
-    source_file,
     CURRENT_TIMESTAMP AS process_timestamp,
     'bronze.accounts' AS source_system,
 
@@ -365,19 +331,20 @@ SELECT
     client_id,
     product_id,
 
-    -- Relationship information
-    UPPER(TRIM(relationship_type)) AS relationship_type,
+    -- Original relationship_type
+    relationship_type,
+
+    -- Relationship type normalization
+    UPPER(TRIM(relationship_type)) AS relationship_type_normalized,
+
     start_date,
     end_date,
 
-    -- Status normalization
-    CASE
-        WHEN UPPER(TRIM(status)) = 'ACTIVE' AND (end_date IS NULL OR end_date >= CURRENT_DATE)
-        THEN 'ACTIVE'
-        WHEN UPPER(TRIM(status)) = 'INACTIVE' OR end_date < CURRENT_DATE
-        THEN 'INACTIVE'
-        ELSE 'UNKNOWN'
-    END AS status_normalized,
+    -- Relationship duration
+    DATEDIFF(COALESCE(end_date, CURRENT_DATE), start_date) AS relationship_duration_days,
+
+    -- Original status
+    status,
 
     -- Is active flag
     CASE
@@ -387,15 +354,8 @@ SELECT
         ELSE FALSE
     END AS is_active,
 
-    -- Product holding duration
-    DATEDIFF(COALESCE(end_date, CURRENT_DATE), start_date) AS holding_days,
-
-    -- Relationship duration
-    DATEDIFF(COALESCE(end_date, CURRENT_DATE), start_date) AS relationship_duration_days,
-
     -- Metadata
     load_timestamp,
-    source_file,
     CURRENT_TIMESTAMP AS process_timestamp,
     'bronze.client_products' AS source_system
 
@@ -409,12 +369,13 @@ SELECT COUNT(*) AS silver_client_products_count FROM silver.client_products;
 -- ============================================================================
 -- 6. TRANSACTIONS - Transform to Silver (with partitioning)
 -- ============================================================================
+TRUNCATE TABLE silver.transactions;
 
-INSERT OVERWRITE TABLE silver.transactions
+INSERT INTO TABLE silver.transactions
 PARTITION (transaction_year, transaction_month)
 SELECT
-    -- Primary Key
-    transaction_id,
+    -- Primary Key (BIGINT in silver)
+    CAST(transaction_id AS BIGINT) AS transaction_id,
     TRIM(transaction_uuid) AS transaction_uuid,
 
     -- Account references
@@ -423,38 +384,8 @@ SELECT
     TRIM(from_account_number) AS from_account_number,
     TRIM(to_account_number) AS to_account_number,
 
-    transaction_date,
-
-    -- Date components
-    TO_DATE(transaction_date) AS transaction_date_only,
-    HOUR(transaction_date) AS transaction_hour,
-    DAYOFWEEK(transaction_date) AS day_of_week,
-
-    -- Is weekend flag
-    CASE
-        WHEN DAYOFWEEK(transaction_date) IN (1, 7) THEN TRUE
-        ELSE FALSE
-    END AS is_weekend,
-
-    -- Time of day category
-    CASE
-        WHEN HOUR(transaction_date) BETWEEN 6 AND 11 THEN 'MORNING'
-        WHEN HOUR(transaction_date) BETWEEN 12 AND 17 THEN 'AFTERNOON'
-        WHEN HOUR(transaction_date) BETWEEN 18 AND 21 THEN 'EVENING'
-        ELSE 'NIGHT'
-    END AS time_of_day,
-
-    amount,
-    ABS(amount) AS absolute_amount,
-    UPPER(TRIM(currency)) AS currency,
-
-    -- Amount category
-    CASE
-        WHEN ABS(amount) < 100 THEN 'SMALL'
-        WHEN ABS(amount) < 1000 THEN 'MEDIUM'
-        WHEN ABS(amount) < 10000 THEN 'LARGE'
-        ELSE 'VERY_LARGE'
-    END AS amount_category,
+    -- Original transaction_type
+    transaction_type,
 
     -- Transaction type normalization
     CASE
@@ -466,13 +397,32 @@ SELECT
         ELSE 'OTHER'
     END AS transaction_type_normalized,
 
-    -- Transaction direction
+    amount,
+    ABS(amount) AS amount_abs,
+    UPPER(TRIM(currency)) AS currency,
+
+    transaction_date,
+
+    -- Date components
+    TO_DATE(transaction_date) AS transaction_date_only,
+    HOUR(transaction_date) AS transaction_hour,
+
+    TRIM(description) AS description,
+
+    -- Original status
+    status,
+
+    -- Status normalization
     CASE
-        WHEN UPPER(TRIM(transaction_type)) IN ('DEPOSIT', 'CREDIT', 'REFUND') THEN 'INBOUND'
-        WHEN UPPER(TRIM(transaction_type)) IN ('WITHDRAWAL', 'DEBIT', 'PAYMENT', 'PURCHASE') THEN 'OUTBOUND'
-        WHEN UPPER(TRIM(transaction_type)) IN ('TRANSFER', 'INTERNAL_TRANSFER') THEN 'TRANSFER'
-        ELSE 'OTHER'
-    END AS transaction_direction,
+        WHEN UPPER(TRIM(status)) IN ('COMPLETED', 'SUCCESS', 'SUCCESSFUL') THEN 'COMPLETED'
+        WHEN UPPER(TRIM(status)) IN ('PENDING', 'PROCESSING', 'IN_PROGRESS') THEN 'PENDING'
+        WHEN UPPER(TRIM(status)) IN ('FAILED', 'DECLINED', 'REJECTED') THEN 'FAILED'
+        WHEN UPPER(TRIM(status)) IN ('CANCELLED', 'CANCELED', 'REVERSED') THEN 'CANCELLED'
+        ELSE 'UNKNOWN'
+    END AS status_normalized,
+
+    -- Original category
+    category,
 
     -- Category normalization
     CASE
@@ -488,35 +438,23 @@ SELECT
         ELSE 'OTHER'
     END AS category_normalized,
 
-    TRIM(description) AS description,
     TRIM(merchant_name) AS merchant_name,
 
-    -- Status normalization
+    -- Is internal transfer flag
     CASE
-        WHEN UPPER(TRIM(status)) IN ('COMPLETED', 'SUCCESS', 'SUCCESSFUL') THEN 'COMPLETED'
-        WHEN UPPER(TRIM(status)) IN ('PENDING', 'PROCESSING', 'IN_PROGRESS') THEN 'PENDING'
-        WHEN UPPER(TRIM(status)) IN ('FAILED', 'DECLINED', 'REJECTED') THEN 'FAILED'
-        WHEN UPPER(TRIM(status)) IN ('CANCELLED', 'CANCELED', 'REVERSED') THEN 'CANCELLED'
-        ELSE 'UNKNOWN'
-    END AS status_normalized,
-
-    -- Is completed flag
-    CASE
-        WHEN UPPER(TRIM(status)) IN ('COMPLETED', 'SUCCESS', 'SUCCESSFUL') THEN TRUE
+        WHEN from_account_id IS NOT NULL AND to_account_id IS NOT NULL THEN TRUE
         ELSE FALSE
-    END AS is_completed,
+    END AS is_internal_transfer,
 
     -- Suspicious transaction flag (simple rules)
     CASE
-        WHEN amount > 10000 THEN TRUE  -- Large amount
-        WHEN HOUR(transaction_date) BETWEEN 0 AND 4 THEN TRUE  -- Late night
-        WHEN amount < 0 THEN TRUE  -- Negative amount
+        WHEN ABS(amount) > 10000 THEN TRUE
+        WHEN HOUR(transaction_date) BETWEEN 0 AND 4 THEN TRUE
         ELSE FALSE
     END AS is_suspicious,
 
     -- Metadata
     load_timestamp,
-    source_file,
     CURRENT_TIMESTAMP AS process_timestamp,
     'bronze.transactions' AS source_system,
 
@@ -556,18 +494,20 @@ SELECT
     -- Balance information
     current_balance,
     available_balance,
+
+    -- Reserved amount (derived)
+    current_balance - available_balance AS reserved_amount,
+
     UPPER(TRIM(currency)) AS currency,
+    last_updated,
     COALESCE(credit_limit, 0) AS credit_limit,
 
-    -- Held amount
-    current_balance - available_balance AS held_amount,
-
-    -- Derived: Utilization rate
+    -- Credit utilization (derived)
     CASE
         WHEN credit_limit > 0
-        THEN ROUND((credit_limit - available_balance) / credit_limit * 100, 2)
+        THEN ROUND((current_balance / credit_limit) * 100, 2)
         ELSE 0
-    END AS credit_utilization_pct,
+    END AS credit_utilization,
 
     -- Balance category
     CASE
@@ -579,27 +519,8 @@ SELECT
         ELSE 'VERY_HIGH'
     END AS balance_category,
 
-    -- Liquidity status
-    CASE
-        WHEN available_balance < current_balance * 0.1 THEN 'CRITICAL'
-        WHEN available_balance < current_balance * 0.25 THEN 'LOW'
-        WHEN available_balance < current_balance * 0.5 THEN 'MEDIUM'
-        ELSE 'HEALTHY'
-    END AS liquidity_status,
-
-    -- Is overdrawn flag
-    CASE
-        WHEN current_balance < 0 THEN TRUE
-        ELSE FALSE
-    END AS is_overdrawn,
-
-    -- Dates
-    last_updated,
-    DATEDIFF(CURRENT_DATE, last_updated) AS days_since_update,
-
     -- Metadata
     load_timestamp,
-    source_file,
     CURRENT_TIMESTAMP AS process_timestamp,
     'bronze.account_balances' AS source_system
 
@@ -626,23 +547,18 @@ SELECT
     CONCAT('****-****-****-', SUBSTR(card_number, -4)) AS card_number_masked,
 
     TRIM(card_holder_name) AS card_holder_name,
-
-    UPPER(TRIM(card_type)) AS card_type,
-    UPPER(TRIM(card_level)) AS card_level,
-
-    -- Card tier
-    CASE
-        WHEN UPPER(TRIM(card_level)) IN ('PLATINUM', 'PREMIUM', 'BLACK') THEN 'PREMIUM'
-        WHEN UPPER(TRIM(card_level)) IN ('GOLD') THEN 'GOLD'
-        WHEN UPPER(TRIM(card_level)) IN ('SILVER', 'STANDARD') THEN 'STANDARD'
-        ELSE 'BASIC'
-    END AS card_tier,
-
-    issue_date,
     expiry_date,
 
-    -- Card age
-    DATEDIFF(CURRENT_DATE, issue_date) AS card_age_days,
+    -- Original card_type
+    card_type,
+
+    -- Card type normalization
+    UPPER(TRIM(card_type)) AS card_type_normalized,
+
+    UPPER(TRIM(card_level)) AS card_level,
+
+    -- Original status
+    status,
 
     -- Status normalization
     CASE
@@ -653,13 +569,10 @@ SELECT
         ELSE 'UNKNOWN'
     END AS status_normalized,
 
-    -- Is active flag
-    CASE
-        WHEN UPPER(TRIM(status)) = 'ACTIVE'
-             AND expiry_date >= CURRENT_DATE
-        THEN TRUE
-        ELSE FALSE
-    END AS is_active,
+    issue_date,
+
+    -- Card age
+    DATEDIFF(CURRENT_DATE, issue_date) AS card_age_days,
 
     -- Is expired flag
     CASE
@@ -667,19 +580,11 @@ SELECT
         ELSE FALSE
     END AS is_expired,
 
-    -- Expiry status
-    CASE
-        WHEN expiry_date < CURRENT_DATE THEN 'EXPIRED'
-        WHEN expiry_date < DATE_ADD(CURRENT_DATE, 30) THEN 'EXPIRING_SOON'
-        ELSE 'VALID'
-    END AS expiry_status,
-
-    -- Days until expiry
-    DATEDIFF(expiry_date, CURRENT_DATE) AS days_until_expiry,
+    -- Days to expiry
+    DATEDIFF(expiry_date, CURRENT_DATE) AS days_to_expiry,
 
     -- Metadata
     load_timestamp,
-    source_file,
     CURRENT_TIMESTAMP AS process_timestamp,
     'bronze.cards' AS source_system
 
@@ -706,29 +611,35 @@ SELECT
     TRIM(address) AS address,
     TRIM(city) AS city,
     TRIM(state) AS state,
+
+    -- State code (derived from state)
+    CASE
+        WHEN UPPER(TRIM(state)) IN ('CALIFORNIA', 'CA') THEN 'CA'
+        WHEN UPPER(TRIM(state)) IN ('TEXAS', 'TX') THEN 'TX'
+        WHEN UPPER(TRIM(state)) IN ('NEW YORK', 'NY') THEN 'NY'
+        WHEN UPPER(TRIM(state)) IN ('FLORIDA', 'FL') THEN 'FL'
+        WHEN UPPER(TRIM(state)) IN ('ILLINOIS', 'IL') THEN 'IL'
+        ELSE UPPER(TRIM(state))
+    END AS state_code,
+
     TRIM(zip_code) AS zip_code,
 
-    -- Contact
-    REGEXP_REPLACE(phone, '[^0-9+]', '') AS phone,
+    -- Contact (original)
+    phone,
+
+    -- Phone normalized
+    REGEXP_REPLACE(phone, '[^0-9+]', '') AS phone_normalized,
+
     TRIM(manager_name) AS manager_name,
 
     -- Dates
     opening_date,
-    DATEDIFF(CURRENT_DATE, opening_date) AS days_since_opening,
 
-    -- Branch age in years
-    ROUND(DATEDIFF(CURRENT_DATE, opening_date) / 365.25, 1) AS branch_age_years,
-
-    -- Branch maturity category
-    CASE
-        WHEN DATEDIFF(CURRENT_DATE, opening_date) < 365 THEN 'NEW'
-        WHEN DATEDIFF(CURRENT_DATE, opening_date) < 1825 THEN 'ESTABLISHED'
-        ELSE 'VETERAN'
-    END AS branch_maturity,
+    -- Branch age in days
+    DATEDIFF(CURRENT_DATE, opening_date) AS branch_age_days,
 
     -- Metadata
     load_timestamp,
-    source_file,
     CURRENT_TIMESTAMP AS process_timestamp,
     'bronze.branches' AS source_system
 
@@ -757,41 +668,55 @@ SELECT
 
     -- Contact
     LOWER(TRIM(email)) AS email,
-    REGEXP_REPLACE(phone, '[^0-9+]', '') AS phone,
 
-    -- Position and department
-    TRIM(position) AS position,
-    UPPER(TRIM(department)) AS department,
+    -- Email domain extraction
+    CASE
+        WHEN email IS NOT NULL AND email LIKE '%@%'
+        THEN SUBSTRING(LOWER(email), LOCATE('@', LOWER(email)) + 1)
+        ELSE NULL
+    END AS email_domain,
+
+    -- Phone (original)
+    phone,
+
+    -- Phone normalized
+    REGEXP_REPLACE(phone, '[^0-9+]', '') AS phone_normalized,
+
+    -- Original position
+    position,
+
+    -- Position normalization
+    UPPER(TRIM(position)) AS position_normalized,
+
+    -- Original department
+    department,
+
+    -- Department normalization
+    UPPER(TRIM(department)) AS department_normalized,
 
     -- Employment
     hire_date,
 
     -- Tenure calculation
     DATEDIFF(CURRENT_DATE, hire_date) AS tenure_days,
-    ROUND(DATEDIFF(CURRENT_DATE, hire_date) / 365.25, 1) AS tenure_years,
-    FLOOR(DATEDIFF(CURRENT_DATE, hire_date) / 365.25) AS years_of_service,
-
-    -- Tenure category
-    CASE
-        WHEN DATEDIFF(CURRENT_DATE, hire_date) < 365 THEN 'LESS_THAN_1_YEAR'
-        WHEN DATEDIFF(CURRENT_DATE, hire_date) < 1095 THEN '1_3_YEARS'
-        WHEN DATEDIFF(CURRENT_DATE, hire_date) < 1825 THEN '3_5_YEARS'
-        WHEN DATEDIFF(CURRENT_DATE, hire_date) < 3650 THEN '5_10_YEARS'
-        ELSE '10_PLUS_YEARS'
-    END AS tenure_category,
+    ROUND(DATEDIFF(CURRENT_DATE, hire_date) / 365.25, 2) AS tenure_years,
 
     salary,
 
-    -- Compensation band
+    -- Salary category
     CASE
-        WHEN salary < 40000 THEN 'ENTRY_LEVEL'
-        WHEN salary < 70000 THEN 'MID_LEVEL'
-        WHEN salary < 100000 THEN 'SENIOR_LEVEL'
-        ELSE 'EXECUTIVE_LEVEL'
-    END AS compensation_band,
+        WHEN salary < 40000 THEN 'LOW'
+        WHEN salary >= 40000 AND salary < 70000 THEN 'MEDIUM'
+        WHEN salary >= 70000 AND salary < 100000 THEN 'HIGH'
+        WHEN salary >= 100000 THEN 'VERY_HIGH'
+        ELSE 'UNKNOWN'
+    END AS salary_category,
 
-    -- Status
-    UPPER(TRIM(status)) AS status,
+    -- Original status
+    status,
+
+    -- Status normalization
+    UPPER(TRIM(status)) AS status_normalized,
 
     -- Is active flag
     CASE
@@ -801,7 +726,6 @@ SELECT
 
     -- Metadata
     load_timestamp,
-    source_file,
     CURRENT_TIMESTAMP AS process_timestamp,
     'bronze.employees' AS source_system
 
@@ -827,56 +751,31 @@ SELECT
     loan_amount,
     outstanding_balance,
 
-    -- Amount paid
-    loan_amount - outstanding_balance AS amount_paid,
+    -- Paid amount (derived)
+    loan_amount - outstanding_balance AS paid_amount,
 
-    -- Outstanding balance percentage
-    CASE
-        WHEN loan_amount > 0
-        THEN ROUND((outstanding_balance / loan_amount) * 100, 2)
-        ELSE 0
-    END AS outstanding_balance_pct,
-
-    -- Amount paid percentage
+    -- Payment progress (derived)
     CASE
         WHEN loan_amount > 0
         THEN ROUND(((loan_amount - outstanding_balance) / loan_amount) * 100, 2)
         ELSE 0
-    END AS amount_paid_pct,
+    END AS payment_progress,
 
     ROUND(interest_rate, 4) AS interest_rate,
-
-    -- Interest rate category
-    CASE
-        WHEN interest_rate < 3 THEN 'LOW'
-        WHEN interest_rate >= 3 AND interest_rate < 6 THEN 'MEDIUM'
-        WHEN interest_rate >= 6 AND interest_rate < 10 THEN 'HIGH'
-        ELSE 'VERY_HIGH'
-    END AS interest_rate_category,
 
     -- Term information
     term_months,
     remaining_months,
-    term_months - remaining_months AS months_elapsed,
 
-    -- Remaining term percentage
-    CASE
-        WHEN term_months > 0
-        THEN ROUND((remaining_months / term_months) * 100, 2)
-        ELSE 0
-    END AS remaining_term_pct,
+    -- Elapsed months (derived)
+    term_months - remaining_months AS elapsed_months,
 
     -- Payment information
     next_payment_date,
-    DATEDIFF(next_payment_date, CURRENT_DATE) AS days_until_next_payment,
     next_payment_amount,
 
-    -- Payment status
-    CASE
-        WHEN next_payment_date < CURRENT_DATE THEN 'OVERDUE'
-        WHEN next_payment_date <= DATE_ADD(CURRENT_DATE, 7) THEN 'DUE_SOON'
-        ELSE 'CURRENT'
-    END AS payment_status,
+    -- Original delinquency_status
+    delinquency_status,
 
     -- Delinquency status normalization
     CASE
@@ -904,11 +803,10 @@ SELECT
         WHEN loan_to_value_ratio <= 0.80 THEN 'MEDIUM_RISK'
         WHEN loan_to_value_ratio <= 0.95 THEN 'HIGH_RISK'
         ELSE 'VERY_HIGH_RISK'
-    END AS ltv_risk_category,
+    END AS ltv_category,
 
     -- Metadata
     load_timestamp,
-    source_file,
     CURRENT_TIMESTAMP AS process_timestamp,
     'bronze.loans' AS source_system
 
@@ -923,32 +821,34 @@ SELECT COUNT(*) AS silver_loans_count FROM silver.loans;
 TRUNCATE TABLE silver.credit_applications;
 
 INSERT INTO TABLE silver.credit_applications
+PARTITION (application_year)
 SELECT
     -- Primary Key
     application_id,
 
     -- Foreign Keys
     client_id,
-    officer_id,
 
     -- Application details
     application_date,
-    DATEDIFF(CURRENT_DATE, application_date) AS days_since_application,
-
-    -- Amounts
     requested_amount,
     COALESCE(approved_amount, 0) AS approved_amount,
-    requested_amount - COALESCE(approved_amount, 0) AS amount_difference,
 
-    -- Approval percentage
+    -- Approval rate (derived)
     CASE
-        WHEN approved_amount IS NOT NULL AND approved_amount > 0
-        THEN ROUND((approved_amount / requested_amount) * 100, 2)
+        WHEN requested_amount > 0
+        THEN ROUND((COALESCE(approved_amount, 0) / requested_amount) * 100, 2)
         ELSE 0
-    END AS approval_percentage,
+    END AS approval_rate,
 
-    -- Purpose
-    UPPER(TRIM(purpose)) AS purpose,
+    -- Original purpose
+    purpose,
+
+    -- Purpose normalization
+    UPPER(TRIM(purpose)) AS purpose_normalized,
+
+    -- Original status
+    status,
 
     -- Status normalization
     CASE
@@ -959,47 +859,50 @@ SELECT
         ELSE 'UNKNOWN'
     END AS status_normalized,
 
-    -- Decision category
-    CASE
-        WHEN UPPER(TRIM(status)) IN ('APPROVED', 'ACCEPTED') THEN 'APPROVED'
-        WHEN UPPER(TRIM(status)) IN ('REJECTED', 'DECLINED', 'DENIED') THEN 'REJECTED'
-        WHEN UPPER(TRIM(status)) IN ('PENDING', 'UNDER_REVIEW', 'IN_REVIEW') THEN 'PENDING'
-        WHEN UPPER(TRIM(status)) IN ('WITHDRAWN', 'CANCELLED') THEN 'WITHDRAWN'
-        ELSE 'OTHER'
-    END AS decision_category,
-
     decision_date,
 
-    -- Days to decision
+    -- Processing days (derived)
     CASE
         WHEN decision_date IS NOT NULL AND application_date IS NOT NULL
         THEN DATEDIFF(decision_date, application_date)
         ELSE NULL
-    END AS days_to_decision,
+    END AS processing_days,
 
     ROUND(interest_rate_proposed, 4) AS interest_rate_proposed,
 
-    -- Interest rate category
-    CASE
-        WHEN interest_rate_proposed < 3 THEN 'LOW'
-        WHEN interest_rate_proposed >= 3 AND interest_rate_proposed < 6 THEN 'MEDIUM'
-        WHEN interest_rate_proposed >= 6 AND interest_rate_proposed < 10 THEN 'HIGH'
-        ELSE 'VERY_HIGH'
-    END AS interest_rate_category,
-
     TRIM(reason_for_rejection) AS reason_for_rejection,
 
-    -- Has rejection reason flag
+    -- Rejection category (derived)
     CASE
-        WHEN reason_for_rejection IS NOT NULL THEN TRUE
+        WHEN reason_for_rejection IS NULL THEN NULL
+        WHEN UPPER(reason_for_rejection) LIKE '%CREDIT%SCORE%' THEN 'LOW_CREDIT_SCORE'
+        WHEN UPPER(reason_for_rejection) LIKE '%INCOME%' THEN 'INSUFFICIENT_INCOME'
+        WHEN UPPER(reason_for_rejection) LIKE '%DEBT%' THEN 'HIGH_DEBT_RATIO'
+        WHEN UPPER(reason_for_rejection) LIKE '%EMPLOYMENT%' THEN 'EMPLOYMENT_ISSUES'
+        ELSE 'OTHER'
+    END AS rejection_category,
+
+    officer_id,
+
+    -- Is approved flag
+    CASE
+        WHEN UPPER(TRIM(status)) IN ('APPROVED', 'ACCEPTED') THEN TRUE
         ELSE FALSE
-    END AS has_rejection_reason,
+    END AS is_approved,
+
+    -- Is rejected flag
+    CASE
+        WHEN UPPER(TRIM(status)) IN ('REJECTED', 'DECLINED', 'DENIED') THEN TRUE
+        ELSE FALSE
+    END AS is_rejected,
 
     -- Metadata
     load_timestamp,
-    source_file,
     CURRENT_TIMESTAMP AS process_timestamp,
-    'bronze.credit_applications' AS source_system
+    'bronze.credit_applications' AS source_system,
+
+    -- Partition
+    YEAR(application_date) AS application_year
 
 FROM bronze.credit_applications
 WHERE application_id IS NOT NULL;

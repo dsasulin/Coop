@@ -160,13 +160,13 @@ TRUNCATE TABLE gold.dim_product;
 
 INSERT INTO TABLE gold.dim_product
 SELECT
-    product_id as product_key,
-    product_id,
-    product_name,
-    product_type,
-    product_category,
-    currency,
-    active,
+    p.product_id as product_key,
+    p.product_id,
+    p.product_name,
+    p.product_type,
+    p.product_category,
+    p.currency,
+    p.active,
 
     -- Aggregated metrics
     COALESCE(cp.total_clients, 0) as total_clients,
@@ -176,7 +176,7 @@ SELECT
     -- SCD fields
     CURRENT_DATE as effective_date,
     CAST(NULL AS DATE) as end_date,
-    active as is_current,
+    p.active as is_current,
 
     CURRENT_TIMESTAMP as created_timestamp,
     CURRENT_TIMESTAMP as updated_timestamp
@@ -209,29 +209,29 @@ TRUNCATE TABLE gold.dim_branch;
 
 INSERT INTO TABLE gold.dim_branch
 SELECT
-    branch_id as branch_key,
-    branch_id,
-    branch_code,
-    branch_name,
-    address,
-    city,
-    state,
-    state_code,
-    zip_code,
+    b.branch_id as branch_key,
+    b.branch_id,
+    b.branch_code,
+    b.branch_name,
+    b.address,
+    b.city,
+    b.state,
+    b.state_code,
+    b.zip_code,
 
     -- Region
     CASE
-        WHEN state_code IN ('CA', 'WA', 'OR', 'NV', 'AZ') THEN 'WEST'
-        WHEN state_code IN ('TX', 'OK', 'LA', 'AR') THEN 'SOUTH'
-        WHEN state_code IN ('NY', 'NJ', 'PA', 'MA', 'CT') THEN 'NORTHEAST'
-        WHEN state_code IN ('IL', 'MI', 'OH', 'IN', 'WI') THEN 'MIDWEST'
+        WHEN b.state_code IN ('CA', 'WA', 'OR', 'NV', 'AZ') THEN 'WEST'
+        WHEN b.state_code IN ('TX', 'OK', 'LA', 'AR') THEN 'SOUTH'
+        WHEN b.state_code IN ('NY', 'NJ', 'PA', 'MA', 'CT') THEN 'NORTHEAST'
+        WHEN b.state_code IN ('IL', 'MI', 'OH', 'IN', 'WI') THEN 'MIDWEST'
         ELSE 'OTHER'
     END as region,
 
-    phone,
-    manager_name,
-    opening_date,
-    branch_age_days,
+    b.phone,
+    b.manager_name,
+    b.opening_date,
+    b.branch_age_days,
 
     -- Aggregated metrics
     COALESCE(emp.total_employees, 0) as total_employees,
@@ -239,7 +239,7 @@ SELECT
     COALESCE(acct.total_clients, 0) as total_clients,
 
     -- SCD fields
-    opening_date as effective_date,
+    b.opening_date as effective_date,
     CAST(NULL AS DATE) as end_date,
     TRUE as is_current,
 
@@ -359,7 +359,7 @@ SELECT
 
     -- Holiday name
     CASE
-        WHEN MONTH(dt) = 1 AND DAYOFMONTH(dt) = 1 THEN 'New Year''s Day'
+        WHEN MONTH(dt) = 1 AND DAYOFMONTH(dt) = 1 THEN 'New Year Day'
         WHEN MONTH(dt) = 7 AND DAYOFMONTH(dt) = 4 THEN 'Independence Day'
         WHEN MONTH(dt) = 12 AND DAYOFMONTH(dt) = 25 THEN 'Christmas'
         ELSE NULL

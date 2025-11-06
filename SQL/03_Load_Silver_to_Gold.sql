@@ -42,8 +42,8 @@ SELECT
     END as age_group,
 
     c.registration_date,
-    c.customer_tenure_days,
-    ROUND(c.customer_tenure_days / 365.25, 2) as customer_tenure_years,
+    DATEDIFF(CURRENT_DATE, c.registration_date) as customer_tenure_days,
+    ROUND(DATEDIFF(CURRENT_DATE, c.registration_date) / 365.25, 2) as customer_tenure_years,
 
     -- Location
     c.address,
@@ -82,9 +82,15 @@ SELECT
 
     -- Product summary
     COALESCE(prod.total_products, 0) as total_products,
-    0 as total_contracts,  -- Placeholder
-    0 as total_cards,      -- Placeholder
-    0 as total_loans,      -- Placeholder
+
+    -- Contracts summary
+    COALESCE(cont.total_contracts, 0) as total_contracts,
+
+    -- Cards summary
+    COALESCE(cards.total_cards, 0) as total_cards,
+
+    -- Loans summary
+    COALESCE(loans.total_loans, 0) as total_loans,
 
     -- SCD Type 2 fields (simplified - not full implementation)
     c.registration_date as effective_date,
@@ -113,7 +119,32 @@ LEFT JOIN (
     FROM silver.client_products
     WHERE is_active = TRUE
     GROUP BY client_id
-) prod ON c.client_id = prod.client_id;
+) prod ON c.client_id = prod.client_id
+
+LEFT JOIN (
+    SELECT
+        client_id,
+        COUNT(*) as total_contracts
+    FROM silver.contracts
+    GROUP BY client_id
+) cont ON c.client_id = cont.client_id
+
+LEFT JOIN (
+    SELECT
+        client_id,
+        COUNT(*) as total_cards
+    FROM silver.cards
+    GROUP BY client_id
+) cards ON c.client_id = cards.client_id
+
+LEFT JOIN (
+    SELECT
+        cnt.client_id,
+        COUNT(*) as total_loans
+    FROM silver.loans l
+    INNER JOIN silver.contracts cnt ON l.contract_id = cnt.contract_id
+    GROUP BY cnt.client_id
+) loans ON c.client_id = loans.client_id;
 
 -- Check results
 SELECT
@@ -133,32 +164,41 @@ SELECT
     product_id,
     product_name,
     product_type,
-    description,
-    interest_rate,
-    min_amount,
-    max_amount,
-    term_months,
+    product_category,
     currency,
     active,
 
-    -- Product category (derived from type)
-    CASE
-        WHEN product_type IN ('CHECKING', 'SAVINGS') THEN 'DEPOSIT_ACCOUNTS'
-        WHEN product_type IN ('CREDIT_CARD', 'DEBIT_CARD') THEN 'CARD_PRODUCTS'
-        WHEN product_type IN ('PERSONAL_LOAN', 'MORTGAGE', 'AUTO_LOAN') THEN 'LENDING_PRODUCTS'
-        WHEN product_type IN ('INVESTMENT', 'INSURANCE') THEN 'INVESTMENT_PRODUCTS'
-        ELSE 'OTHER'
-    END as product_category,
+    -- Aggregated metrics
+    COALESCE(cp.total_clients, 0) as total_clients,
+    COALESCE(cont.total_contracts, 0) as total_contracts,
+    COALESCE(cont.total_revenue, 0) as total_revenue,
 
     -- SCD fields
-    created_date as effective_date,
+    CURRENT_DATE as effective_date,
     CAST(NULL AS DATE) as end_date,
     active as is_current,
 
     CURRENT_TIMESTAMP as created_timestamp,
     CURRENT_TIMESTAMP as updated_timestamp
 
-FROM silver.products;
+FROM silver.products p
+
+LEFT JOIN (
+    SELECT
+        product_id,
+        COUNT(DISTINCT client_id) as total_clients
+    FROM silver.client_products
+    GROUP BY product_id
+) cp ON p.product_id = cp.product_id
+
+LEFT JOIN (
+    SELECT
+        product_id,
+        COUNT(*) as total_contracts,
+        SUM(contract_amount) as total_revenue
+    FROM silver.contracts
+    GROUP BY product_id
+) cont ON p.product_id = cont.product_id;
 
 SELECT COUNT(*) as total_products FROM gold.dim_product;
 
@@ -176,31 +216,55 @@ SELECT
     address,
     city,
     state,
-    country,
+    state_code,
+    zip_code,
 
     -- Region
     CASE
-        WHEN country = 'US' THEN 'NORTH_AMERICA'
-        WHEN country IN ('UK', 'DE', 'FR', 'IT', 'ES') THEN 'EUROPE'
+        WHEN state_code IN ('CA', 'WA', 'OR', 'NV', 'AZ') THEN 'WEST'
+        WHEN state_code IN ('TX', 'OK', 'LA', 'AR') THEN 'SOUTH'
+        WHEN state_code IN ('NY', 'NJ', 'PA', 'MA', 'CT') THEN 'NORTHEAST'
+        WHEN state_code IN ('IL', 'MI', 'OH', 'IN', 'WI') THEN 'MIDWEST'
         ELSE 'OTHER'
     END as region,
 
-    postal_code,
     phone,
-    email,
     manager_name,
-    open_date,
-    branch_age_years,
+    opening_date,
+    branch_age_days,
+
+    -- Aggregated metrics
+    COALESCE(emp.total_employees, 0) as total_employees,
+    COALESCE(acct.total_accounts, 0) as total_accounts,
+    COALESCE(acct.total_clients, 0) as total_clients,
 
     -- SCD fields
-    open_date as effective_date,
+    opening_date as effective_date,
     CAST(NULL AS DATE) as end_date,
     TRUE as is_current,
 
     CURRENT_TIMESTAMP as created_timestamp,
     CURRENT_TIMESTAMP as updated_timestamp
 
-FROM silver.branches;
+FROM silver.branches b
+
+LEFT JOIN (
+    SELECT
+        branch_id,
+        COUNT(*) as total_employees
+    FROM silver.employees
+    WHERE is_active = TRUE
+    GROUP BY branch_id
+) emp ON b.branch_id = emp.branch_id
+
+LEFT JOIN (
+    SELECT
+        branch_code,
+        COUNT(*) as total_accounts,
+        COUNT(DISTINCT client_id) as total_clients
+    FROM silver.accounts
+    GROUP BY branch_code
+) acct ON b.branch_code = acct.branch_code;
 
 SELECT COUNT(*) as total_branches FROM gold.dim_branch;
 
@@ -218,11 +282,11 @@ SELECT
     dt as date_value,
     YEAR(dt) as year,
     QUARTER(dt) as quarter,
+
+    -- Quarter name
+    CONCAT('Q', QUARTER(dt), ' ', YEAR(dt)) as quarter_name,
+
     MONTH(dt) as month,
-    DAYOFMONTH(dt) as day,
-    DAYOFWEEK(dt) as day_of_week,
-    DAYOFYEAR(dt) as day_of_year,
-    WEEKOFYEAR(dt) as week_of_year,
 
     -- Month name
     CASE MONTH(dt)
@@ -240,6 +304,26 @@ SELECT
         WHEN 12 THEN 'December'
     END as month_name,
 
+    -- Month short
+    CASE MONTH(dt)
+        WHEN 1 THEN 'Jan'
+        WHEN 2 THEN 'Feb'
+        WHEN 3 THEN 'Mar'
+        WHEN 4 THEN 'Apr'
+        WHEN 5 THEN 'May'
+        WHEN 6 THEN 'Jun'
+        WHEN 7 THEN 'Jul'
+        WHEN 8 THEN 'Aug'
+        WHEN 9 THEN 'Sep'
+        WHEN 10 THEN 'Oct'
+        WHEN 11 THEN 'Nov'
+        WHEN 12 THEN 'Dec'
+    END as month_short,
+
+    WEEKOFYEAR(dt) as week_of_year,
+    DAYOFMONTH(dt) as day_of_month,
+    DAYOFWEEK(dt) as day_of_week,
+
     -- Day name
     CASE DAYOFWEEK(dt)
         WHEN 1 THEN 'Sunday'
@@ -250,6 +334,17 @@ SELECT
         WHEN 6 THEN 'Friday'
         WHEN 7 THEN 'Saturday'
     END as day_name,
+
+    -- Day short
+    CASE DAYOFWEEK(dt)
+        WHEN 1 THEN 'Sun'
+        WHEN 2 THEN 'Mon'
+        WHEN 3 THEN 'Tue'
+        WHEN 4 THEN 'Wed'
+        WHEN 5 THEN 'Thu'
+        WHEN 6 THEN 'Fri'
+        WHEN 7 THEN 'Sat'
+    END as day_short,
 
     -- Is weekend
     CASE WHEN DAYOFWEEK(dt) IN (1, 7) THEN TRUE ELSE FALSE END as is_weekend,
@@ -262,14 +357,30 @@ SELECT
         ELSE FALSE
     END as is_holiday,
 
-    -- Fiscal period (assuming fiscal year = calendar year)
-    CONCAT('FY', YEAR(dt)) as fiscal_year,
-    CONCAT('Q', QUARTER(dt), '-', YEAR(dt)) as fiscal_quarter,
+    -- Holiday name
+    CASE
+        WHEN MONTH(dt) = 1 AND DAYOFMONTH(dt) = 1 THEN 'New Year''s Day'
+        WHEN MONTH(dt) = 7 AND DAYOFMONTH(dt) = 4 THEN 'Independence Day'
+        WHEN MONTH(dt) = 12 AND DAYOFMONTH(dt) = 25 THEN 'Christmas'
+        ELSE NULL
+    END as holiday_name,
 
-    CURRENT_TIMESTAMP as created_timestamp
+    -- Is business day
+    CASE
+        WHEN DAYOFWEEK(dt) IN (1, 7) THEN FALSE  -- Weekend
+        WHEN (MONTH(dt) = 1 AND DAYOFMONTH(dt) = 1) OR
+             (MONTH(dt) = 7 AND DAYOFMONTH(dt) = 4) OR
+             (MONTH(dt) = 12 AND DAYOFMONTH(dt) = 25) THEN FALSE  -- Holiday
+        ELSE TRUE
+    END as is_business_day,
+
+    -- Fiscal period (assuming fiscal year = calendar year)
+    YEAR(dt) as fiscal_year,
+    QUARTER(dt) as fiscal_quarter,
+    MONTH(dt) as fiscal_month
 
 FROM (
-    -- Generate date range from 2020-01-01 to 2027-12-31
+    -- Generate date range from 2020-01-01 to 2027-12-31 (2922 days)
     SELECT DATE_ADD('2020-01-01', pos) as dt
     FROM (
         SELECT posexplode(split(space(2921), ' ')) as (pos, val)
@@ -310,22 +421,22 @@ SELECT
     SUM(CASE WHEN t.status_normalized = 'PENDING' THEN 1 ELSE 0 END) as pending_count,
     SUM(CASE WHEN t.status_normalized = 'CANCELLED' THEN 1 ELSE 0 END) as cancelled_count,
 
-    -- Suspicious transactions
-    SUM(CASE WHEN t.is_suspicious THEN 1 ELSE 0 END) as suspicious_transaction_count,
-
     -- Success rate
     ROUND((SUM(CASE WHEN t.status_normalized = 'COMPLETED' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 2) as success_rate,
 
     -- Has suspicious flag
     CASE WHEN SUM(CASE WHEN t.is_suspicious THEN 1 ELSE 0 END) > 0 THEN TRUE ELSE FALSE END as has_suspicious_transactions,
 
+    -- Suspicious transactions
+    SUM(CASE WHEN t.is_suspicious THEN 1 ELSE 0 END) as suspicious_transaction_count,
+
     -- Technical fields
     CURRENT_TIMESTAMP as created_timestamp,
     CURRENT_TIMESTAMP as updated_timestamp,
 
     -- Partitions
-    YEAR(t.transaction_date) as year,
-    MONTH(t.transaction_date) as month
+    t.transaction_year as year,
+    t.transaction_month as month
 
 FROM silver.transactions t
 LEFT JOIN silver.accounts a ON t.from_account_id = a.account_id
@@ -340,8 +451,8 @@ GROUP BY
     t.transaction_type_normalized,
     t.category_normalized,
     t.currency,
-    YEAR(t.transaction_date),
-    MONTH(t.transaction_date);
+    t.transaction_year,
+    t.transaction_month;
 
 -- Check results
 SELECT
@@ -357,36 +468,41 @@ ORDER BY year DESC, month DESC;
 -- ============================================================================
 -- 6. FACT_ACCOUNT_BALANCE_DAILY - Daily Account Balance Snapshots
 -- ============================================================================
-TRUNCATE TABLE gold.fact_account_balance_daily;
 
-INSERT INTO TABLE gold.fact_account_balance_daily
+INSERT OVERWRITE TABLE gold.fact_account_balance_daily
+PARTITION (year, month)
 SELECT
-    ab.balance_date,
-    a.client_id,
+    CAST(DATE_FORMAT(ab.last_updated, 'yyyy-MM-dd') AS DATE) as snapshot_date,
     ab.account_id,
-    a.branch_code,
+    a.client_id,
     a.account_type_normalized as account_type,
+    a.branch_code,
     ab.currency,
 
     -- Balance metrics
     ROUND(ab.current_balance, 2) as current_balance,
     ROUND(ab.available_balance, 2) as available_balance,
-    ROUND(ab.overdraft_limit, 2) as overdraft_limit,
+    ROUND(ab.reserved_amount, 2) as reserved_amount,
     ROUND(ab.credit_limit, 2) as credit_limit,
-    ab.credit_utilization_pct,
-    ab.is_overdrawn,
+    ab.credit_utilization as credit_utilization,
+    ab.balance_category,
 
-    -- Account status
-    a.is_active as is_account_active,
+    -- Change metrics (placeholders - would need historical data)
+    0.0 as balance_change_daily,
+    0.0 as balance_change_weekly,
+    0.0 as balance_change_monthly,
 
     -- Technical fields
     CURRENT_TIMESTAMP as created_timestamp,
-    CURRENT_TIMESTAMP as updated_timestamp
+
+    -- Partitions
+    YEAR(ab.last_updated) as year,
+    MONTH(ab.last_updated) as month
 
 FROM silver.account_balances ab
 INNER JOIN silver.accounts a ON ab.account_id = a.account_id
 
-WHERE ab.balance_date IS NOT NULL;
+WHERE ab.last_updated IS NOT NULL;
 
 SELECT
     COUNT(*) as total_balance_records,
@@ -397,57 +513,53 @@ FROM gold.fact_account_balance_daily;
 -- ============================================================================
 -- 7. FACT_LOAN_PERFORMANCE - Loan Performance Metrics
 -- ============================================================================
-TRUNCATE TABLE gold.fact_loan_performance;
 
-INSERT INTO TABLE gold.fact_loan_performance
+INSERT OVERWRITE TABLE gold.fact_loan_performance
+PARTITION (year, month)
 SELECT
     l.loan_id,
-    c.client_id,
     l.contract_id,
-    l.loan_type,
-    l.currency,
+    cnt.client_id,
+    CURRENT_DATE as snapshot_date,
 
     -- Loan details
     ROUND(l.loan_amount, 2) as loan_amount,
+    ROUND(l.outstanding_balance, 2) as outstanding_balance,
+    ROUND(l.paid_amount, 2) as paid_amount,
+    l.payment_progress,
     l.interest_rate,
     l.term_months,
-    ROUND(l.monthly_payment, 2) as monthly_payment,
-    l.start_date,
-    l.maturity_date,
-
-    -- Performance metrics
-    ROUND(l.outstanding_balance, 2) as outstanding_balance,
-    ROUND(l.principal_paid, 2) as principal_paid,
-    l.outstanding_pct,
-    l.days_to_maturity,
+    l.remaining_months,
+    l.elapsed_months,
 
     -- Payment metrics
     l.next_payment_date,
     ROUND(l.next_payment_amount, 2) as next_payment_amount,
-    l.payment_day,
+    DATEDIFF(l.next_payment_date, CURRENT_DATE) as days_to_next_payment,
+    0 as total_payments_made,  -- Placeholder
+    0 as missed_payments,      -- Placeholder
+    0 as late_payments,        -- Placeholder
+    0.0 as on_time_payment_rate,  -- Placeholder
 
-    -- Delinquency metrics
+    -- Risk metrics
     l.delinquency_status_normalized as delinquency_status,
-    l.days_past_due,
     l.is_delinquent,
-    l.loan_risk_category,
-
-    -- Collateral
-    l.collateral_type,
+    0 as days_past_due,  -- Field not in silver loans table
     ROUND(l.collateral_value, 2) as collateral_value,
     l.loan_to_value_ratio,
-
-    -- Client credit profile
-    c.credit_score as client_credit_score,
-    c.annual_income as client_annual_income,
+    l.ltv_category,
+    0.0 as default_probability,  -- Placeholder
 
     -- Technical fields
     CURRENT_TIMESTAMP as created_timestamp,
-    CURRENT_TIMESTAMP as updated_timestamp
+    CURRENT_TIMESTAMP as updated_timestamp,
+
+    -- Partitions
+    YEAR(CURRENT_DATE) as year,
+    MONTH(CURRENT_DATE) as month
 
 FROM silver.loans l
-INNER JOIN silver.contracts cnt ON l.contract_id = cnt.contract_id
-INNER JOIN silver.clients c ON cnt.client_id = c.client_id;
+INNER JOIN silver.contracts cnt ON l.contract_id = cnt.contract_id;
 
 SELECT
     COUNT(*) as total_loans,
@@ -496,7 +608,8 @@ SELECT
     CASE
         WHEN c.annual_income > 150000 AND c.credit_score > 750 THEN 'VIP'
         WHEN c.annual_income > 100000 AND c.credit_score > 700 THEN 'PREMIUM'
-        ELSE 'REGULAR'
+        WHEN c.annual_income > 50000 AND c.credit_score > 650 THEN 'REGULAR'
+        ELSE 'BASIC'
     END as client_segment,
 
     -- Account summary
@@ -505,14 +618,12 @@ SELECT
     COALESCE(acct.checking_accounts, 0) as checking_accounts,
     COALESCE(acct.savings_accounts, 0) as savings_accounts,
     COALESCE(acct.loan_accounts, 0) as loan_accounts,
-
-    -- Balance summary
     COALESCE(bal.total_balance, 0) as total_balance,
     COALESCE(bal.avg_balance, 0) as avg_balance,
 
     -- Product holdings
     COALESCE(prod.total_products, 0) as total_products,
-    0 as total_contracts,  -- Placeholder
+    COALESCE(cont.total_contracts, 0) as total_contracts,
     COALESCE(cards.total_cards, 0) as total_cards,
     COALESCE(cards.active_cards, 0) as active_cards,
 
@@ -555,7 +666,7 @@ SELECT
     -- Risk indicators (placeholders)
     0.0 as risk_score,
     0 as fraud_alerts,
-    0 as suspicious_activities,
+    COALESCE(txn.suspicious_transactions, 0) as suspicious_activities,
 
     -- Technical fields
     CURRENT_TIMESTAMP as created_timestamp,
@@ -601,12 +712,21 @@ LEFT JOIN (
     GROUP BY client_id
 ) prod ON c.client_id = prod.client_id
 
+-- Contracts
+LEFT JOIN (
+    SELECT
+        client_id,
+        COUNT(*) as total_contracts
+    FROM silver.contracts
+    GROUP BY client_id
+) cont ON c.client_id = cont.client_id
+
 -- Card summary
 LEFT JOIN (
     SELECT
         client_id,
         COUNT(*) as total_cards,
-        SUM(CASE WHEN is_active THEN 1 ELSE 0 END) as active_cards
+        SUM(CASE WHEN NOT is_expired THEN 1 ELSE 0 END) as active_cards
     FROM silver.cards
     GROUP BY client_id
 ) cards ON c.client_id = cards.client_id
@@ -616,10 +736,10 @@ LEFT JOIN (
     SELECT
         cnt.client_id,
         COUNT(*) as total_loans,
-        SUM(CASE WHEN l.days_past_due = 0 THEN 1 ELSE 0 END) as active_loans,
+        SUM(CASE WHEN NOT l.is_delinquent THEN 1 ELSE 0 END) as active_loans,
         SUM(l.loan_amount) as total_loan_amount,
         SUM(l.outstanding_balance) as total_outstanding_balance,
-        SUM(l.monthly_payment) as total_loan_payment,
+        SUM(l.next_payment_amount) as total_loan_payment,
         SUM(CASE WHEN l.is_delinquent THEN 1 ELSE 0 END) as delinquent_loans
     FROM silver.loans l
     INNER JOIN silver.contracts cnt ON l.contract_id = cnt.contract_id
@@ -636,6 +756,7 @@ LEFT JOIN (
         SUM(CASE WHEN t.transaction_type_normalized = 'DEPOSIT' THEN 1 ELSE 0 END) as deposits_30d,
         SUM(CASE WHEN t.transaction_type_normalized = 'WITHDRAWAL' THEN 1 ELSE 0 END) as withdrawals_30d,
         SUM(CASE WHEN t.transaction_type_normalized = 'TRANSFER' THEN 1 ELSE 0 END) as transfers_30d,
+        SUM(CASE WHEN t.is_suspicious THEN 1 ELSE 0 END) as suspicious_transactions,
         MAX(t.transaction_date) as last_transaction_date
     FROM silver.transactions t
     INNER JOIN silver.accounts a ON t.from_account_id = a.account_id
@@ -666,39 +787,51 @@ ORDER BY client_count DESC;
 -- ============================================================================
 -- 9. PRODUCT_PERFORMANCE_SUMMARY - Product Performance Dashboard
 -- ============================================================================
-TRUNCATE TABLE gold.product_performance_summary;
 
-INSERT INTO TABLE gold.product_performance_summary
+INSERT OVERWRITE TABLE gold.product_performance_summary
+PARTITION (year, month)
 SELECT
     p.product_id,
+    CURRENT_DATE as report_date,
+
+    -- Product details
     p.product_name,
     p.product_type,
+    p.product_category,
 
-    -- Adoption metrics
+    -- Customer metrics
     COALESCE(cp.total_clients, 0) as total_clients,
+    COALESCE(growth.new_clients_mtd, 0) as new_clients_mtd,
+    COALESCE(growth.churned_clients_mtd, 0) as churned_clients_mtd,
     COALESCE(cp.active_clients, 0) as active_clients,
 
-    -- Contract metrics
-    COALESCE(cnt.total_contracts, 0) as total_contracts,
-    COALESCE(cnt.active_contracts, 0) as active_contracts,
-    COALESCE(cnt.total_contract_value, 0) as total_contract_value,
-    COALESCE(cnt.avg_contract_value, 0) as avg_contract_value,
+    -- Retention rate
+    CASE
+        WHEN COALESCE(cp.total_clients, 0) > 0
+        THEN ROUND((COALESCE(cp.active_clients, 0) / cp.total_clients) * 100, 2)
+        ELSE 0.0
+    END as retention_rate,
 
-    -- Revenue metrics (simplified)
-    COALESCE(cnt.total_monthly_payment, 0) as total_monthly_revenue,
-    COALESCE(cnt.total_interest_revenue, 0) as total_interest_revenue,
+    -- Financial metrics
+    COALESCE(cont.total_contracts, 0) as total_contracts,
+    COALESCE(cont.active_contracts, 0) as active_contracts,
+    COALESCE(cont.total_contract_value, 0) as total_contract_value,
+    COALESCE(cont.avg_contract_value, 0) as avg_contract_value,
+    COALESCE(cont.total_revenue_mtd, 0) as total_revenue_mtd,
+    0.0 as total_revenue_ytd,  -- Placeholder
 
     -- Growth metrics
-    COALESCE(growth.new_clients_30d, 0) as new_clients_last_30_days,
-    COALESCE(growth.churned_clients_30d, 0) as churned_clients_last_30_days,
-
-    -- Product rating (placeholder)
-    0.0 as average_rating,
-    0 as total_reviews,
+    0.0 as client_growth_rate,  -- Placeholder
+    0.0 as revenue_growth_rate, -- Placeholder
+    0.0 as market_share,        -- Placeholder
 
     -- Technical fields
     CURRENT_TIMESTAMP as created_timestamp,
-    CURRENT_TIMESTAMP as updated_timestamp
+    CURRENT_TIMESTAMP as updated_timestamp,
+
+    -- Partitions
+    YEAR(CURRENT_DATE) as year,
+    MONTH(CURRENT_DATE) as month
 
 FROM silver.products p
 
@@ -717,21 +850,20 @@ LEFT JOIN (
     SELECT
         product_id,
         COUNT(*) as total_contracts,
-        SUM(CASE WHEN is_active THEN 1 ELSE 0 END) as active_contracts,
+        SUM(CASE WHEN status_normalized = 'ACTIVE' THEN 1 ELSE 0 END) as active_contracts,
         SUM(contract_amount) as total_contract_value,
         AVG(contract_amount) as avg_contract_value,
-        SUM(monthly_payment) as total_monthly_payment,
-        SUM(contract_amount * interest_rate / 100) as total_interest_revenue
+        SUM(CASE WHEN created_date >= DATE_SUB(CURRENT_DATE, 30) THEN contract_amount * interest_rate / 100 ELSE 0 END) as total_revenue_mtd
     FROM silver.contracts
     GROUP BY product_id
-) cnt ON p.product_id = cnt.product_id
+) cont ON p.product_id = cont.product_id
 
 -- Growth metrics (last 30 days)
 LEFT JOIN (
     SELECT
         product_id,
-        COUNT(DISTINCT CASE WHEN start_date >= DATE_SUB(CURRENT_DATE, 30) THEN client_id END) as new_clients_30d,
-        COUNT(DISTINCT CASE WHEN end_date >= DATE_SUB(CURRENT_DATE, 30) AND end_date < CURRENT_DATE THEN client_id END) as churned_clients_30d
+        COUNT(DISTINCT CASE WHEN start_date >= DATE_SUB(CURRENT_DATE, 30) THEN client_id END) as new_clients_mtd,
+        COUNT(DISTINCT CASE WHEN end_date >= DATE_SUB(CURRENT_DATE, 30) AND end_date < CURRENT_DATE THEN client_id END) as churned_clients_mtd
     FROM silver.client_products
     GROUP BY product_id
 ) growth ON p.product_id = growth.product_id;
@@ -745,54 +877,80 @@ FROM gold.product_performance_summary;
 -- ============================================================================
 -- 10. BRANCH_PERFORMANCE_DASHBOARD - Branch Performance Metrics
 -- ============================================================================
-TRUNCATE TABLE gold.branch_performance_dashboard;
 
-INSERT INTO TABLE gold.branch_performance_dashboard
+INSERT OVERWRITE TABLE gold.branch_performance_dashboard
+PARTITION (year, month)
 SELECT
     b.branch_id,
     b.branch_code,
+    CURRENT_DATE as report_date,
+
+    -- Branch details
     b.branch_name,
     b.city,
     b.state,
-    b.country,
 
-    -- Account metrics
+    -- Region
+    CASE
+        WHEN b.state_code IN ('CA', 'WA', 'OR', 'NV', 'AZ') THEN 'WEST'
+        WHEN b.state_code IN ('TX', 'OK', 'LA', 'AR') THEN 'SOUTH'
+        WHEN b.state_code IN ('NY', 'NJ', 'PA', 'MA', 'CT') THEN 'NORTHEAST'
+        WHEN b.state_code IN ('IL', 'MI', 'OH', 'IN', 'WI') THEN 'MIDWEST'
+        ELSE 'OTHER'
+    END as region,
+
+    b.manager_name,
+
+    -- Staff metrics
+    COALESCE(emp.total_employees, 0) as total_employees,
+    COALESCE(emp.active_employees, 0) as active_employees,
+    COALESCE(emp.avg_employee_tenure_years, 0) as avg_employee_tenure_years,
+
+    -- Customer metrics
+    COALESCE(acct.total_clients, 0) as total_clients,
+    COALESCE(acct.new_clients_mtd, 0) as new_clients_mtd,
+    COALESCE(acct.active_clients, 0) as active_clients,
     COALESCE(acct.total_accounts, 0) as total_accounts,
     COALESCE(acct.active_accounts, 0) as active_accounts,
-    COALESCE(acct.new_accounts_30d, 0) as new_accounts_last_30_days,
-
-    -- Client metrics
-    COALESCE(acct.total_clients, 0) as total_clients,
-
-    -- Employee metrics
-    COALESCE(emp.total_employees, 0) as total_employees,
-    COALESCE(emp.avg_employee_tenure, 0) as avg_employee_tenure_years,
 
     -- Financial metrics
     COALESCE(bal.total_deposits, 0) as total_deposits,
+    COALESCE(loans.total_loans_issued, 0) as total_loans_issued,
+    COALESCE(txn.total_transaction_volume, 0) as total_transaction_volume,
+    COALESCE(txn.total_revenue_mtd, 0) as total_revenue_mtd,
+    0.0 as total_fees_collected,  -- Placeholder
+
+    -- Performance KPIs
     COALESCE(bal.avg_account_balance, 0) as avg_account_balance,
+    0.0 as loan_approval_rate,      -- Placeholder
+    0.0 as customer_satisfaction_score,  -- Placeholder
+    0.0 as nps_score,               -- Placeholder
 
-    -- Transaction metrics (last 30 days)
-    COALESCE(txn.total_transactions_30d, 0) as total_transactions_last_30_days,
-    COALESCE(txn.total_transaction_volume_30d, 0) as total_transaction_volume_last_30_days,
-
-    -- Card metrics
-    COALESCE(cards.total_cards_issued, 0) as total_cards_issued,
-    COALESCE(cards.active_cards, 0) as active_cards,
-
-    -- Performance score (simplified calculation)
-    ROUND(
-        (COALESCE(acct.active_accounts, 0) * 0.3 +
-         COALESCE(bal.total_deposits, 0) / 10000 * 0.4 +
-         COALESCE(txn.total_transactions_30d, 0) * 0.3),
-        2
-    ) as branch_performance_score,
+    -- Rankings (placeholders - would need RANK() window function)
+    0 as revenue_rank,
+    0 as customer_rank,
+    0 as efficiency_rank,
 
     -- Technical fields
     CURRENT_TIMESTAMP as created_timestamp,
-    CURRENT_TIMESTAMP as updated_timestamp
+    CURRENT_TIMESTAMP as updated_timestamp,
+
+    -- Partitions
+    YEAR(CURRENT_DATE) as year,
+    MONTH(CURRENT_DATE) as month
 
 FROM silver.branches b
+
+-- Employee metrics
+LEFT JOIN (
+    SELECT
+        branch_id,
+        COUNT(*) as total_employees,
+        SUM(CASE WHEN is_active THEN 1 ELSE 0 END) as active_employees,
+        ROUND(AVG(tenure_years), 1) as avg_employee_tenure_years
+    FROM silver.employees
+    GROUP BY branch_id
+) emp ON b.branch_id = emp.branch_id
 
 -- Account and client metrics
 LEFT JOIN (
@@ -800,21 +958,12 @@ LEFT JOIN (
         branch_code,
         COUNT(*) as total_accounts,
         SUM(CASE WHEN is_active THEN 1 ELSE 0 END) as active_accounts,
-        COUNT(CASE WHEN open_date >= DATE_SUB(CURRENT_DATE, 30) THEN 1 END) as new_accounts_30d,
-        COUNT(DISTINCT client_id) as total_clients
+        COUNT(CASE WHEN open_date >= DATE_SUB(CURRENT_DATE, 30) THEN 1 END) as new_clients_mtd,
+        COUNT(DISTINCT client_id) as total_clients,
+        COUNT(DISTINCT CASE WHEN is_active THEN client_id END) as active_clients
     FROM silver.accounts
     GROUP BY branch_code
 ) acct ON b.branch_code = acct.branch_code
-
--- Employee metrics
-LEFT JOIN (
-    SELECT
-        branch_id,
-        COUNT(*) as total_employees,
-        ROUND(AVG(tenure_years), 1) as avg_employee_tenure
-    FROM silver.employees
-    GROUP BY branch_id
-) emp ON b.branch_id = emp.branch_id
 
 -- Balance metrics
 LEFT JOIN (
@@ -827,29 +976,28 @@ LEFT JOIN (
     GROUP BY a.branch_code
 ) bal ON b.branch_code = bal.branch_code
 
+-- Loan metrics
+LEFT JOIN (
+    SELECT
+        a.branch_code,
+        SUM(l.loan_amount) as total_loans_issued
+    FROM silver.loans l
+    INNER JOIN silver.contracts cnt ON l.contract_id = cnt.contract_id
+    INNER JOIN silver.accounts a ON cnt.client_id = a.client_id
+    GROUP BY a.branch_code
+) loans ON b.branch_code = loans.branch_code
+
 -- Transaction metrics (last 30 days)
 LEFT JOIN (
     SELECT
         a.branch_code,
-        COUNT(*) as total_transactions_30d,
-        SUM(t.amount) as total_transaction_volume_30d
+        SUM(t.amount) as total_transaction_volume,
+        SUM(CASE WHEN t.transaction_date >= DATE_SUB(CURRENT_DATE, 30) THEN t.amount * 0.001 ELSE 0 END) as total_revenue_mtd
     FROM silver.transactions t
     INNER JOIN silver.accounts a ON t.from_account_id = a.account_id
-    WHERE t.transaction_date >= DATE_SUB(CURRENT_DATE, 30)
-      AND t.status_normalized = 'COMPLETED'
+    WHERE t.status_normalized = 'COMPLETED'
     GROUP BY a.branch_code
-) txn ON b.branch_code = txn.branch_code
-
--- Card metrics
-LEFT JOIN (
-    SELECT
-        a.branch_code,
-        COUNT(*) as total_cards_issued,
-        SUM(CASE WHEN c.is_active THEN 1 ELSE 0 END) as active_cards
-    FROM silver.cards c
-    INNER JOIN silver.accounts a ON c.account_id = a.account_id
-    GROUP BY a.branch_code
-) cards ON b.branch_code = cards.branch_code;
+) txn ON b.branch_code = txn.branch_code;
 
 SELECT
     COUNT(*) as total_branches,

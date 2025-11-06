@@ -26,13 +26,11 @@ SELECT
     registration_date,
     address,
     city,
-    state,
     country,
-    postal_code,
-    occupation,
+    risk_category,
+    credit_score,
     employment_status,
     annual_income,
-    credit_score,
     -- Technical fields
     CURRENT_TIMESTAMP as load_timestamp,
     'test.clients' as source_file
@@ -51,15 +49,8 @@ SELECT
     product_id,
     product_name,
     product_type,
-    description,
-    interest_rate,
-    min_amount,
-    max_amount,
-    term_months,
     currency,
     active,
-    created_date,
-    updated_date,
     -- Technical fields
     CURRENT_TIMESTAMP as load_timestamp,
     'test.products' as source_file
@@ -78,15 +69,13 @@ SELECT
     client_id,
     product_id,
     contract_number,
-    contract_date,
     start_date,
     end_date,
-    status,
     contract_amount,
-    currency,
     interest_rate,
-    term_months,
+    status,
     monthly_payment,
+    created_date,
     -- Technical fields
     CURRENT_TIMESTAMP as load_timestamp,
     'test.contracts' as source_file
@@ -119,7 +108,28 @@ FROM test.accounts;
 SELECT COUNT(*) as bronze_accounts_count FROM bronze.accounts;
 
 -- ============================================================================
--- 5. TRANSACTIONS - Load to Bronze (with partitioning)
+-- 5. CLIENT_PRODUCTS - Load to Bronze
+-- ============================================================================
+TRUNCATE TABLE bronze.client_products;
+
+INSERT INTO TABLE bronze.client_products
+SELECT
+    relationship_id,
+    client_id,
+    product_id,
+    relationship_type,
+    start_date,
+    end_date,
+    status,
+    -- Technical fields
+    CURRENT_TIMESTAMP as load_timestamp,
+    'test.client_products' as source_file
+FROM test.client_products;
+
+SELECT COUNT(*) as bronze_client_products_count FROM bronze.client_products;
+
+-- ============================================================================
+-- 6. TRANSACTIONS - Load to Bronze (with partitioning)
 -- ============================================================================
 -- Note: Using dynamic partitioning by year and month
 
@@ -127,16 +137,19 @@ INSERT OVERWRITE TABLE bronze.transactions
 PARTITION (transaction_year, transaction_month)
 SELECT
     transaction_id,
+    transaction_uuid,
     from_account_id,
     to_account_id,
-    transaction_date,
+    from_account_number,
+    to_account_number,
+    transaction_type,
     amount,
     currency,
-    transaction_type,
-    category,
+    transaction_date,
     description,
     status,
-    channel,
+    category,
+    merchant_name,
     -- Technical fields
     CURRENT_TIMESTAMP as load_timestamp,
     'test.transactions' as source_file,
@@ -158,7 +171,7 @@ GROUP BY transaction_year, transaction_month
 ORDER BY transaction_year DESC, transaction_month DESC;
 
 -- ============================================================================
--- 6. ACCOUNT_BALANCES - Load to Bronze
+-- 7. ACCOUNT_BALANCES - Load to Bronze
 -- ============================================================================
 TRUNCATE TABLE bronze.account_balances;
 
@@ -166,11 +179,10 @@ INSERT INTO TABLE bronze.account_balances
 SELECT
     balance_id,
     account_id,
-    balance_date,
     current_balance,
     available_balance,
     currency,
-    overdraft_limit,
+    last_updated,
     credit_limit,
     -- Technical fields
     CURRENT_TIMESTAMP as load_timestamp,
@@ -180,7 +192,7 @@ FROM test.account_balances;
 SELECT COUNT(*) as bronze_balances_count FROM bronze.account_balances;
 
 -- ============================================================================
--- 7. CARDS - Load to Bronze
+-- 8. CARDS - Load to Bronze
 -- ============================================================================
 TRUNCATE TABLE bronze.cards;
 
@@ -190,13 +202,13 @@ SELECT
     client_id,
     account_id,
     card_number,
+    card_holder_name,
+    expiry_date,
+    cvv,
     card_type,
     card_level,
-    issue_date,
-    expiry_date,
     status,
-    credit_limit,
-    cvv,
+    issue_date,
     -- Technical fields
     CURRENT_TIMESTAMP as load_timestamp,
     'test.cards' as source_file
@@ -205,7 +217,7 @@ FROM test.cards;
 SELECT COUNT(*) as bronze_cards_count FROM bronze.cards;
 
 -- ============================================================================
--- 8. BRANCHES - Load to Bronze
+-- 9. BRANCHES - Load to Bronze
 -- ============================================================================
 TRUNCATE TABLE bronze.branches;
 
@@ -217,12 +229,10 @@ SELECT
     address,
     city,
     state,
-    country,
-    postal_code,
+    zip_code,
     phone,
-    email,
     manager_name,
-    open_date,
+    opening_date,
     -- Technical fields
     CURRENT_TIMESTAMP as load_timestamp,
     'test.branches' as source_file
@@ -231,7 +241,7 @@ FROM test.branches;
 SELECT COUNT(*) as bronze_branches_count FROM bronze.branches;
 
 -- ============================================================================
--- 9. EMPLOYEES - Load to Bronze
+-- 10. EMPLOYEES - Load to Bronze
 -- ============================================================================
 TRUNCATE TABLE bronze.employees;
 
@@ -247,7 +257,7 @@ SELECT
     department,
     hire_date,
     salary,
-    manager_id,
+    status,
     -- Technical fields
     CURRENT_TIMESTAMP as load_timestamp,
     'test.employees' as source_file
@@ -256,7 +266,7 @@ FROM test.employees;
 SELECT COUNT(*) as bronze_employees_count FROM bronze.employees;
 
 -- ============================================================================
--- 10. LOANS - Load to Bronze
+-- 11. LOANS - Load to Bronze
 -- ============================================================================
 TRUNCATE TABLE bronze.loans;
 
@@ -264,21 +274,14 @@ INSERT INTO TABLE bronze.loans
 SELECT
     loan_id,
     contract_id,
-    loan_type,
     loan_amount,
-    currency,
+    outstanding_balance,
     interest_rate,
     term_months,
-    monthly_payment,
-    start_date,
-    maturity_date,
-    outstanding_balance,
+    remaining_months,
     next_payment_date,
     next_payment_amount,
-    payment_day,
     delinquency_status,
-    days_past_due,
-    collateral_type,
     collateral_value,
     loan_to_value_ratio,
     -- Technical fields
@@ -289,7 +292,7 @@ FROM test.loans;
 SELECT COUNT(*) as bronze_loans_count FROM bronze.loans;
 
 -- ============================================================================
--- 11. CREDIT_APPLICATIONS - Load to Bronze
+-- 12. CREDIT_APPLICATIONS - Load to Bronze
 -- ============================================================================
 TRUNCATE TABLE bronze.credit_applications;
 
@@ -298,44 +301,20 @@ SELECT
     application_id,
     client_id,
     application_date,
-    product_type,
     requested_amount,
-    requested_term_months,
+    approved_amount,
     purpose,
-    employment_status,
-    annual_income,
-    existing_debt,
     status,
     decision_date,
-    approved_amount,
-    approved_term_months,
     interest_rate_proposed,
-    rejection_reason,
+    reason_for_rejection,
+    officer_id,
     -- Technical fields
     CURRENT_TIMESTAMP as load_timestamp,
     'test.credit_applications' as source_file
 FROM test.credit_applications;
 
 SELECT COUNT(*) as bronze_credit_applications_count FROM bronze.credit_applications;
-
--- ============================================================================
--- 12. CLIENT_PRODUCTS - Load to Bronze
--- ============================================================================
-TRUNCATE TABLE bronze.client_products;
-
-INSERT INTO TABLE bronze.client_products
-SELECT
-    client_id,
-    product_id,
-    start_date,
-    end_date,
-    status,
-    -- Technical fields
-    CURRENT_TIMESTAMP as load_timestamp,
-    'test.client_products' as source_file
-FROM test.client_products;
-
-SELECT COUNT(*) as bronze_client_products_count FROM bronze.client_products;
 
 -- ============================================================================
 -- FINAL SUMMARY - Bronze Layer Load Statistics
@@ -351,6 +330,8 @@ SELECT 'contracts', COUNT(*) FROM bronze.contracts
 UNION ALL
 SELECT 'accounts', COUNT(*) FROM bronze.accounts
 UNION ALL
+SELECT 'client_products', COUNT(*) FROM bronze.client_products
+UNION ALL
 SELECT 'transactions', COUNT(*) FROM bronze.transactions
 UNION ALL
 SELECT 'account_balances', COUNT(*) FROM bronze.account_balances
@@ -364,8 +345,6 @@ UNION ALL
 SELECT 'loans', COUNT(*) FROM bronze.loans
 UNION ALL
 SELECT 'credit_applications', COUNT(*) FROM bronze.credit_applications
-UNION ALL
-SELECT 'client_products', COUNT(*) FROM bronze.client_products
 ORDER BY table_name;
 
 -- ============================================================================

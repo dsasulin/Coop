@@ -254,242 +254,376 @@ Bank accounts with relationship to clients, products, and branches.
 
 ---
 
-### Fact Tables (2)
+### Fact Tables (3)
 
-Fact tables store measurable events with foreign keys to dimensions. Both are **partitioned** by year/month for performance.
+Fact tables store pre-aggregated metrics. All are **partitioned** by year/month for performance.
 
-#### 1. **fact_transaction** - Transaction Fact Table
+#### 1. **fact_transactions_daily** - Daily Transaction Aggregates
 
-Stores all financial transactions with dimensional context.
+Daily aggregated transaction metrics by client, account, and branch.
 
-**Grain:** One row per transaction
+**Grain:** One row per day per client per account per transaction type
 
 **Key Fields:**
-- `transaction_id` (PK)
-- **Foreign Keys:**
-  - `date_key` → dim_date
-  - `account_key` → dim_account
-  - `client_key` → dim_client
-  - `product_key` → dim_product
-  - `branch_key` → dim_branch
-- **Measures:**
-  - `amount` - Transaction amount (can be negative)
-  - `amount_abs` - Absolute amount
-  - `balance_after` - Balance after transaction
-- **Attributes:**
-  - `transaction_date`, `transaction_type`, `transaction_direction`
-  - `channel` (ATM, Online, Branch, Mobile)
-  - `transaction_status`, `is_completed`
-  - `transaction_hour`, `transaction_day_of_week`
-  - `currency`
-- **Partitioning:** `transaction_year`, `transaction_month`
+- `transaction_date` (PK part)
+- `client_id`, `account_id`, `branch_code`
+- `transaction_type`, `category`, `currency`
+- **Aggregated Measures:**
+  - `transaction_count` - Number of transactions
+  - `total_amount` - Sum of all amounts
+  - `avg_amount` - Average transaction amount
+  - `min_amount`, `max_amount`
+  - `successful_count`, `failed_count`, `pending_count`, `cancelled_count`
+  - `success_rate` - Percentage of successful transactions
+  - `has_suspicious_transactions` - Flag for suspicious activity
+  - `suspicious_transaction_count`
+- **Partitioning:** `year`, `month`
 
 **Typical Queries:**
-- Transaction volume by client segment
-- Revenue by product type
-- Channel performance analysis
-- Hourly/daily transaction patterns
-- Branch transaction activity
+- Daily transaction volume trends
+- Transaction success rate by channel
+- Suspicious activity detection
+- Revenue by transaction type
 
 ---
 
-#### 2. **fact_account_balance** - Account Balance Fact Table
+#### 2. **fact_account_balance_daily** - Daily Account Balance Snapshots
 
-Stores daily account balance snapshots.
+Daily balance snapshots for all accounts.
 
-**Grain:** One row per account per day
+**Grain:** One row per day per account
 
 **Key Fields:**
-- `balance_id` (PK)
-- **Foreign Keys:**
-  - `date_key` → dim_date
-  - `account_key` → dim_account
-  - `client_key` → dim_client
-  - `product_key` → dim_product
-  - `branch_key` → dim_branch
-- **Measures:**
-  - `balance_amount` - Current balance
+- `snapshot_date` (PK part)
+- `account_id`, `client_id`, `branch_code`
+- `account_type`, `currency`
+- **Balance Measures:**
+  - `current_balance` - End-of-day balance
   - `available_balance` - Available for withdrawal
-  - `available_percentage` - Available/Balance ratio
-- **Attributes:**
-  - `balance_date`, `currency`
-- **Partitioning:** `balance_year`, `balance_month`
+  - `reserved_amount` - Reserved/held funds
+  - `credit_limit`, `credit_utilization`
+  - `balance_category` - HIGH/MEDIUM/LOW/NEGATIVE
+- **Change Measures:**
+  - `balance_change_daily` - Change from previous day
+  - `balance_change_weekly` - Change from 7 days ago
+  - `balance_change_monthly` - Change from 30 days ago
+- **Partitioning:** `year`, `month`
 
 **Typical Queries:**
-- Average balance trends by client segment
-- Total deposits by branch/product
-- Balance growth analysis
-- Liquidity monitoring
+- Balance growth trends
+- Account liquidity analysis
+- Credit utilization monitoring
+- Low balance alerts
 
 ---
 
-### Aggregate Tables (3)
+#### 3. **fact_loan_performance** - Loan Performance Tracking
 
-Pre-aggregated summary tables for fast dashboard queries.
+Daily loan performance metrics and risk indicators.
 
-#### 1. **client_summary** - Client Summary
+**Grain:** One row per day per loan
 
-Complete client activity summary with all financial metrics.
+**Key Fields:**
+- `loan_id` (PK part)
+- `contract_id`, `client_id`, `snapshot_date`
+- **Loan Metrics:**
+  - `loan_amount`, `outstanding_balance`, `paid_amount`
+  - `payment_progress` - Percentage paid
+  - `interest_rate`, `term_months`, `remaining_months`
+- **Payment Metrics:**
+  - `next_payment_date`, `next_payment_amount`, `days_to_next_payment`
+  - `total_payments_made`, `missed_payments`, `late_payments`
+  - `on_time_payment_rate`
+- **Risk Metrics:**
+  - `delinquency_status`, `is_delinquent`, `days_past_due`
+  - `collateral_value`, `loan_to_value_ratio`
+  - `default_probability` - Predictive score
+- **Partitioning:** `year`, `month`
 
-**Grain:** One row per client (current snapshot)
+**Typical Queries:**
+- Delinquency tracking
+- Loan portfolio risk assessment
+- Payment behavior analysis
+- Early default prediction
+
+---
+
+### Aggregate Tables (6)
+
+Wide pre-aggregated tables for dashboards and reporting. All are **partitioned** for performance.
+
+#### 1. **client_360_view** - Complete Client Profile
+
+Comprehensive 360-degree view of each client with all relationships and metrics.
+
+**Grain:** One row per client per snapshot period
 
 **Key Fields:**
 - `client_id` (PK)
-- `full_name`, `client_segment`
-- **Account Metrics:** `total_accounts`, `total_balance`
-- **Transaction Metrics:** `total_transactions`, `total_transaction_volume`
-- **Product Metrics:** `total_cards`, `total_loans`, `total_loan_amount`
-- **Risk Metrics:** `risk_category`, `credit_score`
-- `summary_date`, `created_timestamp`
+- `snapshot_date`
+- **Demographics:** `full_name`, `email`, `phone`, `age`, `age_group`, `city`, `country`
+- **Financial Profile:** `risk_category`, `credit_score`, `credit_score_category`, `annual_income`, `income_category`, `client_segment`
+- **Account Summary:** `total_accounts`, `active_accounts`, `checking_accounts`, `savings_accounts`, `loan_accounts`, `total_balance`, `avg_balance`
+- **Product Holdings:** `total_products`, `total_contracts`, `total_cards`, `active_cards`
+- **Loan Summary:** `total_loans`, `active_loans`, `total_loan_amount`, `total_outstanding_balance`, `delinquent_loans`
+- **Transaction Behavior (30d):** `transactions_30d`, `transaction_volume_30d`, `avg_transaction_30d`, `deposits_30d`, `withdrawals_30d`, `transfers_30d`
+- **Engagement:** `last_transaction_date`, `days_since_last_transaction`, `transaction_frequency`, `channel_preference`
+- **Value Metrics:** `customer_lifetime_value`, `total_revenue`, `total_fees_paid`, `profitability_score`
+- **Risk Indicators:** `risk_score`, `fraud_alerts`, `suspicious_activities`
+- **Partitioning:** `snapshot_year`, `snapshot_month`
 
 **Use Cases:**
 - Client 360° dashboard
 - VIP client identification
+- Churn prediction
 - Cross-sell/up-sell targeting
-- Portfolio risk analysis
+- Relationship management
 
 ---
 
-#### 2. **product_performance** - Product Performance
+#### 2. **product_performance_summary** - Product KPIs
 
-Product-level KPIs and adoption metrics.
+Product-level performance metrics and growth indicators.
 
-**Grain:** One row per product (current snapshot)
+**Grain:** One row per product per report period
 
 **Key Fields:**
 - `product_id` (PK)
-- `product_name`, `product_type`, `product_category`
-- **Adoption Metrics:** `total_clients`, `total_accounts`
-- **Financial Metrics:** `total_balance`, `total_contract_value`, `total_loan_value`
-- **Status:** `is_active`
-- `performance_date`, `created_timestamp`
+- `report_date`
+- **Product Details:** `product_name`, `product_type`, `product_category`
+- **Customer Metrics:** `total_clients`, `new_clients_mtd`, `churned_clients_mtd`, `active_clients`, `retention_rate`
+- **Financial Metrics:** `total_contracts`, `active_contracts`, `total_contract_value`, `avg_contract_value`, `total_revenue_mtd`, `total_revenue_ytd`
+- **Growth Metrics:** `client_growth_rate`, `revenue_growth_rate`, `market_share`
+- **Partitioning:** `year`, `month`
 
 **Use Cases:**
 - Product profitability analysis
 - Product adoption trends
 - Portfolio composition
-- Revenue attribution by product
+- Revenue attribution
+- Product lifecycle management
 
 ---
 
-#### 3. **branch_performance** - Branch Performance
+#### 3. **branch_performance_dashboard** - Branch KPIs
 
-Branch-level operational and financial KPIs.
+Branch-level operational and financial performance metrics.
 
-**Grain:** One row per branch (current snapshot)
+**Grain:** One row per branch per report period
 
 **Key Fields:**
-- `branch_id` (PK)
-- `branch_name`, `branch_type`, `city`, `region`
-- **HR Metrics:** `total_employees`, `total_active_employees`
-- **Customer Metrics:** `total_accounts`, `total_balance`
-- **Product Metrics:** `total_loans`, `total_loan_value`, `total_contracts`, `total_contract_value`
-- `performance_date`, `created_timestamp`
+- `branch_id`, `branch_code` (PK)
+- `report_date`
+- **Branch Details:** `branch_name`, `city`, `state`, `region`, `manager_name`
+- **Staff Metrics:** `total_employees`, `active_employees`, `avg_employee_tenure_years`
+- **Customer Metrics:** `total_clients`, `new_clients_mtd`, `active_clients`, `total_accounts`, `active_accounts`
+- **Financial Metrics:** `total_deposits`, `total_loans_issued`, `total_transaction_volume`, `total_revenue_mtd`, `total_fees_collected`
+- **Performance KPIs:** `avg_account_balance`, `loan_approval_rate`, `customer_satisfaction_score`, `nps_score`
+- **Rankings:** `revenue_rank`, `customer_rank`, `efficiency_rank`
+- **Partitioning:** `year`, `month`
 
 **Use Cases:**
 - Branch profitability comparison
 - Regional performance analysis
 - Resource allocation planning
-- Branch efficiency metrics
+- Manager performance evaluation
+- Branch efficiency benchmarking
 
 ---
 
-### Star Schema Relationships
+#### 4. **financial_kpi_summary** - Enterprise-Level Financial KPIs
+
+Top-level financial metrics for executive reporting.
+
+**Grain:** One row per report date per metric category
+
+**Key Fields:**
+- `report_date` (PK)
+- `metric_category` - DEPOSITS/LOANS/TRANSACTIONS/REVENUE
+- **Overall Metrics:** `total_clients`, `active_clients`, `total_accounts`, `active_accounts`
+- **Financial Metrics:** `total_assets`, `total_liabilities`, `net_assets`, `total_deposits`, `total_loans`, `total_revenue_mtd`, `total_revenue_ytd`
+- **Transaction Metrics:** `total_transactions`, `total_transaction_volume`, `avg_transaction_value`, `transaction_success_rate`
+- **Risk Metrics:** `total_delinquent_loans`, `delinquency_rate`, `total_npl_amount`, `provision_coverage_ratio`
+- **Growth Metrics:** `client_growth_rate`, `revenue_growth_rate`, `loan_growth_rate`, `deposit_growth_rate`
+- **Partitioning:** `year`, `month`
+
+**Use Cases:**
+- Executive dashboards
+- Board reporting
+- Regulatory reporting
+- Strategic planning
+- Performance tracking against targets
+
+---
+
+#### 5. **data_quality_dashboard** - Data Quality Metrics
+
+Data quality monitoring and issue tracking.
+
+**Grain:** One row per table per report date
+
+**Key Fields:**
+- `report_date`, `table_name`, `database_name` (PK)
+- **Volume Metrics:** `total_records`, `new_records_today`, `updated_records_today`, `deleted_records_today`
+- **Quality Metrics:** `complete_records`, `incomplete_records`, `completeness_rate`, `duplicate_records`, `duplicate_rate`, `null_critical_fields`, `invalid_format_records`
+- **Quality Score:** `data_quality_score` (0-100), `data_quality_grade` (A/B/C/D/F)
+- **Issue Tracking:** `critical_issues`, `major_issues`, `minor_issues`, `issue_details` (JSON)
+- **Partitioning:** `year`, `month`
+
+**Use Cases:**
+- Data quality monitoring
+- Issue detection and alerting
+- Data governance reporting
+- SLA compliance tracking
+- Root cause analysis
+
+---
+
+### Data Model Relationships
 
 ```
-Fact Tables connect to Dimensions via Foreign Keys:
+Fact/Aggregate Tables connect to Dimensions via Foreign Keys:
 
-fact_transaction                    fact_account_balance
-├─ date_key      → dim_date        ├─ date_key      → dim_date
-├─ account_key   → dim_account     ├─ account_key   → dim_account
-├─ client_key    → dim_client      ├─ client_key    → dim_client
-├─ product_key   → dim_product     ├─ product_key   → dim_product
-└─ branch_key    → dim_branch      └─ branch_key    → dim_branch
+fact_transactions_daily             fact_account_balance_daily
+├─ client_id     → dim_client      ├─ client_id     → dim_client
+├─ account_id    → dim_account     ├─ account_id    → dim_account
+└─ branch_code   → dim_branch      └─ branch_code   → dim_branch
+
+fact_loan_performance               client_360_view
+├─ client_id     → dim_client      ├─ client_id     → dim_client
+└─ contract_id   → (silver layer)  └─ (denormalized, includes all relationships)
+
+product_performance_summary         branch_performance_dashboard
+├─ product_id    → dim_product     ├─ branch_id     → dim_branch
+                                   └─ branch_code   → dim_branch
 ```
 
-**Advantages of Star Schema:**
-- ✅ Simple queries (easy JOINs)
-- ✅ Fast aggregations
-- ✅ Optimized for BI tools
-- ✅ Denormalized dimensions (no snowflaking)
-- ✅ Partition pruning on facts (year/month)
+**Advantages of This Model:**
+- ✅ Pre-aggregated facts = Fast queries
+- ✅ Denormalized wide tables = No complex JOINs needed for dashboards
+- ✅ Partition pruning on all facts (year/month)
+- ✅ Optimized for BI tools (Tableau, PowerBI, etc.)
+- ✅ Both detailed (facts) and summary (aggregates) available
 
 ---
 
 ### Example Analytical Queries
 
-#### Query 1: Revenue by Client Segment and Product Type
+#### Query 1: Daily Transaction Volume by Client Segment
 
 ```sql
 SELECT
     dc.client_segment,
-    dp.product_type,
-    COUNT(DISTINCT ft.transaction_id) as transaction_count,
-    SUM(ft.amount_abs) as total_volume,
-    AVG(ft.amount_abs) as avg_transaction_size
-FROM gold.fact_transaction ft
-INNER JOIN gold.dim_client dc ON ft.client_key = dc.client_key
-INNER JOIN gold.dim_product dp ON ft.product_key = dp.product_key
-INNER JOIN gold.dim_date dd ON ft.date_key = dd.date_key
-WHERE dd.year = 2025
-  AND dd.quarter = 1
-  AND ft.is_completed = TRUE
-GROUP BY dc.client_segment, dp.product_type
-ORDER BY total_volume DESC;
+    ftd.transaction_type,
+    ftd.transaction_date,
+    SUM(ftd.transaction_count) as total_transactions,
+    ROUND(SUM(ftd.total_amount), 2) as total_volume,
+    ROUND(AVG(ftd.avg_amount), 2) as avg_transaction_size,
+    ROUND(AVG(ftd.success_rate), 2) as avg_success_rate
+FROM gold.fact_transactions_daily ftd
+INNER JOIN gold.dim_client dc ON ftd.client_id = dc.client_id
+WHERE ftd.year = 2025
+  AND ftd.month = 1
+GROUP BY dc.client_segment, ftd.transaction_type, ftd.transaction_date
+ORDER BY ftd.transaction_date, total_volume DESC;
 ```
 
-#### Query 2: Top Performing Branches by Balance Growth
+#### Query 2: Top Performing Branches
 
 ```sql
 SELECT
     bp.branch_name,
     bp.region,
-    bp.total_accounts,
-    bp.total_balance,
     bp.total_employees,
-    ROUND(bp.total_balance / NULLIF(bp.total_employees, 0), 2) as balance_per_employee,
-    ROUND(bp.total_balance / NULLIF(bp.total_accounts, 0), 2) as avg_balance_per_account
-FROM gold.branch_performance bp
-WHERE bp.total_employees > 0
-ORDER BY bp.total_balance DESC
+    bp.active_employees,
+    bp.total_clients,
+    bp.total_accounts,
+    ROUND(bp.total_deposits, 2) as total_deposits,
+    ROUND(bp.total_loans_issued, 2) as total_loans_issued,
+    ROUND(bp.total_revenue_mtd, 2) as revenue_mtd,
+    ROUND(bp.avg_account_balance, 2) as avg_balance,
+    ROUND(bp.total_deposits / NULLIF(bp.total_employees, 0), 2) as deposits_per_employee
+FROM gold.branch_performance_dashboard bp
+WHERE bp.year = 2025
+  AND bp.month = 1
+  AND bp.total_employees > 0
+ORDER BY bp.total_revenue_mtd DESC
 LIMIT 10;
 ```
 
-#### Query 3: VIP Client Portfolio Analysis
+#### Query 3: VIP Client 360° Analysis
 
 ```sql
 SELECT
-    cs.client_id,
-    cs.full_name,
-    cs.client_segment,
-    cs.total_accounts,
-    cs.total_balance,
-    cs.total_cards,
-    cs.total_loans,
-    cs.total_loan_amount,
-    cs.credit_score,
-    ROUND(cs.total_transaction_volume / NULLIF(cs.total_transactions, 0), 2) as avg_transaction_size
-FROM gold.client_summary cs
-WHERE cs.client_segment = 'VIP'
-ORDER BY cs.total_balance DESC;
+    cv.client_id,
+    cv.full_name,
+    cv.client_segment,
+    cv.age,
+    cv.city,
+    cv.credit_score,
+    cv.credit_score_category,
+    cv.total_accounts,
+    cv.active_accounts,
+    ROUND(cv.total_balance, 2) as total_balance,
+    cv.total_cards,
+    cv.active_cards,
+    cv.total_loans,
+    cv.active_loans,
+    ROUND(cv.total_loan_amount, 2) as total_loan_amount,
+    ROUND(cv.total_outstanding_balance, 2) as outstanding_balance,
+    cv.transactions_30d,
+    ROUND(cv.transaction_volume_30d, 2) as volume_30d,
+    cv.days_since_last_transaction,
+    cv.channel_preference
+FROM gold.client_360_view cv
+WHERE cv.client_segment = 'VIP'
+  AND cv.snapshot_year = 2025
+  AND cv.snapshot_month = 1
+ORDER BY cv.total_balance DESC
+LIMIT 20;
 ```
 
-#### Query 4: Daily Transaction Trends with Weekday Analysis
+#### Query 4: Product Performance Comparison
 
 ```sql
 SELECT
-    dd.full_date,
-    dd.day_name,
-    dd.is_weekend,
-    COUNT(ft.transaction_id) as daily_transactions,
-    SUM(ft.amount_abs) as daily_volume,
-    COUNT(DISTINCT ft.client_key) as unique_clients
-FROM gold.fact_transaction ft
-INNER JOIN gold.dim_date dd ON ft.date_key = dd.date_key
-WHERE dd.year = 2025
-  AND dd.month = 1
-GROUP BY dd.full_date, dd.day_name, dd.is_weekend
-ORDER BY dd.full_date;
+    pps.product_name,
+    pps.product_type,
+    pps.product_category,
+    pps.total_clients,
+    pps.active_clients,
+    pps.total_contracts,
+    pps.active_contracts,
+    ROUND(pps.total_contract_value, 2) as total_contract_value,
+    ROUND(pps.avg_contract_value, 2) as avg_contract_value,
+    ROUND(pps.total_revenue_mtd, 2) as revenue_mtd,
+    ROUND(pps.total_revenue_ytd, 2) as revenue_ytd,
+    ROUND(pps.retention_rate, 2) as retention_rate,
+    ROUND(pps.client_growth_rate, 2) as client_growth_rate
+FROM gold.product_performance_summary pps
+WHERE pps.year = 2025
+  AND pps.month = 1
+ORDER BY pps.total_revenue_ytd DESC;
+```
+
+#### Query 5: Account Balance Trends
+
+```sql
+SELECT
+    fabd.snapshot_date,
+    fabd.account_type,
+    fabd.branch_code,
+    COUNT(DISTINCT fabd.account_id) as account_count,
+    ROUND(SUM(fabd.current_balance), 2) as total_balance,
+    ROUND(AVG(fabd.current_balance), 2) as avg_balance,
+    ROUND(SUM(fabd.available_balance), 2) as total_available,
+    ROUND(AVG(fabd.credit_utilization), 2) as avg_credit_utilization,
+    ROUND(SUM(fabd.balance_change_daily), 2) as daily_change
+FROM gold.fact_account_balance_daily fabd
+WHERE fabd.year = 2025
+  AND fabd.month = 1
+GROUP BY fabd.snapshot_date, fabd.account_type, fabd.branch_code
+ORDER BY fabd.snapshot_date, total_balance DESC;
 ```
 
 ---
@@ -497,24 +631,30 @@ ORDER BY dd.full_date;
 ### Data Lineage
 
 ```
-Silver Layer                    Gold Layer
-─────────────                  ─────────────
+Silver Layer                     Gold Layer
+─────────────                   ─────────────
 
-silver.clients        ──────► dim_client
-                               client_summary
+silver.clients         ──────► dim_client
+                                client_360_view
+                                financial_kpi_summary
 
-silver.products       ──────► dim_product
-                               product_performance
+silver.products        ──────► dim_product
+                                product_performance_summary
 
-silver.branches       ──────► dim_branch
-                               branch_performance
+silver.branches        ──────► dim_branch
+                                branch_performance_dashboard
 
-silver.accounts       ──────► dim_account
+silver.accounts        ──────► dim_account
+                                fact_account_balance_daily
 
-silver.transactions   ──────► dim_date (distinct dates)
-                               fact_transaction
+silver.transactions    ──────► dim_date (distinct dates)
+                                fact_transactions_daily
 
-silver.account_balances ────► fact_account_balance
+silver.loans           ──────► fact_loan_performance
+
+silver.account_balances ─────► fact_account_balance_daily
+
+All Silver tables      ──────► data_quality_dashboard
 ```
 
 ---
@@ -522,21 +662,41 @@ silver.account_balances ────► fact_account_balance
 ### Performance Optimization
 
 **Partitioning Strategy:**
-- `fact_transaction`: Partitioned by `transaction_year`, `transaction_month`
-- `fact_account_balance`: Partitioned by `balance_year`, `balance_month`
-- **Benefit:** Partition pruning reduces scan size by 10-100x for date-filtered queries
+All fact and aggregate tables are partitioned by `year` and `month`:
+- `fact_transactions_daily`
+- `fact_account_balance_daily`
+- `fact_loan_performance`
+- `client_360_view` (by `snapshot_year`, `snapshot_month`)
+- `product_performance_summary`
+- `branch_performance_dashboard`
+- `financial_kpi_summary`
+- `data_quality_dashboard`
+
+**Benefit:** Partition pruning reduces scan size by 10-100x for date-filtered queries
 
 **SCD Type 2 Ready:**
-- All dimensions include `effective_date`, `end_date`, `is_current`
-- Current implementation uses simple overwrite (Type 1)
-- Can be enhanced to track historical changes (Type 2)
+- All dimension tables include `effective_date`, `end_date`, `is_current` fields
+- Currently populated using Type 1 (overwrite) strategy
+- Structure supports Type 2 (historical tracking) - can be enhanced as needed
 
-**Statistics:**
+**Query Optimization:**
 ```sql
--- Compute statistics for query optimization
-ANALYZE TABLE gold.fact_transaction COMPUTE STATISTICS;
+-- Compute statistics for better query plans
+ANALYZE TABLE gold.fact_transactions_daily COMPUTE STATISTICS;
 ANALYZE TABLE gold.dim_client COMPUTE STATISTICS FOR COLUMNS;
+ANALYZE TABLE gold.client_360_view COMPUTE STATISTICS;
+
+-- Check partition metadata
+SHOW PARTITIONS gold.fact_transactions_daily;
+
+-- Optimize storage
+ALTER TABLE gold.fact_transactions_daily CONCATENATE;
 ```
+
+**Storage Format:**
+- All Gold tables use **Parquet** format with **Snappy** compression
+- Optimized for analytical queries (columnar storage)
+- Efficient compression (typically 5:1 ratio)
 
 ---
 

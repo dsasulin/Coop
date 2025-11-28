@@ -1,0 +1,63 @@
+version: '3.8'
+
+# ============================================================================
+# Banking ETL - Simplified Docker Compose for Testing
+# ============================================================================
+# This is a simplified version with only Spark (no Hive, no Airflow)
+# For quick testing of Spark jobs
+
+services:
+  # ==========================================================================
+  # Spark Master
+  # ==========================================================================
+  spark-master:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.spark
+    container_name: banking_etl_spark_master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_MASTER_HOST=spark-master
+      - SPARK_MASTER_PORT=7077
+      - SPARK_MASTER_WEBUI_PORT=8080
+    ports:
+      - "8083:8080"  # Spark Master Web UI
+      - "7077:7077"  # Spark Master Port
+    volumes:
+      - ./spark_jobs:/opt/spark/jobs
+      - ./utils:/opt/spark/utils
+      - ./Data:/opt/spark/data
+      - ./.env:/opt/.env
+    networks:
+      - banking_etl_network
+
+  # ==========================================================================
+  # Spark Worker
+  # ==========================================================================
+  spark-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.spark
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_MEMORY=4g
+    ports:
+      - "8082:8081"  # Spark Worker Web UI
+    volumes:
+      - ./spark_jobs:/opt/spark/jobs
+      - ./utils:/opt/spark/utils
+      - ./Data:/opt/spark/data
+      - ./.env:/opt/.env
+    networks:
+      - banking_etl_network
+    depends_on:
+      - spark-master
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  banking_etl_network:
+    driver: bridge

@@ -1,0 +1,52 @@
+# ============================================================================
+# Banking ETL - Spark Dockerfile
+# ============================================================================
+FROM apache/spark:3.5.0
+
+USER root
+
+# Install system dependencies and Python
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    postgresql-client \
+    vim \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt /tmp/requirements.txt
+RUN pip3 install --no-cache-dir -r /tmp/requirements.txt || echo "Some packages failed, continuing..."
+
+# Create directories
+RUN mkdir -p /opt/spark/jobs \
+    /opt/spark/utils \
+    /opt/spark/data \
+    /opt/spark/logs \
+    /opt/spark/work \
+    /opt/spark/conf
+
+# Copy Spark configuration
+COPY docker/spark-defaults.conf /opt/spark/conf/spark-defaults.conf
+
+# Set working directory
+WORKDIR /opt/spark
+
+# Set environment variables
+ENV PYTHONPATH="/opt/spark:/opt/spark/jobs:/opt/spark/utils:$PYTHONPATH"
+ENV SPARK_HOME=/opt/spark
+ENV PATH="$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH"
+
+# Expose ports
+# 7077: Spark Master Port
+# 8080: Spark Master Web UI
+# 8081: Spark Worker Web UI
+# 4040: Spark Application Web UI
+EXPOSE 7077 8080 8081 4040
+
+# Copy entrypoint script
+COPY docker/docker-entrypoint-spark.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint-spark.sh
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint-spark.sh"]

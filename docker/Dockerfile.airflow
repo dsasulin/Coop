@@ -1,0 +1,41 @@
+# ============================================================================
+# Banking ETL - Airflow Dockerfile
+# ============================================================================
+FROM apache/airflow:2.8.0-python3.11
+
+USER root
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    vim \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+USER airflow
+
+# Install Python dependencies
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt || echo "Some packages failed, continuing..."
+
+# Create directories
+RUN mkdir -p /opt/airflow/dags \
+    /opt/airflow/logs \
+    /opt/airflow/plugins \
+    /opt/airflow/spark_jobs \
+    /opt/airflow/utils
+
+# Set environment variables
+ENV PYTHONPATH="/opt/airflow:/opt/airflow/dags:/opt/airflow/utils:$PYTHONPATH"
+ENV AIRFLOW_HOME=/opt/airflow
+
+# Initialize Airflow database (will be run by docker-compose)
+# CMD airflow db init && airflow users create \
+#     --username admin \
+#     --password admin \
+#     --firstname Admin \
+#     --lastname User \
+#     --role Admin \
+#     --email admin@example.com
+
+WORKDIR /opt/airflow

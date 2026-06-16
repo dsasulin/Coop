@@ -2,6 +2,9 @@
 
 This project demonstrates a modern Data Lakehouse architecture using Cloudera Data Platform (CDP) on AWS for the banking domain.
 
+Last updated: 2026-06-16
+Time: 15:15:45 (UTC+04)
+
 ## Architecture
 
 The project implements **Medallion Architecture** (Bronze-Silver-Gold) for data management:

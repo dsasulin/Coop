@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T09:00:21.000Z"
+  },
+  "session_config": {
+    "sessions": [
+      {
+        "session_name": "s_transform_loans",
+        "mapping_name": "m_brz_to_slv_loans",
+        "sort_order": 0,
+        "is_partitioned": 0,
+        "is_recovery": 0
+      }
+    ],
+    "widget_instances": {
+      "s_transform_loans": [
+        {"instance_name": "SQ_BRZ_LOANS", "widget_type": 1, "partition_type": 0, "stage_id": 0, "pipeline_id": 0},
+        {"instance_name": "LKP_CONTRACTS", "widget_type": 7, "partition_type": 0, "stage_id": 0, "pipeline_id": 0},
+        {"instance_name": "EXP_CALC_METRICS", "widget_type": 5, "partition_type": 0, "stage_id": 0, "pipeline_id": 0},
+        {"instance_name": "EXP_CATEGORIZE", "widget_type": 5, "partition_type": 0, "stage_id": 0, "pipeline_id": 0},
+        {"instance_name": "FIL_VALID_LOANS", "widget_type": 8, "partition_type": 0, "stage_id": 0, "pipeline_id": 0},
+        {"instance_name": "TGT_SLV_LOANS", "widget_type": 2, "partition_type": 0, "stage_id": 0, "pipeline_id": 0}
+      ]
+    },
+    "connections": {
+      "s_transform_loans": [
+        {"connection_name": "CONN_HIVE_BRONZE", "connection_num": 1, "ref_object_id": 2, "ref_object_type": 73},
+        {"connection_name": "CONN_HIVE_SILVER", "connection_num": 2, "ref_object_id": 3, "ref_object_type": 73}
+      ]
+    }
+  },
+  "mapping_parameters": {
+    "mapping_name": "m_brz_to_slv_loans",
+    "total_parameters": 0,
+    "parameters": []
+  }
+}

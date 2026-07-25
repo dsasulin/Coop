@@ -1,0 +1,19 @@
+{
+  "export_metadata": {
+    "export_date": "2026-03-01T08:30:00.000Z",
+    "tool": "informatica-mcp-server",
+    "version": "2.1.0",
+    "output_path": "./export/ipc-full",
+    "export_completed": "2026-03-01T08:31:15.000Z",
+    "duration_seconds": "75.00"
+  },
+  "exported_objects": {
+    "folders": 1,
+    "mappings": 5,
+    "workflows": 5,
+    "sources": 5,
+    "targets": 5,
+    "connections": 2
+  },
+  "errors": []
+}

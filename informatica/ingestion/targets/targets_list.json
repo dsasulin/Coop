@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T08:30:15.000Z"
+  },
+  "targets": [
+    {"target_id": 301, "target_name": "bronze.clients", "db_type": "Hive", "subject_area": "COOP_INGESTION", "owner_name": "bronze"},
+    {"target_id": 302, "target_name": "bronze.products", "db_type": "Hive", "subject_area": "COOP_INGESTION", "owner_name": "bronze"},
+    {"target_id": 303, "target_name": "bronze.contracts", "db_type": "Hive", "subject_area": "COOP_INGESTION", "owner_name": "bronze"},
+    {"target_id": 304, "target_name": "bronze.accounts", "db_type": "Hive", "subject_area": "COOP_INGESTION", "owner_name": "bronze"},
+    {"target_id": 305, "target_name": "bronze.client_products", "db_type": "Hive", "subject_area": "COOP_INGESTION", "owner_name": "bronze"}
+  ]
+}

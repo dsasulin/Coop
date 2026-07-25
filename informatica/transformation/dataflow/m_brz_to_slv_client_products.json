@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T09:00:17.000Z"
+  },
+  "ports": {
+    "total_ports": 52,
+    "widgets": {
+      "SQ_BRZ_CLIENT_PRODUCTS": [
+        {"field_name": "RELATIONSHIP_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 2, "default_value": null},
+        {"field_name": "PRODUCT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "RELATIONSHIP_TYPE", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "START_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "END_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 6, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 7, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT/OUTPUT", "order": 8, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 9, "default_value": null}
+      ],
+      "LKP_PRODUCTS": [
+        {"field_name": "PRODUCT_ID_IN", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "PRODUCT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "LOOKUP", "order": 2, "default_value": null},
+        {"field_name": "PRODUCT_NAME", "datatype": 12, "precision": 200, "scale": 0, "port_type": "OUTPUT", "order": 3, "default_value": null}
+      ],
+      "EXP_NORMALIZE": [
+        {"field_name": "RELATIONSHIP_TYPE", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "RELATIONSHIP_TYPE_NORMALIZED", "datatype": 12, "precision": 50, "scale": 0, "port_type": "OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "IS_ACTIVE", "datatype": 12, "precision": 10, "scale": 0, "port_type": "OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "PROCESS_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "SOURCE_SYSTEM", "datatype": 12, "precision": 50, "scale": 0, "port_type": "OUTPUT", "order": 6, "default_value": null}
+      ],
+      "EXP_CALC_DURATION": [
+        {"field_name": "START_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "END_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "RELATIONSHIP_DURATION_DAYS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "OUTPUT", "order": 3, "default_value": null}
+      ],
+      "TGT_SLV_CLIENT_PRODUCTS": [
+        {"field_name": "RELATIONSHIP_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "PRODUCT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 3, "default_value": null},
+        {"field_name": "RELATIONSHIP_TYPE", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 4, "default_value": null},
+        {"field_name": "RELATIONSHIP_TYPE_NORMALIZED", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 5, "default_value": null},
+        {"field_name": "START_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 6, "default_value": null},
+        {"field_name": "END_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 7, "default_value": null},
+        {"field_name": "RELATIONSHIP_DURATION_DAYS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 8, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 9, "default_value": null},
+        {"field_name": "IS_ACTIVE", "datatype": 12, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 10, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT", "order": 11, "default_value": null},
+        {"field_name": "PROCESS_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT", "order": 12, "default_value": null},
+        {"field_name": "SOURCE_SYSTEM", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 13, "default_value": null}
+      ]
+    }
+  },
+  "linkage": {
+    "mapping_name": "m_brz_to_slv_client_products",
+    "total_links": 15,
+    "links": [
+      {"from": "SQ_BRZ_CLIENT_PRODUCTS.PRODUCT_ID", "to": "LKP_PRODUCTS.PRODUCT_ID_IN"},
+      {"from": "SQ_BRZ_CLIENT_PRODUCTS.RELATIONSHIP_TYPE", "to": "EXP_NORMALIZE.RELATIONSHIP_TYPE"},
+      {"from": "SQ_BRZ_CLIENT_PRODUCTS.STATUS", "to": "EXP_NORMALIZE.STATUS"},
+      {"from": "SQ_BRZ_CLIENT_PRODUCTS.START_DATE", "to": "EXP_CALC_DURATION.START_DATE"},
+      {"from": "SQ_BRZ_CLIENT_PRODUCTS.END_DATE", "to": "EXP_CALC_DURATION.END_DATE"},
+      {"from": "SQ_BRZ_CLIENT_PRODUCTS.RELATIONSHIP_ID", "to": "TGT_SLV_CLIENT_PRODUCTS.RELATIONSHIP_ID"},
+      {"from": "SQ_BRZ_CLIENT_PRODUCTS.CLIENT_ID", "to": "TGT_SLV_CLIENT_PRODUCTS.CLIENT_ID"},
+      {"from": "SQ_BRZ_CLIENT_PRODUCTS.PRODUCT_ID", "to": "TGT_SLV_CLIENT_PRODUCTS.PRODUCT_ID"},
+      {"from": "SQ_BRZ_CLIENT_PRODUCTS.RELATIONSHIP_TYPE", "to": "TGT_SLV_CLIENT_PRODUCTS.RELATIONSHIP_TYPE"},
+      {"from": "EXP_NORMALIZE.RELATIONSHIP_TYPE_NORMALIZED", "to": "TGT_SLV_CLIENT_PRODUCTS.RELATIONSHIP_TYPE_NORMALIZED"},
+      {"from": "SQ_BRZ_CLIENT_PRODUCTS.START_DATE", "to": "TGT_SLV_CLIENT_PRODUCTS.START_DATE"},
+      {"from": "SQ_BRZ_CLIENT_PRODUCTS.END_DATE", "to": "TGT_SLV_CLIENT_PRODUCTS.END_DATE"},
+      {"from": "EXP_CALC_DURATION.RELATIONSHIP_DURATION_DAYS", "to": "TGT_SLV_CLIENT_PRODUCTS.RELATIONSHIP_DURATION_DAYS"},
+      {"from": "SQ_BRZ_CLIENT_PRODUCTS.STATUS", "to": "TGT_SLV_CLIENT_PRODUCTS.STATUS"},
+      {"from": "EXP_NORMALIZE.IS_ACTIVE", "to": "TGT_SLV_CLIENT_PRODUCTS.IS_ACTIVE"}
+    ]
+  },
+  "attributes": {
+    "mapping_name": "m_brz_to_slv_client_products",
+    "total_attributes": 4,
+    "widgets": {
+      "LKP_PRODUCTS": [
+        {"attr_id": 1, "value": "SELECT PRODUCT_ID, PRODUCT_NAME FROM bronze.products", "line_no": 1}
+      ],
+      "EXP_NORMALIZE": [
+        {"attr_id": 1, "value": "UPPER(RELATIONSHIP_TYPE)", "line_no": 1},
+        {"attr_id": 2, "value": "IIF(UPPER(STATUS) = 'ACTIVE', TRUE, FALSE)", "line_no": 2}
+      ],
+      "EXP_CALC_DURATION": [
+        {"attr_id": 1, "value": "DATE_DIFF(IIF(ISNULL(END_DATE), SYSDATE, END_DATE), START_DATE, 'DD')", "line_no": 1}
+      ]
+    }
+  }
+}

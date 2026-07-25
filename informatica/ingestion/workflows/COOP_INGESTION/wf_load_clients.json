@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T08:30:20.000Z",
+    "folder": "COOP_INGESTION"
+  },
+  "workflow": {
+    "workflow_id": 1001,
+    "workflow_name": "wf_load_clients",
+    "versionnumber": 1,
+    "is_valid": 1,
+    "comments": "Load clients from Oracle source to bronze layer",
+    "folder_name": "COOP_INGESTION"
+  }
+}

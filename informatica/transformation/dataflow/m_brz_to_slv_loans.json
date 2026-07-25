@@ -1,0 +1,156 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T09:00:15.000Z"
+  },
+  "ports": {
+    "total_ports": 78,
+    "widgets": {
+      "SQ_BRZ_LOANS": [
+        {"field_name": "LOAN_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 1, "default_value": null},
+        {"field_name": "CONTRACT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 2, "default_value": null},
+        {"field_name": "LOAN_AMOUNT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "OUTSTANDING_BALANCE", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "INTEREST_RATE", "datatype": 2, "precision": 5, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "TERM_MONTHS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 6, "default_value": null},
+        {"field_name": "REMAINING_MONTHS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 7, "default_value": null},
+        {"field_name": "NEXT_PAYMENT_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 8, "default_value": null},
+        {"field_name": "NEXT_PAYMENT_AMOUNT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 9, "default_value": null},
+        {"field_name": "DELINQUENCY_STATUS", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 10, "default_value": null},
+        {"field_name": "COLLATERAL_VALUE", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 11, "default_value": null},
+        {"field_name": "LOAN_TO_VALUE_RATIO", "datatype": 2, "precision": 5, "scale": 4, "port_type": "INPUT/OUTPUT", "order": 12, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT/OUTPUT", "order": 13, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 14, "default_value": null}
+      ],
+      "LKP_CONTRACTS": [
+        {"field_name": "CONTRACT_ID_IN", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "CONTRACT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "LOOKUP", "order": 2, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "OUTPUT", "order": 3, "default_value": null}
+      ],
+      "EXP_CALC_METRICS": [
+        {"field_name": "LOAN_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "CONTRACT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "LOAN_AMOUNT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT", "order": 3, "default_value": null},
+        {"field_name": "OUTSTANDING_BALANCE", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT", "order": 4, "default_value": null},
+        {"field_name": "TERM_MONTHS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 5, "default_value": null},
+        {"field_name": "REMAINING_MONTHS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 6, "default_value": null},
+        {"field_name": "PAID_AMOUNT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "OUTPUT", "order": 7, "default_value": null},
+        {"field_name": "PAYMENT_PROGRESS", "datatype": 2, "precision": 5, "scale": 4, "port_type": "OUTPUT", "order": 8, "default_value": null},
+        {"field_name": "ELAPSED_MONTHS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "OUTPUT", "order": 9, "default_value": null}
+      ],
+      "EXP_CATEGORIZE": [
+        {"field_name": "DELINQUENCY_STATUS", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "LOAN_TO_VALUE_RATIO", "datatype": 2, "precision": 5, "scale": 4, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "DELINQUENCY_STATUS_NORMALIZED", "datatype": 12, "precision": 50, "scale": 0, "port_type": "OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "IS_DELINQUENT", "datatype": 12, "precision": 10, "scale": 0, "port_type": "OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "LTV_CATEGORY", "datatype": 12, "precision": 20, "scale": 0, "port_type": "OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "PROCESS_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "OUTPUT", "order": 6, "default_value": null},
+        {"field_name": "SOURCE_SYSTEM", "datatype": 12, "precision": 50, "scale": 0, "port_type": "OUTPUT", "order": 7, "default_value": null}
+      ],
+      "FIL_VALID_LOANS": [
+        {"field_name": "LOAN_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 1, "default_value": null},
+        {"field_name": "CONTRACT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 2, "default_value": null},
+        {"field_name": "LOAN_AMOUNT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "OUTSTANDING_BALANCE", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "PAID_AMOUNT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "PAYMENT_PROGRESS", "datatype": 2, "precision": 5, "scale": 4, "port_type": "INPUT/OUTPUT", "order": 6, "default_value": null},
+        {"field_name": "INTEREST_RATE", "datatype": 2, "precision": 5, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 7, "default_value": null},
+        {"field_name": "TERM_MONTHS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 8, "default_value": null},
+        {"field_name": "REMAINING_MONTHS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 9, "default_value": null},
+        {"field_name": "ELAPSED_MONTHS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 10, "default_value": null},
+        {"field_name": "NEXT_PAYMENT_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 11, "default_value": null},
+        {"field_name": "NEXT_PAYMENT_AMOUNT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 12, "default_value": null},
+        {"field_name": "DELINQUENCY_STATUS", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 13, "default_value": null},
+        {"field_name": "DELINQUENCY_STATUS_NORMALIZED", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 14, "default_value": null},
+        {"field_name": "IS_DELINQUENT", "datatype": 12, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 15, "default_value": null},
+        {"field_name": "COLLATERAL_VALUE", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 16, "default_value": null},
+        {"field_name": "LOAN_TO_VALUE_RATIO", "datatype": 2, "precision": 5, "scale": 4, "port_type": "INPUT/OUTPUT", "order": 17, "default_value": null},
+        {"field_name": "LTV_CATEGORY", "datatype": 12, "precision": 20, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 18, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT/OUTPUT", "order": 19, "default_value": null},
+        {"field_name": "PROCESS_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT/OUTPUT", "order": 20, "default_value": null},
+        {"field_name": "SOURCE_SYSTEM", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 21, "default_value": null}
+      ],
+      "TGT_SLV_LOANS": [
+        {"field_name": "LOAN_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "CONTRACT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "LOAN_AMOUNT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT", "order": 3, "default_value": null},
+        {"field_name": "OUTSTANDING_BALANCE", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT", "order": 4, "default_value": null},
+        {"field_name": "PAID_AMOUNT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT", "order": 5, "default_value": null},
+        {"field_name": "PAYMENT_PROGRESS", "datatype": 2, "precision": 5, "scale": 4, "port_type": "INPUT", "order": 6, "default_value": null},
+        {"field_name": "INTEREST_RATE", "datatype": 2, "precision": 5, "scale": 2, "port_type": "INPUT", "order": 7, "default_value": null},
+        {"field_name": "TERM_MONTHS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 8, "default_value": null},
+        {"field_name": "REMAINING_MONTHS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 9, "default_value": null},
+        {"field_name": "ELAPSED_MONTHS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 10, "default_value": null},
+        {"field_name": "NEXT_PAYMENT_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 11, "default_value": null},
+        {"field_name": "NEXT_PAYMENT_AMOUNT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT", "order": 12, "default_value": null},
+        {"field_name": "DELINQUENCY_STATUS", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 13, "default_value": null},
+        {"field_name": "DELINQUENCY_STATUS_NORMALIZED", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 14, "default_value": null},
+        {"field_name": "IS_DELINQUENT", "datatype": 12, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 15, "default_value": null},
+        {"field_name": "COLLATERAL_VALUE", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT", "order": 16, "default_value": null},
+        {"field_name": "LOAN_TO_VALUE_RATIO", "datatype": 2, "precision": 5, "scale": 4, "port_type": "INPUT", "order": 17, "default_value": null},
+        {"field_name": "LTV_CATEGORY", "datatype": 12, "precision": 20, "scale": 0, "port_type": "INPUT", "order": 18, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT", "order": 19, "default_value": null},
+        {"field_name": "PROCESS_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT", "order": 20, "default_value": null},
+        {"field_name": "SOURCE_SYSTEM", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 21, "default_value": null}
+      ]
+    }
+  },
+  "linkage": {
+    "mapping_name": "m_brz_to_slv_loans",
+    "total_links": 32,
+    "links": [
+      {"from": "SQ_BRZ_LOANS.CONTRACT_ID", "to": "LKP_CONTRACTS.CONTRACT_ID_IN"},
+      {"from": "SQ_BRZ_LOANS.LOAN_ID", "to": "EXP_CALC_METRICS.LOAN_ID"},
+      {"from": "SQ_BRZ_LOANS.CONTRACT_ID", "to": "EXP_CALC_METRICS.CONTRACT_ID"},
+      {"from": "SQ_BRZ_LOANS.LOAN_AMOUNT", "to": "EXP_CALC_METRICS.LOAN_AMOUNT"},
+      {"from": "SQ_BRZ_LOANS.OUTSTANDING_BALANCE", "to": "EXP_CALC_METRICS.OUTSTANDING_BALANCE"},
+      {"from": "SQ_BRZ_LOANS.TERM_MONTHS", "to": "EXP_CALC_METRICS.TERM_MONTHS"},
+      {"from": "SQ_BRZ_LOANS.REMAINING_MONTHS", "to": "EXP_CALC_METRICS.REMAINING_MONTHS"},
+      {"from": "SQ_BRZ_LOANS.DELINQUENCY_STATUS", "to": "EXP_CATEGORIZE.DELINQUENCY_STATUS"},
+      {"from": "SQ_BRZ_LOANS.LOAN_TO_VALUE_RATIO", "to": "EXP_CATEGORIZE.LOAN_TO_VALUE_RATIO"},
+      {"from": "EXP_CALC_METRICS.LOAN_ID", "to": "FIL_VALID_LOANS.LOAN_ID"},
+      {"from": "EXP_CALC_METRICS.CONTRACT_ID", "to": "FIL_VALID_LOANS.CONTRACT_ID"},
+      {"from": "EXP_CALC_METRICS.LOAN_AMOUNT", "to": "FIL_VALID_LOANS.LOAN_AMOUNT"},
+      {"from": "EXP_CALC_METRICS.OUTSTANDING_BALANCE", "to": "FIL_VALID_LOANS.OUTSTANDING_BALANCE"},
+      {"from": "EXP_CALC_METRICS.PAID_AMOUNT", "to": "FIL_VALID_LOANS.PAID_AMOUNT"},
+      {"from": "EXP_CALC_METRICS.PAYMENT_PROGRESS", "to": "FIL_VALID_LOANS.PAYMENT_PROGRESS"},
+      {"from": "EXP_CALC_METRICS.ELAPSED_MONTHS", "to": "FIL_VALID_LOANS.ELAPSED_MONTHS"},
+      {"from": "SQ_BRZ_LOANS.INTEREST_RATE", "to": "FIL_VALID_LOANS.INTEREST_RATE"},
+      {"from": "SQ_BRZ_LOANS.TERM_MONTHS", "to": "FIL_VALID_LOANS.TERM_MONTHS"},
+      {"from": "SQ_BRZ_LOANS.REMAINING_MONTHS", "to": "FIL_VALID_LOANS.REMAINING_MONTHS"},
+      {"from": "SQ_BRZ_LOANS.NEXT_PAYMENT_DATE", "to": "FIL_VALID_LOANS.NEXT_PAYMENT_DATE"},
+      {"from": "SQ_BRZ_LOANS.NEXT_PAYMENT_AMOUNT", "to": "FIL_VALID_LOANS.NEXT_PAYMENT_AMOUNT"},
+      {"from": "SQ_BRZ_LOANS.DELINQUENCY_STATUS", "to": "FIL_VALID_LOANS.DELINQUENCY_STATUS"},
+      {"from": "EXP_CATEGORIZE.DELINQUENCY_STATUS_NORMALIZED", "to": "FIL_VALID_LOANS.DELINQUENCY_STATUS_NORMALIZED"},
+      {"from": "EXP_CATEGORIZE.IS_DELINQUENT", "to": "FIL_VALID_LOANS.IS_DELINQUENT"},
+      {"from": "SQ_BRZ_LOANS.COLLATERAL_VALUE", "to": "FIL_VALID_LOANS.COLLATERAL_VALUE"},
+      {"from": "SQ_BRZ_LOANS.LOAN_TO_VALUE_RATIO", "to": "FIL_VALID_LOANS.LOAN_TO_VALUE_RATIO"},
+      {"from": "EXP_CATEGORIZE.LTV_CATEGORY", "to": "FIL_VALID_LOANS.LTV_CATEGORY"},
+      {"from": "SQ_BRZ_LOANS.LOAD_TIMESTAMP", "to": "FIL_VALID_LOANS.LOAD_TIMESTAMP"},
+      {"from": "EXP_CATEGORIZE.PROCESS_TIMESTAMP", "to": "FIL_VALID_LOANS.PROCESS_TIMESTAMP"},
+      {"from": "EXP_CATEGORIZE.SOURCE_SYSTEM", "to": "FIL_VALID_LOANS.SOURCE_SYSTEM"},
+      {"from": "FIL_VALID_LOANS.*", "to": "TGT_SLV_LOANS.*"}
+    ]
+  },
+  "attributes": {
+    "mapping_name": "m_brz_to_slv_loans",
+    "total_attributes": 8,
+    "widgets": {
+      "LKP_CONTRACTS": [
+        {"attr_id": 1, "value": "SELECT CONTRACT_ID, CLIENT_ID FROM bronze.contracts", "line_no": 1}
+      ],
+      "EXP_CALC_METRICS": [
+        {"attr_id": 1, "value": "LOAN_AMOUNT - OUTSTANDING_BALANCE", "line_no": 1},
+        {"attr_id": 2, "value": "IIF(LOAN_AMOUNT > 0, (LOAN_AMOUNT - OUTSTANDING_BALANCE) / LOAN_AMOUNT, 0)", "line_no": 2},
+        {"attr_id": 3, "value": "TERM_MONTHS - REMAINING_MONTHS", "line_no": 3}
+      ],
+      "EXP_CATEGORIZE": [
+        {"attr_id": 1, "value": "UPPER(DELINQUENCY_STATUS)", "line_no": 1},
+        {"attr_id": 2, "value": "IIF(DELINQUENCY_STATUS != 'CURRENT', TRUE, FALSE)", "line_no": 2},
+        {"attr_id": 3, "value": "IIF(LOAN_TO_VALUE_RATIO < 0.6, 'LOW', IIF(LOAN_TO_VALUE_RATIO < 0.8, 'MEDIUM', IIF(LOAN_TO_VALUE_RATIO < 0.95, 'HIGH', 'VERY_HIGH')))", "line_no": 3}
+      ],
+      "FIL_VALID_LOANS": [
+        {"attr_id": 1, "value": "NOT ISNULL(LOAN_ID) AND LOAN_AMOUNT > 0", "line_no": 1}
+      ]
+    }
+  }
+}

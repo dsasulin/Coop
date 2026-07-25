@@ -1,0 +1,112 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T09:00:16.000Z"
+  },
+  "ports": {
+    "total_ports": 72,
+    "widgets": {
+      "SQ_BRZ_CARDS": [
+        {"field_name": "CARD_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 2, "default_value": null},
+        {"field_name": "ACCOUNT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "CARD_NUMBER", "datatype": 12, "precision": 20, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "CARD_HOLDER_NAME", "datatype": 12, "precision": 200, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "EXPIRY_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 6, "default_value": null},
+        {"field_name": "CVV", "datatype": 12, "precision": 4, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 7, "default_value": null},
+        {"field_name": "CARD_TYPE", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 8, "default_value": null},
+        {"field_name": "CARD_LEVEL", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 9, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 10, "default_value": null},
+        {"field_name": "ISSUE_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 11, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT/OUTPUT", "order": 12, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 13, "default_value": null}
+      ],
+      "LKP_CLIENTS": [
+        {"field_name": "CLIENT_ID_IN", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "LOOKUP", "order": 2, "default_value": null}
+      ],
+      "EXP_MASK_CARD": [
+        {"field_name": "CARD_NUMBER", "datatype": 12, "precision": 20, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "CARD_NUMBER_MASKED", "datatype": 12, "precision": 20, "scale": 0, "port_type": "OUTPUT", "order": 2, "default_value": null}
+      ],
+      "EXP_CALC_EXPIRY": [
+        {"field_name": "ISSUE_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "EXPIRY_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "CARD_AGE_DAYS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "IS_EXPIRED", "datatype": 12, "precision": 10, "scale": 0, "port_type": "OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "DAYS_TO_EXPIRY", "datatype": 4, "precision": 10, "scale": 0, "port_type": "OUTPUT", "order": 5, "default_value": null}
+      ],
+      "EXP_NORMALIZE": [
+        {"field_name": "CARD_TYPE", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "CARD_TYPE_NORMALIZED", "datatype": 12, "precision": 30, "scale": 0, "port_type": "OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "STATUS_NORMALIZED", "datatype": 12, "precision": 30, "scale": 0, "port_type": "OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "PROCESS_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "SOURCE_SYSTEM", "datatype": 12, "precision": 50, "scale": 0, "port_type": "OUTPUT", "order": 6, "default_value": null}
+      ],
+      "TGT_SLV_CARDS": [
+        {"field_name": "CARD_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "ACCOUNT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 3, "default_value": null},
+        {"field_name": "CARD_NUMBER_MASKED", "datatype": 12, "precision": 20, "scale": 0, "port_type": "INPUT", "order": 4, "default_value": null},
+        {"field_name": "CARD_HOLDER_NAME", "datatype": 12, "precision": 200, "scale": 0, "port_type": "INPUT", "order": 5, "default_value": null},
+        {"field_name": "EXPIRY_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 6, "default_value": null},
+        {"field_name": "CARD_TYPE", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 7, "default_value": null},
+        {"field_name": "CARD_TYPE_NORMALIZED", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 8, "default_value": null},
+        {"field_name": "CARD_LEVEL", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 9, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 10, "default_value": null},
+        {"field_name": "STATUS_NORMALIZED", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 11, "default_value": null},
+        {"field_name": "ISSUE_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 12, "default_value": null},
+        {"field_name": "CARD_AGE_DAYS", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 13, "default_value": null},
+        {"field_name": "IS_EXPIRED", "datatype": 12, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 14, "default_value": null},
+        {"field_name": "DAYS_TO_EXPIRY", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 15, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT", "order": 16, "default_value": null},
+        {"field_name": "PROCESS_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT", "order": 17, "default_value": null},
+        {"field_name": "SOURCE_SYSTEM", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 18, "default_value": null}
+      ]
+    }
+  },
+  "linkage": {
+    "mapping_name": "m_brz_to_slv_cards",
+    "total_links": 18,
+    "links": [
+      {"from": "SQ_BRZ_CARDS.CLIENT_ID", "to": "LKP_CLIENTS.CLIENT_ID_IN"},
+      {"from": "SQ_BRZ_CARDS.CARD_NUMBER", "to": "EXP_MASK_CARD.CARD_NUMBER"},
+      {"from": "SQ_BRZ_CARDS.ISSUE_DATE", "to": "EXP_CALC_EXPIRY.ISSUE_DATE"},
+      {"from": "SQ_BRZ_CARDS.EXPIRY_DATE", "to": "EXP_CALC_EXPIRY.EXPIRY_DATE"},
+      {"from": "SQ_BRZ_CARDS.CARD_TYPE", "to": "EXP_NORMALIZE.CARD_TYPE"},
+      {"from": "SQ_BRZ_CARDS.STATUS", "to": "EXP_NORMALIZE.STATUS"},
+      {"from": "SQ_BRZ_CARDS.CARD_ID", "to": "TGT_SLV_CARDS.CARD_ID"},
+      {"from": "SQ_BRZ_CARDS.CLIENT_ID", "to": "TGT_SLV_CARDS.CLIENT_ID"},
+      {"from": "SQ_BRZ_CARDS.ACCOUNT_ID", "to": "TGT_SLV_CARDS.ACCOUNT_ID"},
+      {"from": "EXP_MASK_CARD.CARD_NUMBER_MASKED", "to": "TGT_SLV_CARDS.CARD_NUMBER_MASKED"},
+      {"from": "SQ_BRZ_CARDS.CARD_HOLDER_NAME", "to": "TGT_SLV_CARDS.CARD_HOLDER_NAME"},
+      {"from": "SQ_BRZ_CARDS.EXPIRY_DATE", "to": "TGT_SLV_CARDS.EXPIRY_DATE"},
+      {"from": "SQ_BRZ_CARDS.CARD_TYPE", "to": "TGT_SLV_CARDS.CARD_TYPE"},
+      {"from": "EXP_NORMALIZE.CARD_TYPE_NORMALIZED", "to": "TGT_SLV_CARDS.CARD_TYPE_NORMALIZED"},
+      {"from": "SQ_BRZ_CARDS.CARD_LEVEL", "to": "TGT_SLV_CARDS.CARD_LEVEL"},
+      {"from": "SQ_BRZ_CARDS.STATUS", "to": "TGT_SLV_CARDS.STATUS"},
+      {"from": "EXP_NORMALIZE.STATUS_NORMALIZED", "to": "TGT_SLV_CARDS.STATUS_NORMALIZED"},
+      {"from": "SQ_BRZ_CARDS.ISSUE_DATE", "to": "TGT_SLV_CARDS.ISSUE_DATE"}
+    ]
+  },
+  "attributes": {
+    "mapping_name": "m_brz_to_slv_cards",
+    "total_attributes": 6,
+    "widgets": {
+      "LKP_CLIENTS": [
+        {"attr_id": 1, "value": "SELECT CLIENT_ID FROM bronze.clients", "line_no": 1}
+      ],
+      "EXP_MASK_CARD": [
+        {"attr_id": 1, "value": "CONCAT('****-****-****-', SUBSTR(CARD_NUMBER, LENGTH(CARD_NUMBER)-3, 4))", "line_no": 1}
+      ],
+      "EXP_CALC_EXPIRY": [
+        {"attr_id": 1, "value": "DATE_DIFF(SYSDATE, ISSUE_DATE, 'DD')", "line_no": 1},
+        {"attr_id": 2, "value": "IIF(EXPIRY_DATE < SYSDATE, TRUE, FALSE)", "line_no": 2},
+        {"attr_id": 3, "value": "DATE_DIFF(EXPIRY_DATE, SYSDATE, 'DD')", "line_no": 3}
+      ],
+      "EXP_NORMALIZE": [
+        {"attr_id": 1, "value": "UPPER(CARD_TYPE)", "line_no": 1}
+      ]
+    }
+  }
+}

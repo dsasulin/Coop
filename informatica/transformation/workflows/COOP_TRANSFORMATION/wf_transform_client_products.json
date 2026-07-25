@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T09:00:20.000Z",
+    "folder": "COOP_TRANSFORMATION"
+  },
+  "workflow": {
+    "workflow_id": 2003,
+    "workflow_name": "wf_transform_client_products",
+    "versionnumber": 1,
+    "is_valid": 1,
+    "comments": "Transform client-product relationships from bronze to silver with normalization",
+    "folder_name": "COOP_TRANSFORMATION"
+  }
+}

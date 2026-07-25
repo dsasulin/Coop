@@ -34,6 +34,25 @@ The project implements **Medallion Architecture** (Bronze-Silver-Gold) for data 
 3. **Silver** - Cleaned data with business rules applied and validation
 4. **Gold** - Aggregated data, dimensions, facts, analytical data marts
 
+## Status and limitations
+
+What actually runs today:
+- The pure-SQL medallion pipeline (`SQL/01_Load_Stage_to_Bronze.sql` → `02_Load_Bronze_to_Silver.sql` → `03_Load_Silver_to_Gold.sql`).
+- Data quality checks on the silver layer.
+- Unit tests for the shared code in `utils/` (pytest).
+
+What is demo, mock, or not runnable out of the box:
+- The orchestrated Spark chain does not pass end-to-end. Known issues include an ImportError on `case` in `03_silver_to_gold.py`, a schema break between the 02 and 03 stages, and a missing PARTITION clause in `05_gold_aggregations.py`.
+- The `informatica/` assets are JSON mocks, not executable.
+- The Kafka streaming job (`spark_jobs/00_kafka_to_bronze.py`) has no broker provisioned by the docker-compose files.
+- ML, security, and audit are not implemented (no code).
+- `Spark/` and `Airflow/dags/` are deprecated duplicates. `Airflow/dags/banking_etl_pipeline.py` declares the same `dag_id='banking_etl_pipeline'` as the active DAG, causing a dag_id collision, and references non-existent unnumbered Spark files.
+
+Data caveats:
+- Data generation is not reproducible (Faker is not seeded).
+- `accounts.branch_code` (BR100-BR999) does not intersect `branches.branch_code` (BR001-BR050), so that join yields nothing.
+- `accounts_bad_quality.csv` is empty (header only) due to a generator bug; bad-quality data covers only 3 of 12 tables.
+
 ## Project Structure
 
 ```
@@ -45,17 +64,33 @@ Coop/
 │   ├── 02_Create_Silver_Layer.sql     # Silver layer DDL
 │   └── 03_Create_Gold_Layer.sql       # Gold layer DDL (Star Schema)
 │
-├── spark_jobs/                         # Production PySpark ETL jobs ✅
-│   ├── 01_stage_to_bronze.py          # Stage → Bronze (12 tables)
+├── spark_jobs/                         # PySpark ETL jobs (7 files)
+│   ├── 00_kafka_to_bronze.py          # Structured Streaming: Kafka → Bronze
+│   ├── 01_stage_to_bronze.py          # Stage → Bronze
+│   ├── 01_stage_to_bronze_refactored.py  # Refactored Stage → Bronze
 │   ├── 02_bronze_to_silver.py         # Bronze → Silver (cleaning, DQ scoring)
-│   └── 03_silver_to_gold.py           # Silver → Gold (5 dims, 2 facts, 3 aggregates)
+│   ├── 03_silver_to_gold.py           # Silver → Gold (4 dims, 3 facts, 3 aggregates)
+│   ├── 04_spark_csv_ingestion.py      # CSV ingestion job
+│   └── 05_gold_aggregations.py        # Additional gold aggregations
 │
-├── airflow_dags/                       # Airflow orchestration ✅
-│   └── banking_etl_pipeline.py        # Complete ETL pipeline DAG
+├── airflow_dags/                       # Airflow orchestration (3 DAGs)
+│   ├── banking_etl_pipeline.py        # Main ETL DAG (schedule @once)
+│   ├── api_ingestion_pipeline.py      # API ingestion DAG (every 6h, fetch tasks are print stubs)
+│   └── kafka_streaming_monitor.py     # Kafka monitor DAG (every 15 min)
 │
-├── deploy_etl.sh                       # Automated deployment script ✅
-├── DEPLOYMENT_GUIDE.md                 # Deployment documentation ✅
-├── SPARK_AIRFLOW_SUMMARY.md            # Spark & Airflow summary ✅
+├── SQL/                                # SQL scripts for manual execution
+│   ├── 01_Load_Stage_to_Bronze.sql    # Manual load: Stage → Bronze
+│   ├── 02_Load_Bronze_to_Silver.sql   # Manual load: Bronze → Silver
+│   ├── 03_Load_Silver_to_Gold.sql     # Manual load: Silver → Gold
+│   ├── Analyse_Queries.sql            # Sample analytical queries
+│   ├── procedures/                    # Stored procedures (13 files)
+│   └── views/                         # SQL views (15 files)
+│
+├── informatica/                        # Informatica JSON mocks (28 files, not runnable)
+├── config/                             # Configuration files
+├── docker/                             # Docker images and helper files
+├── tests/                              # Unit tests (pytest)
+├── utils/                              # Shared Python utilities
 │
 ├── Data/                               # Test data
 │   ├── clients.csv                    # Clients
@@ -72,22 +107,27 @@ Coop/
 │   └── quality_test/                  # Data with quality issues
 │       ├── clients_bad_quality.csv
 │       ├── transactions_bad_quality.csv
-│       └── accounts_bad_quality.csv
+│       └── accounts_bad_quality.csv    # Empty (header only) due to a generator bug
 │
 ├── Generator/                          # Data generation utilities
 │   ├── generate_banking_data.py       # Test data generator
 │   └── generate_bad_quality_data.py   # Bad quality data generator
 │
-├── SQL/                                # SQL scripts for manual execution
-│   ├── 01_Load_Stage_to_Bronze.sql    # Manual load: Stage → Bronze
-│   ├── 02_Load_Bronze_to_Silver.sql   # Manual load: Bronze → Silver
-│   ├── 03_Load_Silver_to_Gold.sql     # Manual load: Silver → Gold
-│   └── Analyse_Queries.sql            # Sample analytical queries
+├── Spark/                              # DEPRECATED duplicate of spark_jobs/
+├── Airflow/                            # DEPRECATED duplicate of airflow_dags/
+│
+├── docker-compose.yml                  # Docker Compose stack
+├── docker-compose.simple.yml           # Minimal Docker Compose stack
+├── Makefile                            # Build and run targets
+├── pytest.ini                          # Pytest configuration
+├── FINAL_REPORT.md                     # Project report
+├── REFACTORING_SUMMARY.md              # Refactoring summary
+├── SPARK_AIRFLOW_SUMMARY.md            # Spark & Airflow summary
 │
 └── README.md                           # This file
 ```
 
-**Note:** Use `spark_jobs/` for production automation and `SQL/` scripts for manual execution in Hue.
+**Note:** Use `spark_jobs/` for production automation and `SQL/` scripts for manual execution in Hue. `Spark/` and `Airflow/dags/` are deprecated duplicates; do not use them.
 
 ## Data Model
 
@@ -153,20 +193,20 @@ The Gold layer implements a **Star Schema** optimized for analytical queries and
 │  (Clients)  ├─────►│                 │◄──┤ (Products)  │
 └─────────────┘      │ • fact_trans    │   └─────────────┘
                      │ • fact_balance  │
-┌─────────────┐      │                 │   ┌─────────────┐
-│ dim_branch  ├─────►│                 │◄──┤ dim_account │
-│ (Branches)  │      └─────────────────┘   │ (Accounts)  │
-└─────────────┘                            └─────────────┘
+┌─────────────┐      │ • fact_loan     │
+│ dim_branch  ├─────►│                 │
+│ (Branches)  │      └─────────────────┘
+└─────────────┘
        │
        │          ┌─────────────────────────────────┐
        └─────────►│     AGGREGATE TABLES            │
-                  │ • client_summary                │
-                  │ • product_performance           │
-                  │ • branch_performance            │
+                  │ • client_360_view               │
+                  │ • product_performance_summary   │
+                  │ • branch_performance_dashboard  │
                   └─────────────────────────────────┘
 ```
 
-### Dimension Tables (5)
+### Dimension Tables (4)
 
 #### 1. **dim_client** - Client Dimension (Client 360° View)
 
@@ -235,22 +275,6 @@ Time dimension for temporal analysis.
 - `is_weekend`, `is_holiday`, `holiday_name`
 
 **Usage:** Enables time-based analysis (daily, weekly, monthly, quarterly, yearly trends)
-
----
-
-#### 5. **dim_account** - Account Dimension
-
-Bank accounts with relationship to clients, products, and branches.
-
-**Key Fields:**
-- `account_key` (PK) - Surrogate key
-- `account_id` - Business key
-- `account_number`, `account_type`, `account_status`
-- Foreign Keys: `client_id`, `product_id`, `branch_id`
-- Financial: `current_balance`, `overdraft_limit`, `interest_rate`, `currency`
-- Metrics: `account_age_years`, `total_transactions`, `total_cards`
-- `opening_date`
-- SCD Type 2 Support: `effective_date`, `end_date`, `is_current`
 
 ---
 
@@ -348,9 +372,11 @@ Daily loan performance metrics and risk indicators.
 
 ---
 
-### Aggregate Tables (6)
+### Aggregate Tables (5)
 
 Wide pre-aggregated tables for dashboards and reporting. All are **partitioned** for performance.
+
+**Note:** The DDL defines 12 gold tables (4 dimensions, 3 facts, 5 aggregates). The Spark jobs currently populate 10 of the 12. `financial_kpi_summary` and `data_quality_dashboard` are defined in DDL but not yet filled by the Spark jobs.
 
 #### 1. **client_360_view** - Complete Client Profile
 
@@ -486,7 +512,6 @@ Fact/Aggregate Tables connect to Dimensions via Foreign Keys:
 
 fact_transactions_daily             fact_account_balance_daily
 ├─ client_id     → dim_client      ├─ client_id     → dim_client
-├─ account_id    → dim_account     ├─ account_id    → dim_account
 └─ branch_code   → dim_branch      └─ branch_code   → dim_branch
 
 fact_loan_performance               client_360_view
@@ -644,8 +669,7 @@ silver.products        ──────► dim_product
 silver.branches        ──────► dim_branch
                                 branch_performance_dashboard
 
-silver.accounts        ──────► dim_account
-                                fact_account_balance_daily
+silver.accounts        ──────► fact_account_balance_daily
 
 silver.transactions    ──────► dim_date (distinct dates)
                                 fact_transactions_daily
@@ -706,8 +730,9 @@ ALTER TABLE gold.fact_transactions_daily CONCATENATE;
 - **Apache Hive** - Data warehouse, metadata
 - **Apache Spark** - Data processing (ETL)
 - **Apache Airflow** - Pipeline orchestration
+- **Apache Kafka** - Streaming source (used by `spark_jobs/00_kafka_to_bronze.py`)
 - **Hue** - Web UI for data work
-- **Apache NiFi** - Data Flow (optional)
+- **Informatica** - Mock JSON assets in `informatica/` (not executable)
 - **AWS S3** - Object storage
 - **Python** - Programming language for ETL
 
@@ -1003,7 +1028,7 @@ GROUP BY transaction_year, transaction_month;
 ## FAQ
 
 **Q: How often does ETL run?**
-A: By default, daily at 2:00 UTC. Configurable in Airflow DAG.
+A: The current `airflow_dags/banking_etl_pipeline.py` is set to `@once` (runs a single time when enabled). The `0 2 * * *` daily-at-2:00-UTC schedule only exists in the deprecated `Airflow/dags/` version of the DAG.
 
 **Q: How long is historical data stored?**
 A: In the current version, all data is stored indefinitely. Retention policy can be configured via HDFS.
@@ -1015,7 +1040,7 @@ A: Via Cloudera Manager → Ranger → Policies
 A: All layers preserve load timestamp, can restore from bronze or previous partitions.
 
 **Q: Is real-time processing supported?**
-A: Current version has batch processing. For real-time, can add Kafka + Spark Streaming.
+A: A Kafka Structured Streaming job already exists in code (`spark_jobs/00_kafka_to_bronze.py`), but neither `docker-compose.yml` nor `docker-compose.simple.yml` provisions a Kafka broker, so it is not runnable out of the box. The pipeline that actually runs is batch.
 
 ## License
 

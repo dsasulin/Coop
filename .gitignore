@@ -4,6 +4,13 @@
 *.swo
 *~
 
+# Local tooling / machine-specific config
+.mcp.json
+
+# Sensitive: real cluster config dump and filled infra values (do not publish)
+config/current.txt
+config/environment_config.filled.yaml
+
 # Environment Variables
 .env
 .env.local

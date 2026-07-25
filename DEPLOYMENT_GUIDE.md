@@ -99,7 +99,7 @@ export S3_BUCKET="co-op-buk-39d7d9df"
 
 | File | Purpose | Schedule | Dependencies |
 |------|---------|----------|--------------|
-| `banking_etl_pipeline.py` | Orchestrates all 3 Spark jobs | `@once` (manual) | All Spark jobs |
+| `banking_etl_pipeline.py` | Orchestrates 4 Spark jobs (01, 02, 03, 05) plus Informatica `pmcmd` workflows and SQL stored procedures | `@once` (manual) | All Spark jobs |
 
 ### Deployment Scripts
 
@@ -117,7 +117,7 @@ export S3_BUCKET="co-op-buk-39d7d9df"
 Edit each Spark job and update these values:
 
 ```python
-# In all 3 Spark jobs (01, 02, 03):
+# In the orchestrated Spark jobs (01, 02, 03, 05) - these values are hardcoded per job:
 
 # Metastore URI (already set)
 .config("hive.metastore.uris", "thrift://metastore-service.warehouse-1761913838-c49g.svc.cluster.local:9083")
@@ -133,21 +133,21 @@ Edit each Spark job and update these values:
 Edit `airflow_dags/banking_etl_pipeline.py`:
 
 ```python
-# Line 29-32: Update email addresses
+# Line 46: Update email address
 default_args = {
     'owner': 'data_engineering',
     'email': ['YOUR_EMAIL@company.com'],  # ⚠️ UPDATE THIS
     ...
 }
 
-# Line 39: Update schedule (optional)
+# Line 59: Update schedule (optional)
 schedule_interval='@once',  # Change to '0 2 * * *' for daily at 2 AM
 
-# Line 53-60: Update paths
+# Lines 71-72: Update paths
 SPARK_JOBS_DIR = "/opt/spark_jobs"  # ⚠️ UPDATE if different
 SPARK_SUBMIT = "spark-submit"
 
-# Line 63-67: Update Kubernetes config (if needed)
+# Lines 75-78: Update Kubernetes config (if needed)
 SPARK_MASTER = "k8s://https://kubernetes.default.svc.cluster.local:443"
 SPARK_CONTAINER_IMAGE = "cloudera/spark:latest"  # ⚠️ Verify image name
 SPARK_NAMESPACE = "warehouse-1761913838-c49g"  # ✅ Should be correct
@@ -158,11 +158,11 @@ SPARK_NAMESPACE = "warehouse-1761913838-c49g"  # ✅ Should be correct
 Edit `deploy_etl.sh`:
 
 ```bash
-# Line 21-22: Update destination paths
+# Lines 24-25: Update destination paths
 SPARK_JOBS_DEST="/opt/spark_jobs"      # ⚠️ UPDATE if different
 AIRFLOW_DAGS_DEST="/opt/airflow/dags"  # ⚠️ UPDATE if different
 
-# Line 31: For remote deployment
+# Line 35: For remote deployment
 REMOTE_SERVER=""  # e.g., "user001@cdp-server.company.com"
 REMOTE_PORT="22"
 ```
@@ -222,7 +222,7 @@ If you're deploying from your local machine to a remote server:
 
 ```bash
 # 1. Configure remote server in deploy_etl.sh
-# Edit line 31: REMOTE_SERVER="user001@cdp-server.company.com"
+# Edit line 35: REMOTE_SERVER="user001@cdp-server.company.com"
 
 # 2. Run remote deployment
 ./deploy_etl.sh remote
@@ -546,18 +546,24 @@ pull access denied for cloudera/spark
 
 ## Rollback Procedures
 
-### Automatic Rollback
+### Automatic Rollback (currently NOT functional)
 
-If you used the deployment script, backups were created automatically:
+The deployment script creates a timestamped backup on every run, but the
+`./deploy_etl.sh rollback` command does not work as written. `BACKUP_DIR` is
+recomputed with a fresh `$(date +%Y%m%d_%H%M%S)` timestamp each time the script
+runs, so a rollback invocation looks for a backup directory named with the
+current time, which never matches the directory created during the earlier
+deploy. The rollback therefore fails with "Backup directory not found". Until
+this is fixed, use the Manual Rollback steps below and restore from the actual
+timestamped backup directory under `/opt/backups/`.
 
 ```bash
-# Check backup location
+# Check backup location (backups are created, even though the automatic
+# rollback command cannot locate them)
 ls -la /opt/backups/etl_*/
 
-# Rollback to previous version
-./deploy_etl.sh rollback
-
-# This will restore files from the latest backup
+# Do NOT rely on this - it will not find the previous backup:
+# ./deploy_etl.sh rollback
 ```
 
 ### Manual Rollback

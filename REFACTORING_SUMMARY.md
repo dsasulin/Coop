@@ -121,16 +121,16 @@ load_table_generic(
 
 ---
 
-### 5. Unit Tests (Coverage > 70%) ✅
+### 5. Unit Tests (Coverage 65.27%, below the 70% gate) ⚠️
 
 #### Test Structure
 ```
 tests/
 ├── conftest.py              # Pytest configuration & fixtures
 ├── unit/
-│   ├── test_config.py       # Config tests (12 tests)
-│   ├── test_retry.py        # Retry logic tests (15 tests)
-│   ├── test_error_handler.py # Error handling tests (10 tests)
+│   ├── test_config.py       # Config tests (9 tests)
+│   ├── test_retry.py        # Retry logic tests (13 tests)
+│   ├── test_error_handler.py # Error handling tests (15 tests)
 │   └── test_spark_utils.py  # Spark utilities tests (8 tests)
 └── integration/
     └── (future integration tests)
@@ -145,8 +145,8 @@ make test
 make test-coverage
 
 # Expected output:
-# ✅ 45+ tests passing
-# ✅ Coverage: >70%
+# 45 tests passing
+# Coverage: 65.27% (below the 70% gate in pytest.ini, so the run fails the gate)
 ```
 
 **Files Created:**
@@ -201,7 +201,7 @@ make etl-full
 |--------|--------|-------|-------------|
 | **Code Duplication** | ~30% | ~5% | ✅ 83% reduction |
 | **Lines of Code** | 2,584 | ~3,200 | +616 (utilities & tests) |
-| **Test Coverage** | 0% | >70% | ✅ From scratch |
+| **Test Coverage** | 0% | 65.27% (below 70% gate) | ⚠️ utils/ only |
 | **Hardcoded Credentials** | Yes | No | ✅ Eliminated |
 | **Error Handling** | Basic | Comprehensive | ✅ Improved |
 | **Retry Logic** | None | Exponential backoff | ✅ Added |
@@ -363,7 +363,7 @@ make docker-down
 
 ### 1. Unit Tests
 ```bash
-cd /Users/dsasulin/Documents/GitHub/Coop
+cd /Users/dsasulin/Developer/GitHub/Coop
 
 # Install dependencies
 pip install -r requirements.txt
@@ -494,7 +494,7 @@ The refactoring successfully addresses all critical issues identified in the cod
 - **Security:** ✅ No hardcoded credentials
 - **Reliability:** ✅ Error handling & retry logic
 - **Maintainability:** ✅ Reduced code duplication
-- **Testing:** ✅ >70% test coverage
+- **Testing:** ⚠️ 65.27% coverage (utils/ only, below the 70% gate)
 - **Operations:** ✅ Docker infrastructure
 
 **Production Readiness:** Improved from 4/10 to 8/10

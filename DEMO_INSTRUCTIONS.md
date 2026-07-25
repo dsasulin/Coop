@@ -27,6 +27,8 @@ LIMIT 10;
 
 ## 2. Job Scheduling - Batch, Streaming, and Event-Driven
 
+> Note: Only the batch DAG `banking_etl_pipeline` is real. The `banking_etl_incremental` DAG and any `Airflow/dags/` paths shown here are broken/deprecated (an older duplicate DAG with a dag_id collision that references non-existent spark files). Event-driven scheduling is not implemented and no Kafka broker is provisioned; a Kafka streaming job exists at `spark_jobs/00_kafka_to_bronze.py` but is not wired to event triggers.
+
 **Demo Instructions:**
 Open Airflow UI and show the `banking_etl_pipeline` DAG which runs daily batch processing at 2:00 UTC. Show the `banking_etl_incremental` DAG that runs hourly for near-real-time updates. Explain how CDE Jobs can be triggered via API calls or file arrival events using Airflow sensors.
 
@@ -63,6 +65,8 @@ with DAG('banking_event_driven') as dag:
 
 ## 3. MPP SQL Engine - Metadata Caching
 
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only).
+
 **Demo Instructions:**
 In Hue, demonstrate Hive's metadata caching by running `ANALYZE TABLE` commands to collect statistics, then execute the same query twice showing improved performance on the second run. Show cached partition metadata using `SHOW PARTITIONS` and explain how Hive Metastore stores this information for query optimization.
 
@@ -95,6 +99,8 @@ DESCRIBE EXTENDED transactions;
 
 ## 4. Distributed File System - Scalable Storage
 
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only).
+
 **Demo Instructions:**
 Show how data is stored in HDFS/S3 using Parquet format with partitioning strategy for scalability and fault tolerance. Navigate through Hue File Browser to show directory structure: `/warehouse/bronze.db/transactions/year=2025/month=01/`. Demonstrate that multiple concurrent Spark jobs can read/write to the same partitions without conflicts, showcasing the distributed nature of the storage.
 
@@ -117,6 +123,8 @@ hdfs dfs -stat "%r" /user/hive/warehouse/silver.db/transactions/year=2025/month=
 ---
 
 ## 5. Data Profiling at Ingestion and Transformation
+
+> Note: Data-quality profiling in this repo runs on the silver layer only. Also, `accounts_bad_quality.csv` is currently empty (header only, no data rows) due to a generator bug, so the accounts portion of this demo shows no rows. The clients and transactions bad-quality files do contain data.
 
 **Demo Instructions:**
 Run the data profiling query from `SQL/Analyse_Queries.sql` (Data Quality Check section) to show missing values, duplicates, outliers, and inconsistent formats across bronze and silver layers. Highlight how the `bronze_to_silver.py` job calculates dq_score for each record, identifying issues at transformation time. Load the bad quality test data from `Data/quality_test/` and show profiling results with detailed issue breakdown.
@@ -237,6 +245,8 @@ transactions:
 
 ## 7. Governance Policies - Retention, Archival, and Purging
 
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only). The `Airflow/dags/` paths referenced here are broken/deprecated.
+
 **Demo Instructions:**
 Show Hive table properties and partition retention policies. Demonstrate how old partitions can be automatically dropped using Airflow DAG with retention policy logic. Explain Cloudera Manager's data lifecycle policies for archiving data to cheaper storage tiers after a certain period.
 
@@ -339,6 +349,8 @@ with DAG(
 
 ## 8. Centralized Audit Framework - Access History and Reporting
 
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only).
+
 **Demo Instructions:**
 Open Cloudera Manager and navigate to Audits section to show centralized audit logs capturing all access events across Hive, Spark, HDFS, and other services. Demonstrate filtering by user, service, operation type, and time range. Show sample audit report with information about who accessed which tables, when, and what operations were performed.
 
@@ -390,11 +402,15 @@ LIMIT 100;
 
 ## 9. MPP SQL Engine - Metadata Caching (Duplicate of #3)
 
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only).
+
 See instruction #3 above for complete demonstration.
 
 ---
 
 ## 10. Enriched Audit Information with Centralized Reporting
+
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only). The `Scripts/generate_audit_report.py` file referenced here does not exist in this repo.
 
 **Demo Instructions:**
 Show Cloudera Manager's audit dashboard with enriched information including user details from LDAP, query execution times, data volumes accessed, and resource consumption metrics. Demonstrate custom audit reports that correlate activities across multiple services (Hive query -> HDFS reads -> Spark job execution). Export audit data to show compliance reporting capabilities.
@@ -534,6 +550,8 @@ if __name__ == "__main__":
 ---
 
 ## 11. Machine Learning and AI Integration
+
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only). The `ML/fraud_detection_model.py` file referenced here does not exist in this repo.
 
 **Demo Instructions:**
 Create a simple fraud detection model using Spark MLlib trained on transaction data, showing distributed ML training capabilities. Set up MLflow for experiment tracking and model versioning. Demonstrate the entire ML pipeline: data preparation from silver layer, feature engineering, model training with hyperparameter tuning, model evaluation, and model registration in MLflow registry.
@@ -846,6 +864,8 @@ WHERE is_suspicious = TRUE;
 
 ## 12. Heterogeneous Storage Solutions
 
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only).
+
 **Demo Instructions:**
 Show how the platform uses Parquet files (columnar store) for analytical workloads in Hive tables, stored on HDFS/S3. Demonstrate the ability to create external tables pointing to different storage formats (JSON, CSV, Avro, ORC). Explain Cloudera's integration capabilities with NoSQL databases like HBase, document stores, and other specialized storage engines through connectors.
 
@@ -945,6 +965,8 @@ silver_accounts.write \
 
 ## 13. Kerberos Authentication with LDAP Integration
 
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only).
+
 **Demo Instructions:**
 Show Cloudera Manager security settings with Kerberos enabled. Demonstrate authentication flow by running a Spark job that requires Kerberos ticket. Show how Kerberos principals are stored in Active Directory/OpenLDAP and managed through Cloudera Manager. Explain the kinit process and keytab file management for service accounts.
 
@@ -1000,6 +1022,8 @@ Path in Cloudera Manager:
 ---
 
 ## 14. Role-Based Access Control (RBAC) with Active Directory
+
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only).
 
 **Demo Instructions:**
 Open Apache Ranger UI and show policies configured for different user groups from Active Directory. Demonstrate how a user in "data_analysts" group has read-only access to gold layer, while "data_engineers" group has full access to all layers. Show policy evaluation and audit logs for access control decisions. Test access control by attempting operations as different users and showing denied operations in audit logs.
@@ -1155,6 +1179,8 @@ FROM silver.transactions;
 ---
 
 ## 16. Pretrained AI Models for Banking
+
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only). The `ML/credit_risk_scoring.py` file referenced here does not exist in this repo.
 
 **Demo Instructions:**
 Demonstrate integration with pretrained banking-specific models by creating a fraud detection model (see #11), credit risk scoring model, and customer churn prediction model. Show how to load pretrained models from MLflow model registry. Explain Cloudera's integration with Hugging Face for pretrained NLP models that can be used for document classification (KYC/AML forms) and sentiment analysis.
@@ -1389,6 +1415,8 @@ if __name__ == "__main__":
 
 ## 17. Model Optimization - Hyperparameter Tuning
 
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only).
+
 **Demo Instructions:**
 Show the hyperparameter tuning function in the fraud detection model (ML/fraud_detection_model.py) which uses Spark MLlib's CrossValidator with ParamGridBuilder. Demonstrate grid search over multiple parameter combinations (numTrees, maxDepth, minInstancesPerNode) with 3-fold cross-validation. Show MLflow tracking of all experiments with different hyperparameters and how to select the best performing model based on AUC-ROC metric.
 
@@ -1469,6 +1497,8 @@ with mlflow.start_run(run_name="bayesian_optimization"):
 ---
 
 ## 18. Experiment Tracking and Version Control
+
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only).
 
 **Demo Instructions:**
 Open MLflow UI and show experiment tracking dashboard with multiple runs, comparing model parameters, metrics, and artifacts. Demonstrate GitHub integration showing version control of model code with commit history and pull requests. Show MLflow Model Registry with model versions (v1, v2, v3) and stage transitions (None -> Staging -> Production). Explain how each model version is linked to specific Git commits and experiment runs for complete reproducibility.
@@ -1574,6 +1604,8 @@ client.set_model_version_tag(
 ---
 
 ## 19. LLM Deployment and Fine-tuning
+
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only). The `ML/llm_banking_assistant.py` file referenced here does not exist in this repo.
 
 **Demo Instructions:**
 Demonstrate deploying an open-source LLM (like Llama 2 or Mistral) on Cloudera using CML (Cloudera Machine Learning) for banking-specific tasks. Show fine-tuning the LLM on domain-specific data such as banking customer support conversations or financial document analysis. Deploy the model as a REST API endpoint with low-latency inference using vLLM or TensorRT optimization. Show example use cases: customer query classification, automated email response generation, and document summarization.
@@ -1907,6 +1939,8 @@ if __name__ == "__main__":
 ---
 
 ## 20. Multi-Model Deployment and A/B Testing
+
+> Note: This section describes an external Cloudera platform capability. It is NOT implemented in this repository (demo/illustrative only). The `ML/model_ab_testing.py` and `Airflow/dags/model_deployment_pipeline.py` files referenced here do not exist in this repo.
 
 **Demo Instructions:**
 Set up A/B testing infrastructure to deploy two fraud detection models simultaneously (Champion vs Challenger). Route 80% of traffic to the champion model (current production) and 20% to the challenger model (new version). Use MLflow Model Registry to manage both versions and track performance metrics separately. Show how to gradually increase challenger traffic if it outperforms champion. Demonstrate canary deployment where a new model is first deployed to a small percentage of users before full rollout.
@@ -2429,14 +2463,14 @@ This demo guide provides comprehensive instructions for demonstrating all 20 cap
 
 **Key Files Created:**
 - `DEMO_INSTRUCTIONS.md` (this file)
-- `ML/fraud_detection_model.py` (Instruction #11)
-- `ML/credit_risk_scoring.py` (Instruction #16)
-- `ML/llm_banking_assistant.py` (Instruction #19)
-- `ML/model_ab_testing.py` (Instruction #20)
-- `Scripts/generate_audit_report.py` (Instruction #10)
-- `Airflow/dags/data_retention_policy.py` (Instruction #7)
-- `Airflow/dags/model_deployment_pipeline.py` (Instruction #20)
-- `config/dq_rules.yaml` (Instruction #6)
+- `ML/fraud_detection_model.py` (Instruction #11) - NOT present in this repo (demo/illustrative only). There is no `ML/` directory.
+- `ML/credit_risk_scoring.py` (Instruction #16) - NOT present in this repo (demo/illustrative only). There is no `ML/` directory.
+- `ML/llm_banking_assistant.py` (Instruction #19) - NOT present in this repo (demo/illustrative only). There is no `ML/` directory.
+- `ML/model_ab_testing.py` (Instruction #20) - NOT present in this repo (demo/illustrative only). There is no `ML/` directory.
+- `Scripts/generate_audit_report.py` (Instruction #10) - NOT present in this repo (demo/illustrative only). There is no `Scripts/` directory.
+- `Airflow/dags/data_retention_policy.py` (Instruction #7) - NOT present in this repo (demo/illustrative only). The `Airflow/dags/` folder is a deprecated/broken duplicate.
+- `Airflow/dags/model_deployment_pipeline.py` (Instruction #20) - NOT present in this repo (demo/illustrative only). The `Airflow/dags/` folder is a deprecated/broken duplicate.
+- `config/dq_rules.yaml` (Instruction #6) - NOT present in this repo (demo/illustrative only).
 
 **Demo Flow Recommendation:**
 1. Start with foundational capabilities: #3, #4 (Storage and SQL)

@@ -511,9 +511,9 @@ Run the corrected scripts in this exact order:
 
 ## Files Modified
 
-1. `/Users/dsasulin/Documents/GitHub/Coop/SQL/01_Load_Stage_to_Bronze.sql` - Completely rewritten
-2. `/Users/dsasulin/Documents/GitHub/Coop/SQL/02_Load_Bronze_to_Silver.sql` - Recreated by subagent
-3. `/Users/dsasulin/Documents/GitHub/Coop/SQL/03_Load_Silver_to_Gold.sql` - Recreated by subagent
+1. `/Users/dsasulin/Developer/GitHub/Coop/SQL/01_Load_Stage_to_Bronze.sql` - Completely rewritten
+2. `/Users/dsasulin/Developer/GitHub/Coop/SQL/02_Load_Bronze_to_Silver.sql` - Recreated by subagent
+3. `/Users/dsasulin/Developer/GitHub/Coop/SQL/03_Load_Silver_to_Gold.sql` - Recreated by subagent
 
 All files now match the actual schema defined in `DDL/Create_Tables.sql`.
 
@@ -645,6 +645,26 @@ line 84:65 missing KW_END at 's Day' near 's Day'
 
 ---
 
+## Known Limitations: Procedures and Views
+
+The SQL layer also ships `procedures/` and `views/` folders, which the fixes above do not cover:
+
+- `procedures/` (13 files): 7 `sp_*` files are INSERT scripts. The 6 `fn_*` files are UDF
+  registrations that are commented out and reference `com.bank.udf.*` JARs that do not exist in
+  the repo. They are stubs, not working functions.
+- `views/` (15 files): `CREATE VIEW` definitions named `reporting.v_*`.
+
+**⚠️ The `reporting` schema is never created.** No DDL or ETL script in this repo runs
+`CREATE DATABASE reporting` (or `CREATE SCHEMA reporting`). All 15 views target that schema, so
+they will fail unless someone creates it manually first:
+
+```sql
+CREATE DATABASE IF NOT EXISTS reporting;
+-- then run the files in SQL/views/
+```
+
+---
+
 ## Support
 
 If you encounter any issues:
@@ -656,5 +676,5 @@ If you encounter any issues:
 ---
 
 **Last Updated**: 2025-01-06
-**Version**: 3.0 (Runtime Errors Fixed)
-**Validated Against**: DDL/Create_Tables.sql + Runtime Testing
+**Version**: 3.0 (Runtime Errors Fixed) — version reflects manual review, not automated tests
+**Validated Against**: DDL/Create_Tables.sql plus manual runs in Hue. There is no automated SQL test harness in this repo, so "validated" and "tested" here mean manual review and manual execution, not automated test coverage.

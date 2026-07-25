@@ -56,6 +56,9 @@ This directory contains Docker configuration for running the Banking ETL pipelin
 ### 6. Airflow Scheduler
 - **Purpose:** DAG scheduling and execution
 
+### Not included
+This compose stack is standalone Spark plus a Postgres-backed Hive metastore. It does NOT include Kafka, Zookeeper, HDFS, Impala, or MinIO. The Spark warehouse is local (`file:///opt/spark/warehouse`), not S3. The Kafka streaming job (`spark_jobs/00_kafka_to_bronze.py`) has no broker here and will not run out of the box.
+
 ## Quick Start
 
 ### 1. Prerequisites

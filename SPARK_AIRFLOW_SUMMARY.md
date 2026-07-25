@@ -18,7 +18,7 @@ Three PySpark scripts that replicate your SQL ETL logic:
 | `02_bronze_to_silver.py` | 530 | 23KB | Clean and validate data with DQ scoring |
 | `03_silver_to_gold.py` | 480 | 21KB | Build dimensions, facts, and aggregates |
 
-**Total**: 1,460 lines of production-ready PySpark code
+**Total**: the 3 core batch jobs above are ~1,460 lines. `spark_jobs/` actually contains 7 jobs (00 kafka streaming, 01 stage, 01 refactored, 02 silver, 03 gold, 04 csv, 05 aggregations). Note: the orchestrated Spark chain does not currently run end-to-end (see README "Status and limitations").
 
 ---
 
@@ -26,7 +26,7 @@ Three PySpark scripts that replicate your SQL ETL logic:
 
 | File | Lines | Size | Purpose |
 |------|-------|------|---------|
-| `banking_etl_pipeline.py` | 350 | 15KB | Orchestrates all 3 Spark jobs with monitoring |
+| `banking_etl_pipeline.py` | 350 | 15KB | Orchestrates Spark jobs 01, 02, 03, 05 plus Informatica and SQL procedures |
 
 **Features**:
 - ✅ Task dependencies (bronze → silver → gold)
@@ -62,7 +62,7 @@ Three PySpark scripts that replicate your SQL ETL logic:
 - Kubernetes namespace: `warehouse-1761913838-c49g`
 - Spark-on-Kubernetes ready
 
-#### Production-Ready Features ✅
+#### Implemented Features
 - Comprehensive logging
 - Error handling and rollback
 - Progress tracking
@@ -99,7 +99,7 @@ Three PySpark scripts that replicate your SQL ETL logic:
 
 ```bash
 # 1. Navigate to project directory
-cd /Users/dsasulin/Documents/GitHub/Coop
+cd /Users/dsasulin/Developer/GitHub/Coop
 
 # 2. Update configuration (see below)
 # Edit paths and email addresses
@@ -305,7 +305,7 @@ SELECT MAX(process_timestamp) as last_run FROM silver.clients;
 
 ### ✅ Completed
 
-- [x] Created 3 Spark jobs (1,460 lines)
+- [x] Created 7 Spark jobs (spark_jobs/00-05; 3 core batch jobs ~1,460 lines)
 - [x] Created Airflow DAG (350 lines)
 - [x] Created deployment script (400 lines)
 - [x] Created deployment guide (800 lines)
@@ -377,7 +377,7 @@ banking_etl_pipeline (DAG)
 ┌─────────────────────────────────────┐
 │  03_silver_to_gold.py               │
 │  (spark-submit on K8s)              │
-│  → 5 dims, 2 facts, 3 aggregates    │
+│  → 4 dims, 3 facts, 3 aggregates    │
 └──────────┬──────────────────────────┘
            v
 ┌─────────────────────────────────────┐
@@ -404,7 +404,7 @@ banking_etl_pipeline (DAG)
 All documentation is in the repository:
 
 ```
-/Users/dsasulin/Documents/GitHub/Coop/
+/Users/dsasulin/Developer/GitHub/Coop/
 ├── spark_jobs/
 │   ├── 01_stage_to_bronze.py      ← PySpark job 1
 │   ├── 02_bronze_to_silver.py     ← PySpark job 2
@@ -593,7 +593,7 @@ A: Similar costs. Spark uses ephemeral pods (pay per use), SQL uses persistent c
 
 **Created**: 2025-01-06
 **Version**: 1.0
-**Status**: Production Ready ✅
-**Tested**: Syntax validated, logic verified against working SQL scripts
+**Status**: Demo, not production ready (the orchestrated Spark chain does not run end-to-end; see README "Status and limitations")
+**Tested**: Syntax only; no automated test harness for the Spark jobs
 
 Ready to deploy! 🚀

@@ -19,6 +19,8 @@ test (Stage) → bronze (Raw) → silver (Clean) → gold (Analytics)
 | `02_Load_Bronze_to_Silver.sql` | Clean and transform data | 5-10 min | ✅ Tested |
 | `03_Load_Silver_to_Gold.sql` | Build dimensions, facts, and data marts | 3-7 min | ✅ Tested |
 | `Analyse_Queries.sql` | Analytical queries for reporting | - | ✅ Ready |
+| `procedures/` | 13 files: 7 `sp_*` INSERT scripts and 6 `fn_*` UDF registrations (commented-out stubs pointing at `com.bank.udf.*` JARs that do not exist, so not working functions) | - | ⚠️ Partial |
+| `views/` | 15 `CREATE VIEW` files named `reporting.v_*` (require a `reporting` schema that no DDL creates, see note below) | - | ⚠️ Manual setup |
 | `FIXES_SUMMARY.md` | Detailed log of all schema fixes | - | 📋 Documentation |
 
 ## Important Notes
@@ -38,6 +40,11 @@ All scripts are now validated against:
 - ✅ Runtime execution in Hue
 - ✅ Column count matching
 - ✅ Proper table aliases in JOINs
+
+**Note on "Tested":** there is no automated SQL test harness in this repo. Nothing here runs
+the scripts and asserts results automatically. "Tested" and "Validated" mean the scripts were
+manually reviewed and manually run in Hue, not that they are covered by automated tests. The
+"Version 3.0" and status badges reflect that manual review, not automated test coverage.
 
 ## Prerequisites
 
@@ -259,6 +266,24 @@ Available analyses:
 - Client segmentation
 - Card products analysis
 - Data quality checks
+
+## Stored Procedures and Views
+
+Two extra folders ship alongside the ETL scripts:
+
+- `procedures/` (13 files): 7 `sp_*` scripts are plain INSERT routines. The 6 `fn_*` files are
+  UDF registrations that are commented out and point at `com.bank.udf.*` JARs that do not exist
+  in the repo, so they are stubs, not working functions.
+- `views/` (15 files): `CREATE VIEW` definitions named `reporting.v_*`.
+
+**⚠️ The `reporting` schema is not created anywhere.** No DDL or ETL script in this repo runs
+`CREATE DATABASE reporting` (or `CREATE SCHEMA reporting`). All 15 views target that schema, so
+they will fail until you create it manually first:
+
+```sql
+CREATE DATABASE IF NOT EXISTS reporting;
+-- then run the files in SQL/views/
+```
 
 ## Performance Optimization
 
@@ -520,9 +545,9 @@ For issues or questions:
 ---
 
 **Last Updated:** 2025-01-06
-**Version:** 3.0 (All Runtime Errors Fixed)
+**Version:** 3.0 (All Runtime Errors Fixed) — version reflects manual review, not automated tests
 **Compatibility:** Hue, Beeline, Cloudera Data Platform
-**Testing Status:** ✅ Validated against DDL schemas and runtime execution
+**Testing Status:** Manually reviewed and run in Hue. There is no automated SQL test harness in this repo, so "validated" means manual checking against DDL schemas, not automated test coverage.
 
 **Change Log:**
 - v3.0 (2025-01-06): Fixed column count mismatches in Silver layer, ambiguous column errors in Gold layer, ParseException in dim_date

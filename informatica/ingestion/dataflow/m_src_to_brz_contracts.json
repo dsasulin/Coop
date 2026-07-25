@@ -1,0 +1,124 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T08:30:17.000Z"
+  },
+  "ports": {
+    "total_ports": 44,
+    "widgets": {
+      "SQ_CONTRACTS": [
+        {"field_name": "CONTRACT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 2, "default_value": null},
+        {"field_name": "PRODUCT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "CONTRACT_NUMBER", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "START_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "END_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 6, "default_value": null},
+        {"field_name": "CONTRACT_AMOUNT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 7, "default_value": null},
+        {"field_name": "INTEREST_RATE", "datatype": 2, "precision": 5, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 8, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 9, "default_value": null},
+        {"field_name": "MONTHLY_PAYMENT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 10, "default_value": null},
+        {"field_name": "CREATED_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 11, "default_value": null}
+      ],
+      "EXP_ADD_METADATA": [
+        {"field_name": "CONTRACT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "PRODUCT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 3, "default_value": null},
+        {"field_name": "CONTRACT_NUMBER", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 4, "default_value": null},
+        {"field_name": "START_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 5, "default_value": null},
+        {"field_name": "END_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 6, "default_value": null},
+        {"field_name": "CONTRACT_AMOUNT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT", "order": 7, "default_value": null},
+        {"field_name": "INTEREST_RATE", "datatype": 2, "precision": 5, "scale": 2, "port_type": "INPUT", "order": 8, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 9, "default_value": null},
+        {"field_name": "MONTHLY_PAYMENT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT", "order": 10, "default_value": null},
+        {"field_name": "CREATED_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 11, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "OUTPUT", "order": 12, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "OUTPUT", "order": 13, "default_value": null}
+      ],
+      "FIL_VALID_RECORDS": [
+        {"field_name": "CONTRACT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 2, "default_value": null},
+        {"field_name": "PRODUCT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "CONTRACT_NUMBER", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "START_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "END_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 6, "default_value": null},
+        {"field_name": "CONTRACT_AMOUNT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 7, "default_value": null},
+        {"field_name": "INTEREST_RATE", "datatype": 2, "precision": 5, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 8, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 9, "default_value": null},
+        {"field_name": "MONTHLY_PAYMENT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 10, "default_value": null},
+        {"field_name": "CREATED_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 11, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT/OUTPUT", "order": 12, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 13, "default_value": null}
+      ],
+      "TGT_BRZ_CONTRACTS": [
+        {"field_name": "CONTRACT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "PRODUCT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 3, "default_value": null},
+        {"field_name": "CONTRACT_NUMBER", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 4, "default_value": null},
+        {"field_name": "START_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 5, "default_value": null},
+        {"field_name": "END_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 6, "default_value": null},
+        {"field_name": "CONTRACT_AMOUNT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT", "order": 7, "default_value": null},
+        {"field_name": "INTEREST_RATE", "datatype": 2, "precision": 5, "scale": 2, "port_type": "INPUT", "order": 8, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 9, "default_value": null},
+        {"field_name": "MONTHLY_PAYMENT", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT", "order": 10, "default_value": null},
+        {"field_name": "CREATED_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 11, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT", "order": 12, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT", "order": 13, "default_value": null}
+      ]
+    }
+  },
+  "linkage": {
+    "mapping_name": "m_src_to_brz_contracts",
+    "total_links": 37,
+    "links": [
+      {"from": "SQ_CONTRACTS.CONTRACT_ID", "to": "EXP_ADD_METADATA.CONTRACT_ID"},
+      {"from": "SQ_CONTRACTS.CLIENT_ID", "to": "EXP_ADD_METADATA.CLIENT_ID"},
+      {"from": "SQ_CONTRACTS.PRODUCT_ID", "to": "EXP_ADD_METADATA.PRODUCT_ID"},
+      {"from": "SQ_CONTRACTS.CONTRACT_NUMBER", "to": "EXP_ADD_METADATA.CONTRACT_NUMBER"},
+      {"from": "SQ_CONTRACTS.START_DATE", "to": "EXP_ADD_METADATA.START_DATE"},
+      {"from": "SQ_CONTRACTS.END_DATE", "to": "EXP_ADD_METADATA.END_DATE"},
+      {"from": "SQ_CONTRACTS.CONTRACT_AMOUNT", "to": "EXP_ADD_METADATA.CONTRACT_AMOUNT"},
+      {"from": "SQ_CONTRACTS.INTEREST_RATE", "to": "EXP_ADD_METADATA.INTEREST_RATE"},
+      {"from": "SQ_CONTRACTS.STATUS", "to": "EXP_ADD_METADATA.STATUS"},
+      {"from": "SQ_CONTRACTS.MONTHLY_PAYMENT", "to": "EXP_ADD_METADATA.MONTHLY_PAYMENT"},
+      {"from": "SQ_CONTRACTS.CREATED_DATE", "to": "EXP_ADD_METADATA.CREATED_DATE"},
+      {"from": "EXP_ADD_METADATA.CONTRACT_ID", "to": "FIL_VALID_RECORDS.CONTRACT_ID"},
+      {"from": "EXP_ADD_METADATA.CLIENT_ID", "to": "FIL_VALID_RECORDS.CLIENT_ID"},
+      {"from": "EXP_ADD_METADATA.PRODUCT_ID", "to": "FIL_VALID_RECORDS.PRODUCT_ID"},
+      {"from": "EXP_ADD_METADATA.CONTRACT_NUMBER", "to": "FIL_VALID_RECORDS.CONTRACT_NUMBER"},
+      {"from": "EXP_ADD_METADATA.START_DATE", "to": "FIL_VALID_RECORDS.START_DATE"},
+      {"from": "EXP_ADD_METADATA.END_DATE", "to": "FIL_VALID_RECORDS.END_DATE"},
+      {"from": "EXP_ADD_METADATA.CONTRACT_AMOUNT", "to": "FIL_VALID_RECORDS.CONTRACT_AMOUNT"},
+      {"from": "EXP_ADD_METADATA.INTEREST_RATE", "to": "FIL_VALID_RECORDS.INTEREST_RATE"},
+      {"from": "EXP_ADD_METADATA.STATUS", "to": "FIL_VALID_RECORDS.STATUS"},
+      {"from": "EXP_ADD_METADATA.MONTHLY_PAYMENT", "to": "FIL_VALID_RECORDS.MONTHLY_PAYMENT"},
+      {"from": "EXP_ADD_METADATA.CREATED_DATE", "to": "FIL_VALID_RECORDS.CREATED_DATE"},
+      {"from": "EXP_ADD_METADATA.LOAD_TIMESTAMP", "to": "FIL_VALID_RECORDS.LOAD_TIMESTAMP"},
+      {"from": "EXP_ADD_METADATA.SOURCE_FILE", "to": "FIL_VALID_RECORDS.SOURCE_FILE"},
+      {"from": "FIL_VALID_RECORDS.CONTRACT_ID", "to": "TGT_BRZ_CONTRACTS.CONTRACT_ID"},
+      {"from": "FIL_VALID_RECORDS.CLIENT_ID", "to": "TGT_BRZ_CONTRACTS.CLIENT_ID"},
+      {"from": "FIL_VALID_RECORDS.PRODUCT_ID", "to": "TGT_BRZ_CONTRACTS.PRODUCT_ID"},
+      {"from": "FIL_VALID_RECORDS.CONTRACT_NUMBER", "to": "TGT_BRZ_CONTRACTS.CONTRACT_NUMBER"},
+      {"from": "FIL_VALID_RECORDS.START_DATE", "to": "TGT_BRZ_CONTRACTS.START_DATE"},
+      {"from": "FIL_VALID_RECORDS.END_DATE", "to": "TGT_BRZ_CONTRACTS.END_DATE"},
+      {"from": "FIL_VALID_RECORDS.CONTRACT_AMOUNT", "to": "TGT_BRZ_CONTRACTS.CONTRACT_AMOUNT"},
+      {"from": "FIL_VALID_RECORDS.INTEREST_RATE", "to": "TGT_BRZ_CONTRACTS.INTEREST_RATE"},
+      {"from": "FIL_VALID_RECORDS.STATUS", "to": "TGT_BRZ_CONTRACTS.STATUS"},
+      {"from": "FIL_VALID_RECORDS.MONTHLY_PAYMENT", "to": "TGT_BRZ_CONTRACTS.MONTHLY_PAYMENT"},
+      {"from": "FIL_VALID_RECORDS.CREATED_DATE", "to": "TGT_BRZ_CONTRACTS.CREATED_DATE"},
+      {"from": "FIL_VALID_RECORDS.LOAD_TIMESTAMP", "to": "TGT_BRZ_CONTRACTS.LOAD_TIMESTAMP"},
+      {"from": "FIL_VALID_RECORDS.SOURCE_FILE", "to": "TGT_BRZ_CONTRACTS.SOURCE_FILE"}
+    ]
+  },
+  "attributes": {
+    "mapping_name": "m_src_to_brz_contracts",
+    "total_attributes": 3,
+    "widgets": {
+      "EXP_ADD_METADATA": [
+        {"attr_id": 1, "value": "CURRENT_TIMESTAMP", "line_no": 1},
+        {"attr_id": 2, "value": "'oracle_banking_system'", "line_no": 2}
+      ],
+      "FIL_VALID_RECORDS": [
+        {"attr_id": 1, "value": "NOT ISNULL(CONTRACT_ID)", "line_no": 1}
+      ]
+    }
+  }
+}

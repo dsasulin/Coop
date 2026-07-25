@@ -4,6 +4,8 @@
 
 I analyzed the file `config/current.txt` (1,979 lines) which contains the output of Hue SQL queries showing your actual Cloudera Data Platform cluster configuration.
 
+> Note: this summary describes an external Cloudera cluster observed via `current.txt`, plus the `environment_config.filled.yaml` template. No code in this repo reads those YAML files, so the values here do not configure the Spark jobs or DAGs (runtime config is environment variables via `utils/config.py`). The line-number references below point into `environment_config.filled.yaml` and may have drifted. Note also an internal inconsistency: the filled config uses a Kubernetes topology, so the YARN keys (`cdp.yarn.*`, `cdp.hdfs.namenode`) from the YARN template do not apply.
+
 ## Key Findings
 
 ### 🎯 Your Cluster Type

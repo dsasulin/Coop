@@ -2,6 +2,8 @@
 
 This directory contains all environment configuration files for the Banking ETL project.
 
+> **Important:** the `environment_config*.yaml` files here are documentation and planning templates. No code in this repo reads them. The actual runtime configuration comes from environment variables (an `.env` file) loaded by `utils/config.py`. Any workflow below that mentions `scripts/generate_from_config.py` or `scripts/validate_config.py` is not implemented: there is no `scripts/` directory in this repo and those files do not exist.
+
 ## 📁 File Structure
 
 ```
@@ -32,8 +34,7 @@ config/
 1. **Read the checklist** → `QUICKSTART_CHECKLIST.md` (5 min)
 2. **Copy the template** → `cp environment_config.yaml my_config.yaml`
 3. **Fill in values** → Edit `my_config.yaml` using the checklist (30 min)
-4. **Validate** → `python scripts/validate_config.py my_config.yaml`
-5. **Generate code** → `python scripts/generate_from_config.py --config my_config.yaml`
+4. Validate and generate steps below are NOT IMPLEMENTED: `scripts/validate_config.py` and `scripts/generate_from_config.py` do not exist. Filling in the YAML does not change any Spark job or DAG.
 
 ## 📄 File Descriptions
 
@@ -162,10 +163,10 @@ config/
 
 **Usage**:
 ```bash
-# Fill out this file first
+# Fill out this file first (for reference only, nothing reads it)
 vim environment_config.yaml
 
-# Then generate code
+# NOT IMPLEMENTED - scripts/generate_from_config.py does not exist
 python scripts/generate_from_config.py
 ```
 
@@ -254,15 +255,14 @@ sed -n '/^spark:/,/^[a-z]/p' environment_config.example.yaml
 └─────────────────────────────────────────────────────────┘
                           ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 3. VALIDATE                                             │
-│    python scripts/validate_config.py                    │
+│ 3. VALIDATE  (NOT IMPLEMENTED)                          │
+│    scripts/validate_config.py does not exist            │
 └─────────────────────────────────────────────────────────┘
                           ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 4. GENERATE CODE                                        │
-│    python scripts/generate_from_config.py               │
-│    → Updates spark_jobs/*.py                            │
-│    → Updates airflow_dags/*.py                          │
+│ 4. GENERATE CODE  (NOT IMPLEMENTED)                     │
+│    scripts/generate_from_config.py does not exist       │
+│    Spark jobs and DAGs are edited by hand               │
 └─────────────────────────────────────────────────────────┘
                           ↓
 ┌─────────────────────────────────────────────────────────┐
@@ -272,6 +272,8 @@ sed -n '/^spark:/,/^[a-z]/p' environment_config.example.yaml
 │    - Deploy to production                               │
 └─────────────────────────────────────────────────────────┘
 ```
+
+Steps 3 and 4 are aspirational. The YAML template is not wired to any generator or validator. Runtime configuration is environment variables read by `utils/config.py`.
 
 ## 📊 Configuration Sections Overview
 

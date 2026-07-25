@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T08:30:15.000Z"
+  },
+  "sources": [
+    {"src_id": 201, "source_name": "ORACLE_CLIENTS", "db_type": "Oracle", "subject_area": "COOP_INGESTION", "owner_name": "BANKING_CORE"},
+    {"src_id": 202, "source_name": "ORACLE_PRODUCTS", "db_type": "Oracle", "subject_area": "COOP_INGESTION", "owner_name": "BANKING_CORE"},
+    {"src_id": 203, "source_name": "ORACLE_CONTRACTS", "db_type": "Oracle", "subject_area": "COOP_INGESTION", "owner_name": "BANKING_CORE"},
+    {"src_id": 204, "source_name": "ORACLE_ACCOUNTS", "db_type": "Oracle", "subject_area": "COOP_INGESTION", "owner_name": "BANKING_CORE"},
+    {"src_id": 205, "source_name": "ORACLE_CLIENT_PRODUCTS", "db_type": "Oracle", "subject_area": "COOP_INGESTION", "owner_name": "BANKING_CORE"}
+  ]
+}

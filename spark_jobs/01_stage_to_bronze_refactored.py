@@ -19,7 +19,7 @@ from datetime import datetime
 from typing import Dict
 
 # Add parent directory to path
-sys.path.insert(0, '/Users/dsasulin/Documents/GitHub/Coop')
+sys.path.insert(0, '/Users/dsasulin/Developer/GitHub/Coop')
 
 from utils import (
     create_spark_session,

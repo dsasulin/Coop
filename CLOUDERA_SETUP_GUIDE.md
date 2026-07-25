@@ -180,10 +180,13 @@ DESCRIBE FORMATTED bronze.clients;
    - Click **Create Resource**
    - Select type: `Files`
    - Name: `banking-spark-jobs`
-   - Upload files:
-     - `stage_to_bronze.py`
-     - `bronze_to_silver.py`
-     - `silver_to_gold.py`
+   - Upload files (real, orchestrated jobs live in `spark_jobs/`):
+     - `spark_jobs/01_stage_to_bronze.py`
+     - `spark_jobs/02_bronze_to_silver.py`
+     - `spark_jobs/03_silver_to_gold.py`
+     - `spark_jobs/05_gold_aggregations.py`
+
+   Note: the unnumbered names (`stage_to_bronze.py`, `bronze_to_silver.py`, `silver_to_gold.py`) exist only in the deprecated `Spark/` folder. Use the numbered `spark_jobs/` files.
 
 3. **Create Spark Jobs**
    - Go to **Jobs**
@@ -194,7 +197,7 @@ DESCRIBE FORMATTED bronze.clients;
 ```
 Name: stage_to_bronze_job
 Type: Spark
-Application File: stage_to_bronze.py (from Resources)
+Application File: spark_jobs/01_stage_to_bronze.py (from Resources)
 Main Class: (leave empty for Python)
 Arguments: --execution-date ${execution_date}
 
@@ -211,7 +214,7 @@ Resources:
 ```
 Name: bronze_to_silver_job
 Type: Spark
-Application File: bronze_to_silver.py
+Application File: spark_jobs/02_bronze_to_silver.py
 Arguments: --execution-date ${execution_date}
 
 Spark Configuration:
@@ -227,7 +230,23 @@ Resources:
 ```
 Name: silver_to_gold_job
 Type: Spark
-Application File: silver_to_gold.py
+Application File: spark_jobs/03_silver_to_gold.py
+Arguments: --execution-date ${execution_date}
+
+Spark Configuration:
+spark.executor.memory: 4g
+spark.executor.cores: 2
+spark.driver.memory: 2g
+
+Resources:
+- banking-spark-jobs
+```
+
+**Job 4: Gold Aggregations**
+```
+Name: gold_aggregations_job
+Type: Spark
+Application File: spark_jobs/05_gold_aggregations.py
 Arguments: --execution-date ${execution_date}
 
 Spark Configuration:
@@ -265,7 +284,7 @@ Update paths in DAG file:
 SPARK_JOBS_PATH = "/path/to/spark/jobs"
 
 # With:
-SPARK_JOBS_PATH = "stage_to_bronze.py"  # CDE uses file names directly
+SPARK_JOBS_PATH = "spark_jobs/01_stage_to_bronze.py"  # CDE uses file names directly
 ```
 
 For CDE use `CDEJobRunOperator` instead of `SparkSubmitOperator`:
@@ -415,9 +434,11 @@ git clone <your-repo>
 cd Coop
 
 # 2. Upload data to S3 (if using)
+# Real Spark jobs live in spark_jobs/ and DAGs in airflow_dags/.
+# The Spark/ and Airflow/dags/ folders are deprecated duplicates, do not upload them.
 aws s3 cp Data/ s3://your-bucket/banking-data/Data/ --recursive
-aws s3 cp Spark/ s3://your-bucket/banking-data/Spark/ --recursive
-aws s3 cp Airflow/ s3://your-bucket/banking-data/Airflow/ --recursive
+aws s3 cp spark_jobs/ s3://your-bucket/banking-data/spark_jobs/ --recursive
+aws s3 cp airflow_dags/ s3://your-bucket/banking-data/airflow_dags/ --recursive
 ```
 
 ### Step 2: Creating Structure in Hive
@@ -436,7 +457,7 @@ Choose one of the loading options (see "Loading Data" section)
 ### Step 4: Setting up CDE Jobs
 
 1. Create Resource in CDE with Spark jobs
-2. Create three Jobs (stage_to_bronze, bronze_to_silver, silver_to_gold)
+2. Create four Jobs (01_stage_to_bronze, 02_bronze_to_silver, 03_silver_to_gold, 05_gold_aggregations)
 3. Test each job manually
 
 ### Step 5: Setting up Airflow

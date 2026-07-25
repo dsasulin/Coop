@@ -1,0 +1,145 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T08:30:15.000Z"
+  },
+  "ports": {
+    "total_ports": 56,
+    "widgets": {
+      "SQ_CLIENTS": [
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 1, "default_value": null},
+        {"field_name": "FIRST_NAME", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 2, "default_value": null},
+        {"field_name": "LAST_NAME", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "EMAIL", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "PHONE", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "BIRTH_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 6, "default_value": null},
+        {"field_name": "REGISTRATION_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 7, "default_value": null},
+        {"field_name": "ADDRESS", "datatype": 12, "precision": 500, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 8, "default_value": null},
+        {"field_name": "CITY", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 9, "default_value": null},
+        {"field_name": "COUNTRY", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 10, "default_value": null},
+        {"field_name": "RISK_CATEGORY", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 11, "default_value": null},
+        {"field_name": "CREDIT_SCORE", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 12, "default_value": null},
+        {"field_name": "EMPLOYMENT_STATUS", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 13, "default_value": null},
+        {"field_name": "ANNUAL_INCOME", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 14, "default_value": null}
+      ],
+      "EXP_ADD_METADATA": [
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "FIRST_NAME", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "LAST_NAME", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT", "order": 3, "default_value": null},
+        {"field_name": "EMAIL", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT", "order": 4, "default_value": null},
+        {"field_name": "PHONE", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 5, "default_value": null},
+        {"field_name": "BIRTH_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 6, "default_value": null},
+        {"field_name": "REGISTRATION_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 7, "default_value": null},
+        {"field_name": "ADDRESS", "datatype": 12, "precision": 500, "scale": 0, "port_type": "INPUT", "order": 8, "default_value": null},
+        {"field_name": "CITY", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT", "order": 9, "default_value": null},
+        {"field_name": "COUNTRY", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT", "order": 10, "default_value": null},
+        {"field_name": "RISK_CATEGORY", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 11, "default_value": null},
+        {"field_name": "CREDIT_SCORE", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 12, "default_value": null},
+        {"field_name": "EMPLOYMENT_STATUS", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 13, "default_value": null},
+        {"field_name": "ANNUAL_INCOME", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT", "order": 14, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "OUTPUT", "order": 15, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "OUTPUT", "order": 16, "default_value": null}
+      ],
+      "FIL_VALID_RECORDS": [
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 1, "default_value": null},
+        {"field_name": "FIRST_NAME", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 2, "default_value": null},
+        {"field_name": "LAST_NAME", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "EMAIL", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "PHONE", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "BIRTH_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 6, "default_value": null},
+        {"field_name": "REGISTRATION_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 7, "default_value": null},
+        {"field_name": "ADDRESS", "datatype": 12, "precision": 500, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 8, "default_value": null},
+        {"field_name": "CITY", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 9, "default_value": null},
+        {"field_name": "COUNTRY", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 10, "default_value": null},
+        {"field_name": "RISK_CATEGORY", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 11, "default_value": null},
+        {"field_name": "CREDIT_SCORE", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 12, "default_value": null},
+        {"field_name": "EMPLOYMENT_STATUS", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 13, "default_value": null},
+        {"field_name": "ANNUAL_INCOME", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT/OUTPUT", "order": 14, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT/OUTPUT", "order": 15, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 16, "default_value": null}
+      ],
+      "TGT_BRZ_CLIENTS": [
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "FIRST_NAME", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "LAST_NAME", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT", "order": 3, "default_value": null},
+        {"field_name": "EMAIL", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT", "order": 4, "default_value": null},
+        {"field_name": "PHONE", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 5, "default_value": null},
+        {"field_name": "BIRTH_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 6, "default_value": null},
+        {"field_name": "REGISTRATION_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 7, "default_value": null},
+        {"field_name": "ADDRESS", "datatype": 12, "precision": 500, "scale": 0, "port_type": "INPUT", "order": 8, "default_value": null},
+        {"field_name": "CITY", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT", "order": 9, "default_value": null},
+        {"field_name": "COUNTRY", "datatype": 12, "precision": 100, "scale": 0, "port_type": "INPUT", "order": 10, "default_value": null},
+        {"field_name": "RISK_CATEGORY", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 11, "default_value": null},
+        {"field_name": "CREDIT_SCORE", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 12, "default_value": null},
+        {"field_name": "EMPLOYMENT_STATUS", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 13, "default_value": null},
+        {"field_name": "ANNUAL_INCOME", "datatype": 2, "precision": 18, "scale": 2, "port_type": "INPUT", "order": 14, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT", "order": 15, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT", "order": 16, "default_value": null}
+      ]
+    }
+  },
+  "linkage": {
+    "mapping_name": "m_src_to_brz_clients",
+    "total_links": 46,
+    "links": [
+      {"from": "SQ_CLIENTS.CLIENT_ID", "to": "EXP_ADD_METADATA.CLIENT_ID"},
+      {"from": "SQ_CLIENTS.FIRST_NAME", "to": "EXP_ADD_METADATA.FIRST_NAME"},
+      {"from": "SQ_CLIENTS.LAST_NAME", "to": "EXP_ADD_METADATA.LAST_NAME"},
+      {"from": "SQ_CLIENTS.EMAIL", "to": "EXP_ADD_METADATA.EMAIL"},
+      {"from": "SQ_CLIENTS.PHONE", "to": "EXP_ADD_METADATA.PHONE"},
+      {"from": "SQ_CLIENTS.BIRTH_DATE", "to": "EXP_ADD_METADATA.BIRTH_DATE"},
+      {"from": "SQ_CLIENTS.REGISTRATION_DATE", "to": "EXP_ADD_METADATA.REGISTRATION_DATE"},
+      {"from": "SQ_CLIENTS.ADDRESS", "to": "EXP_ADD_METADATA.ADDRESS"},
+      {"from": "SQ_CLIENTS.CITY", "to": "EXP_ADD_METADATA.CITY"},
+      {"from": "SQ_CLIENTS.COUNTRY", "to": "EXP_ADD_METADATA.COUNTRY"},
+      {"from": "SQ_CLIENTS.RISK_CATEGORY", "to": "EXP_ADD_METADATA.RISK_CATEGORY"},
+      {"from": "SQ_CLIENTS.CREDIT_SCORE", "to": "EXP_ADD_METADATA.CREDIT_SCORE"},
+      {"from": "SQ_CLIENTS.EMPLOYMENT_STATUS", "to": "EXP_ADD_METADATA.EMPLOYMENT_STATUS"},
+      {"from": "SQ_CLIENTS.ANNUAL_INCOME", "to": "EXP_ADD_METADATA.ANNUAL_INCOME"},
+      {"from": "EXP_ADD_METADATA.CLIENT_ID", "to": "FIL_VALID_RECORDS.CLIENT_ID"},
+      {"from": "EXP_ADD_METADATA.FIRST_NAME", "to": "FIL_VALID_RECORDS.FIRST_NAME"},
+      {"from": "EXP_ADD_METADATA.LAST_NAME", "to": "FIL_VALID_RECORDS.LAST_NAME"},
+      {"from": "EXP_ADD_METADATA.EMAIL", "to": "FIL_VALID_RECORDS.EMAIL"},
+      {"from": "EXP_ADD_METADATA.PHONE", "to": "FIL_VALID_RECORDS.PHONE"},
+      {"from": "EXP_ADD_METADATA.BIRTH_DATE", "to": "FIL_VALID_RECORDS.BIRTH_DATE"},
+      {"from": "EXP_ADD_METADATA.REGISTRATION_DATE", "to": "FIL_VALID_RECORDS.REGISTRATION_DATE"},
+      {"from": "EXP_ADD_METADATA.ADDRESS", "to": "FIL_VALID_RECORDS.ADDRESS"},
+      {"from": "EXP_ADD_METADATA.CITY", "to": "FIL_VALID_RECORDS.CITY"},
+      {"from": "EXP_ADD_METADATA.COUNTRY", "to": "FIL_VALID_RECORDS.COUNTRY"},
+      {"from": "EXP_ADD_METADATA.RISK_CATEGORY", "to": "FIL_VALID_RECORDS.RISK_CATEGORY"},
+      {"from": "EXP_ADD_METADATA.CREDIT_SCORE", "to": "FIL_VALID_RECORDS.CREDIT_SCORE"},
+      {"from": "EXP_ADD_METADATA.EMPLOYMENT_STATUS", "to": "FIL_VALID_RECORDS.EMPLOYMENT_STATUS"},
+      {"from": "EXP_ADD_METADATA.ANNUAL_INCOME", "to": "FIL_VALID_RECORDS.ANNUAL_INCOME"},
+      {"from": "EXP_ADD_METADATA.LOAD_TIMESTAMP", "to": "FIL_VALID_RECORDS.LOAD_TIMESTAMP"},
+      {"from": "EXP_ADD_METADATA.SOURCE_FILE", "to": "FIL_VALID_RECORDS.SOURCE_FILE"},
+      {"from": "FIL_VALID_RECORDS.CLIENT_ID", "to": "TGT_BRZ_CLIENTS.CLIENT_ID"},
+      {"from": "FIL_VALID_RECORDS.FIRST_NAME", "to": "TGT_BRZ_CLIENTS.FIRST_NAME"},
+      {"from": "FIL_VALID_RECORDS.LAST_NAME", "to": "TGT_BRZ_CLIENTS.LAST_NAME"},
+      {"from": "FIL_VALID_RECORDS.EMAIL", "to": "TGT_BRZ_CLIENTS.EMAIL"},
+      {"from": "FIL_VALID_RECORDS.PHONE", "to": "TGT_BRZ_CLIENTS.PHONE"},
+      {"from": "FIL_VALID_RECORDS.BIRTH_DATE", "to": "TGT_BRZ_CLIENTS.BIRTH_DATE"},
+      {"from": "FIL_VALID_RECORDS.REGISTRATION_DATE", "to": "TGT_BRZ_CLIENTS.REGISTRATION_DATE"},
+      {"from": "FIL_VALID_RECORDS.ADDRESS", "to": "TGT_BRZ_CLIENTS.ADDRESS"},
+      {"from": "FIL_VALID_RECORDS.CITY", "to": "TGT_BRZ_CLIENTS.CITY"},
+      {"from": "FIL_VALID_RECORDS.COUNTRY", "to": "TGT_BRZ_CLIENTS.COUNTRY"},
+      {"from": "FIL_VALID_RECORDS.RISK_CATEGORY", "to": "TGT_BRZ_CLIENTS.RISK_CATEGORY"},
+      {"from": "FIL_VALID_RECORDS.CREDIT_SCORE", "to": "TGT_BRZ_CLIENTS.CREDIT_SCORE"},
+      {"from": "FIL_VALID_RECORDS.EMPLOYMENT_STATUS", "to": "TGT_BRZ_CLIENTS.EMPLOYMENT_STATUS"},
+      {"from": "FIL_VALID_RECORDS.ANNUAL_INCOME", "to": "TGT_BRZ_CLIENTS.ANNUAL_INCOME"},
+      {"from": "FIL_VALID_RECORDS.LOAD_TIMESTAMP", "to": "TGT_BRZ_CLIENTS.LOAD_TIMESTAMP"},
+      {"from": "FIL_VALID_RECORDS.SOURCE_FILE", "to": "TGT_BRZ_CLIENTS.SOURCE_FILE"}
+    ]
+  },
+  "attributes": {
+    "mapping_name": "m_src_to_brz_clients",
+    "total_attributes": 3,
+    "widgets": {
+      "EXP_ADD_METADATA": [
+        {"attr_id": 1, "value": "CURRENT_TIMESTAMP", "line_no": 1},
+        {"attr_id": 2, "value": "'oracle_banking_system'", "line_no": 2}
+      ],
+      "FIL_VALID_RECORDS": [
+        {"attr_id": 1, "value": "NOT ISNULL(CLIENT_ID)", "line_no": 1}
+      ]
+    }
+  }
+}

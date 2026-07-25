@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T09:00:20.000Z",
+    "folder": "COOP_TRANSFORMATION"
+  },
+  "workflow": {
+    "workflow_id": 2001,
+    "workflow_name": "wf_transform_loans",
+    "versionnumber": 1,
+    "is_valid": 1,
+    "comments": "Transform loans from bronze to silver layer with metric calculations and categorization",
+    "folder_name": "COOP_TRANSFORMATION"
+  }
+}

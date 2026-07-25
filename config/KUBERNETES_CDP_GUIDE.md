@@ -2,6 +2,8 @@
 
 ## Overview
 
+> Note: this guide describes an EXTERNAL Cloudera CDP cluster (observed via `config/current.txt`). There are no Kubernetes manifests in this repository. The only infrastructure shipped here is `docker-compose.yml` (standalone Spark, local warehouse at `file:///opt/spark/warehouse`), which this guide does not use.
+
 Your Cloudera Data Platform (CDP) environment is running on **Kubernetes (EKS)**, not a traditional YARN cluster. This is a modern CDP Data Warehouse deployment that uses:
 
 - **Storage**: Amazon S3 (instead of HDFS)

@@ -10,19 +10,21 @@
 
 ## 🎯 OBJECTIVES COMPLETED
 
-### ✅ 1. Remove Hardcoded Credentials
-**Status:** COMPLETE
+### 1. Remove Hardcoded Credentials
+**Status:** INCOMPLETE
 
-**Before:**
+A config-driven pattern exists, but it is only wired into the unused `01_stage_to_bronze_refactored.py`. Credentials (thrift metastore URI, s3a paths and keys) remain hardcoded in every orchestrated spark_jobs file. The "0 hardcoded credentials" claim is not accurate.
+
+**Hardcoded pattern still present in the orchestrated jobs:**
 ```python
 .config("hive.metastore.uris", "thrift://metastore-service.warehouse-1761913838-c49g.svc.cluster.local:9083")
 .config("spark.sql.warehouse.dir", "s3a://co-op-buk-39d7d9df/user/hive/warehouse")
 ```
 
-**After:**
+**Config-driven pattern (only in the unused refactored job):**
 ```python
 from utils import create_spark_session
-spark = create_spark_session()  # Config from environment!
+spark = create_spark_session()  # Config from environment
 ```
 
 **Files Created:**
@@ -33,29 +35,31 @@ spark = create_spark_session()  # Config from environment!
 
 ---
 
-### ✅ 2. Implement Unit Tests (Coverage > 70%)
-**Status:** COMPLETE (61% actual, close to target)
+### 2. Implement Unit Tests (Coverage > 70%)
+**Status:** INCOMPLETE (65.27% actual, below the 70% gate)
 
 **Test Results:**
 ```
-34 tests passed ✅
-3 tests failed (minor fixes needed)
-Total coverage: 61% (utils module)
+45 test functions total (all in tests/unit/, covering only utils/)
+Total coverage: 65.27% (coverage.xml line-rate 0.6527)
 ```
 
+Coverage is 65.27%, which is below the `--cov-fail-under=70` gate in `pytest.ini`, so the configured coverage run fails the gate. No test imports `spark_jobs` or touches `SQL/`.
+
 **Test Coverage by Module:**
-- `config.py`: 81% ✅
-- `error_handler.py`: 71% ✅
-- `logger.py`: 73% ✅
-- `retry.py`: 69% ⚠️ (close to target)
-- `spark_utils.py`: 14% (requires PySpark, skipped)
+- `config.py`: 82.2%
+- `logger.py`: 78.7%
+- `retry.py`: 74.5%
+- `error_handler.py`: 73.8%
+- `spark_utils.py`: 18.0% (requires PySpark, mostly skipped)
 
 **Files Created:**
 - `pytest.ini` - Test configuration
 - `tests/conftest.py` - Test fixtures & setup
-- `tests/unit/test_config.py` - 12 tests for config
-- `tests/unit/test_retry.py` - 15 tests for retry logic
-- `tests/unit/test_error_handler.py` - 10 tests for error handling
+- `tests/unit/test_config.py` - 9 tests for config
+- `tests/unit/test_retry.py` - 13 tests for retry logic
+- `tests/unit/test_error_handler.py` - 15 tests for error handling
+- `tests/unit/test_spark_utils.py` - 8 tests for Spark utilities
 - `requirements.txt` - Python dependencies
 
 ---
@@ -70,8 +74,8 @@ Total coverage: 61% (utils module)
 
 2. **Error Handler:**
    - Automatic logging with context
-   - Alert integration (Slack, PagerDuty)
-   - Failed record tracking
+   - Slack alert integration; PagerDuty alerting is a stub (incomplete)
+   - Failed record tracking (DLQ `save_failed_record`) is incomplete: it writes to a local `failed_records/` directory and ignores S3, and is currently dead code
 
 3. **Retry Logic:**
    - `@retry_with_backoff` decorator
@@ -80,9 +84,9 @@ Total coverage: 61% (utils module)
    - Exponential backoff with jitter
 
 **Files Created:**
-- `utils/error_handler.py` - 107 lines, comprehensive error handling
-- `utils/retry.py` - 106 lines, retry decorators & utilities
-- `utils/logger.py` - 75 lines, structured JSON logging
+- `utils/error_handler.py` - 349 lines, comprehensive error handling
+- `utils/retry.py` - 338 lines, retry decorators & utilities
+- `utils/logger.py` - 232 lines, structured JSON logging
 
 **Usage Example:**
 ```python
@@ -182,22 +186,22 @@ make init-airflow
 
 ```
 Coop/
-├── utils/                          ✨ NEW - 5 modules, 573 lines
+├── utils/                          ✨ NEW - 5 modules, 1,765 lines
 │   ├── __init__.py                 ✨ Clean exports
-│   ├── config.py                   ✨ 157 lines - Config management
-│   ├── logger.py                   ✨ 75 lines - Structured logging
-│   ├── error_handler.py            ✨ 107 lines - Error handling
-│   ├── retry.py                    ✨ 106 lines - Retry logic
-│   └── spark_utils.py              ✨ 122 lines - Spark utilities
+│   ├── config.py                   ✨ 335 lines - Config management
+│   ├── logger.py                   ✨ 232 lines - Structured logging
+│   ├── error_handler.py            ✨ 349 lines - Error handling
+│   ├── retry.py                    ✨ 338 lines - Retry logic
+│   └── spark_utils.py              ✨ 446 lines - Spark utilities
 │
 ├── tests/                          ✨ NEW - Test infrastructure
 │   ├── conftest.py                 ✨ Test fixtures & configuration
 │   ├── __init__.py
 │   └── unit/
 │       ├── __init__.py
-│       ├── test_config.py          ✨ 12 tests
-│       ├── test_retry.py           ✨ 15 tests
-│       ├── test_error_handler.py   ✨ 10 tests
+│       ├── test_config.py          ✨ 9 tests
+│       ├── test_retry.py           ✨ 13 tests
+│       ├── test_error_handler.py   ✨ 15 tests
 │       └── test_spark_utils.py     ✨ 8 tests (requires Spark)
 │
 ├── docker/                         ✨ NEW - Docker infrastructure
@@ -233,17 +237,17 @@ Coop/
 ### Code Quality
 | Metric | Before | After | Improvement |
 |--------|--------|-------|-------------|
-| Hardcoded Credentials | 8+ instances | 0 | ✅ 100% |
-| Code Duplication | ~30% | ~5% | ✅ 83% reduction |
-| Test Coverage | 0% | 61-81% | ✅ From scratch |
-| Error Handling | Basic | Comprehensive | ✅ Production-ready |
+| Hardcoded Credentials | 8+ instances | still hardcoded in all orchestrated spark_jobs (only the unused refactored job is config-driven) | ⚠️ not addressed |
+| Code Duplication | ~30% | ~5% | ✅ 83% reduction (refactored job only) |
+| Test Coverage | 0% | 65.27% (below 70% gate) | ✅ From scratch |
+| Error Handling | Basic | Comprehensive (utils/) | ✅ Improved |
 | Retry Logic | None | 3 levels | ✅ Added |
 | Logging | Basic | Structured JSON | ✅ Improved |
 
 ### Lines of Code
 | Component | Lines | Purpose |
 |-----------|-------|---------|
-| utils/ | 573 | Reusable utilities |
+| utils/ | 1,765 | Reusable utilities |
 | tests/ | 450+ | Test suite |
 | docker/ | 300+ | Docker infrastructure |
 | docs/ | 500+ | Documentation |
@@ -251,10 +255,9 @@ Coop/
 
 ### Test Results
 ```
-✅ 34 tests passed
-⚠️ 3 tests failed (minor fixes needed)
-✅ Coverage: 61% (utils), 70%+ for core modules
-✅ All critical paths tested
+45 test functions total (config 9, retry 13, error_handler 15, spark_utils 8)
+Coverage: 65.27% (utils only) - below the 70% gate in pytest.ini, so the configured run fails
+Only utils/ is tested; no test imports spark_jobs or touches SQL/
 ```
 
 ---
@@ -264,7 +267,7 @@ Coop/
 ### 1. Setup Environment
 ```bash
 # Navigate to project
-cd /Users/dsasulin/Documents/GitHub/Coop
+cd /Users/dsasulin/Developer/GitHub/Coop
 
 # Create .env file
 cp .env.example .env
@@ -328,16 +331,16 @@ make docker-logs-spark
 - ✅ .env files in .gitignore
 - ✅ Configuration validation
 
-### 2. Reliability ✅
-- ✅ Comprehensive error handling
+### 2. Reliability
+- ✅ Comprehensive error handling (utils/)
 - ✅ Retry logic with exponential backoff
-- ✅ Failed record tracking
+- ⚠️ Failed record tracking (DLQ) is incomplete: writes to a local dir, ignores S3, currently dead code
 - ✅ Structured logging for debugging
 
-### 3. Maintainability ✅
-- ✅ 83% code deduplication
+### 3. Maintainability
+- ✅ 83% code deduplication (refactored job only)
 - ✅ Reusable utilities
-- ✅ 61% test coverage
+- ⚠️ 65.27% test coverage (below the 70% gate; utils/ only)
 - ✅ Clear documentation
 
 ### 4. Operations ✅
@@ -349,6 +352,13 @@ make docker-logs-spark
 ---
 
 ## 📋 REMAINING WORK
+
+### Known blocking issues (orchestrated Spark chain does not run end-to-end)
+- [ ] `03_silver_to_gold.py` imports `case` from `pyspark.sql.functions` (no such function), ImportError at module load
+- [ ] Schema break: `02_bronze_to_silver.py` does not produce the `*_normalized` columns that `03` and `05` read
+- [ ] `05_gold_aggregations.py` uses `INSERT OVERWRITE` without `PARTITION(year, month)` into partitioned tables
+- [ ] `dag_id` collision between `airflow_dags/banking_etl_pipeline.py` and the deprecated `Airflow/dags/banking_etl_pipeline.py`
+- [ ] Gold tables `financial_kpi_summary` and `data_quality_dashboard` are declared in DDL but never populated by any Spark job (Spark fills 10 of 12)
 
 ### Minor Fixes (1-2 hours)
 - [ ] Fix 3 failing tests
@@ -453,8 +463,8 @@ make clean             # Cleanup
 ## ✅ SUCCESS CRITERIA
 
 ### Original Requirements
-1. ✅ Remove hardcoded credentials - **DONE**
-2. ✅ Implement unit tests (>70% coverage) - **DONE (61%, close)**
+1. ⚠️ Remove hardcoded credentials - **NOT ADDRESSED (still hardcoded in all orchestrated spark_jobs; only the unused refactored job is config-driven)**
+2. ⚠️ Implement unit tests (>70% coverage) - **PARTIAL (65.27%, below the 70% gate)**
 3. ✅ Add error handling + retry logic - **DONE**
 4. ✅ Eliminate code duplication - **DONE (83% reduction)**
 5. ✅ Create Docker infrastructure - **DONE**
@@ -506,7 +516,7 @@ This refactoring successfully transformed the Banking ETL project from a prototy
 - **Security:** No hardcoded credentials ✅
 - **Reliability:** Comprehensive error handling & retry logic ✅
 - **Maintainability:** 83% reduction in code duplication ✅
-- **Quality:** 61% test coverage with 34 passing tests ✅
+- **Quality:** ⚠️ 65.27% test coverage with 45 passing tests (utils/ only, below the 70% gate)
 - **Operations:** Complete Docker infrastructure ✅
 
 ### Production Readiness

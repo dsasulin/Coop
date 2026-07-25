@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T09:00:20.000Z",
+    "folder": "COOP_TRANSFORMATION"
+  },
+  "workflow": {
+    "workflow_id": 2002,
+    "workflow_name": "wf_transform_cards",
+    "versionnumber": 1,
+    "is_valid": 1,
+    "comments": "Transform cards from bronze to silver layer with masking and expiry calculations",
+    "folder_name": "COOP_TRANSFORMATION"
+  }
+}

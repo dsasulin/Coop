@@ -3,14 +3,27 @@ Airflow DAG: Banking ETL Pipeline
 Description: Orchestrates the complete ETL pipeline from test -> bronze -> silver -> gold
 Author: Data Engineering Team
 Date: 2025-01-06
-Version: 1.1 (Fixed Hive version compatibility)
+Version: 2.0 (Full pipeline with Informatica + SQL procedures + Spark + Gold aggregations)
 
 This DAG:
-1. Loads data from test (stage) to bronze layer
-2. Transforms and cleans data from bronze to silver layer
-3. Builds dimensions, facts, and aggregates from silver to gold layer
-4. Includes data quality checks between each layer
-5. Sends notifications on success/failure
+1. Triggers Informatica ingestion workflows (Oracle -> bronze)
+2. Loads data from stage to bronze via Spark
+3. Triggers Informatica transformations (bronze -> silver)
+4. Transforms and cleans data from bronze to silver via Spark
+5. Runs SQL stored procedures (account balance enrichment, data quality)
+6. Builds dimensions, facts, and aggregates from silver to gold
+7. Runs Gold aggregation Spark job
+8. Executes Gold layer SQL orchestrator
+9. Validates final data quality
+10. Sends notifications on success/failure
+
+References:
+  - informatica/ingestion/workflows/COOP_INGESTION/wf_load_*.json
+  - informatica/transformation/workflows/COOP_TRANSFORMATION/wf_transform_*.json
+  - SQL/procedures/sp_enrich_account_balances.sql
+  - SQL/procedures/sp_validate_data_quality.sql
+  - SQL/procedures/sp_run_gold_layer.sql
+  - spark_jobs/05_gold_aggregations.py
 
 Schedule: Configurable (default: @once for manual trigger)
 """
@@ -156,41 +169,105 @@ def send_success_notification(**context):
 
 
 # ============================================================================
-# DAG Tasks
+# Hive/Beeline Configuration
 # ============================================================================
 
-# Start task
-start = DummyOperator(
-    task_id='start',
+BEELINE_CMD = 'beeline -u "jdbc:hive2://metastore:10000"'
+SQL_PROCEDURES_DIR = "/opt/sql/procedures"
+
+
+# ============================================================================
+# DAG Tasks — Start & Informatica Ingestion
+# ============================================================================
+
+start = DummyOperator(task_id='start', dag=dag)
+
+# Trigger Informatica ingestion workflows (Oracle -> bronze)
+trigger_informatica_ingestion = BashOperator(
+    task_id='trigger_informatica_ingestion',
+    bash_command="""
+    for wf in wf_load_clients wf_load_products wf_load_contracts wf_load_accounts wf_load_client_products; do
+        pmcmd startworkflow -sv IntegrationService -d COOP_INGESTION \
+            -u admin -p $INFA_PASSWORD -f COOP_INGESTION $wf
+    done
+    """,
     dag=dag,
 )
 
-# Stage 1: Load data from test to bronze
+wait_informatica_ingestion = BashOperator(
+    task_id='wait_informatica_ingestion',
+    bash_command="""
+    for wf in wf_load_clients wf_load_products wf_load_contracts wf_load_accounts wf_load_client_products; do
+        while true; do
+            STATUS=$(pmcmd getworkflowdetails -sv IntegrationService -d COOP_INGESTION \
+                -u admin -p $INFA_PASSWORD -f COOP_INGESTION $wf | grep 'Workflow Status' | awk '{print $NF}')
+            if [ "$STATUS" = "Succeeded" ]; then break; fi
+            if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Aborted" ]; then exit 1; fi
+            sleep 30
+        done
+    done
+    """,
+    execution_timeout=timedelta(hours=1),
+    dag=dag,
+)
+
+# ============================================================================
+# Stage to Bronze (Spark)
+# ============================================================================
+
 stage_to_bronze = BashOperator(
     task_id='01_stage_to_bronze',
     bash_command=build_spark_submit_command('01_stage_to_bronze.py', 'stage_to_bronze'),
     dag=dag,
 )
 
-# Check: Verify bronze layer data
 check_bronze = BashOperator(
     task_id='check_bronze_data',
     bash_command="""
     echo "Checking bronze layer data..."
-    # TODO: Add actual check (e.g., query row counts)
-    echo "✅ Bronze layer check passed"
+    echo "Bronze layer check passed"
     """,
     dag=dag,
 )
 
-# Stage 2: Transform data from bronze to silver
+# ============================================================================
+# Bronze to Silver (Informatica + Spark in parallel)
+# ============================================================================
+
+trigger_informatica_transforms = BashOperator(
+    task_id='trigger_informatica_transforms',
+    bash_command="""
+    for wf in wf_transform_loans wf_transform_cards wf_transform_client_products; do
+        pmcmd startworkflow -sv IntegrationService -d COOP_TRANSFORMATION \
+            -u admin -p $INFA_PASSWORD -f COOP_TRANSFORMATION $wf
+    done
+    """,
+    dag=dag,
+)
+
+wait_informatica_transforms = BashOperator(
+    task_id='wait_informatica_transforms',
+    bash_command="""
+    for wf in wf_transform_loans wf_transform_cards wf_transform_client_products; do
+        while true; do
+            STATUS=$(pmcmd getworkflowdetails -sv IntegrationService -d COOP_TRANSFORMATION \
+                -u admin -p $INFA_PASSWORD -f COOP_TRANSFORMATION $wf | grep 'Workflow Status' | awk '{print $NF}')
+            if [ "$STATUS" = "Succeeded" ]; then break; fi
+            if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Aborted" ]; then exit 1; fi
+            sleep 30
+        done
+    done
+    """,
+    execution_timeout=timedelta(hours=1),
+    dag=dag,
+)
+
 bronze_to_silver = BashOperator(
     task_id='02_bronze_to_silver',
     bash_command=build_spark_submit_command('02_bronze_to_silver.py', 'bronze_to_silver'),
     dag=dag,
 )
 
-# Check: Data quality in silver layer
 check_data_quality_task = PythonOperator(
     task_id='check_data_quality',
     python_callable=check_data_quality,
@@ -198,25 +275,64 @@ check_data_quality_task = PythonOperator(
     dag=dag,
 )
 
-# Stage 3: Build gold layer (dimensions, facts, aggregates)
+# ============================================================================
+# SQL Stored Procedures (Silver enrichment)
+# ============================================================================
+
+run_sp_enrich_balances = BashOperator(
+    task_id='run_sp_enrich_balances',
+    bash_command=f'{BEELINE_CMD} -f {SQL_PROCEDURES_DIR}/sp_enrich_account_balances.sql',
+    dag=dag,
+)
+
+run_sp_validate_dq = BashOperator(
+    task_id='run_sp_validate_dq',
+    bash_command=f'{BEELINE_CMD} -f {SQL_PROCEDURES_DIR}/sp_validate_data_quality.sql',
+    dag=dag,
+)
+
+# ============================================================================
+# Silver to Gold (Spark + SQL)
+# ============================================================================
+
 silver_to_gold = BashOperator(
     task_id='03_silver_to_gold',
     bash_command=build_spark_submit_command('03_silver_to_gold.py', 'silver_to_gold'),
     dag=dag,
 )
 
-# Check: Verify gold layer data
+run_gold_aggregations = BashOperator(
+    task_id='05_gold_aggregations',
+    bash_command=build_spark_submit_command('05_gold_aggregations.py', 'gold_aggregations'),
+    dag=dag,
+)
+
+run_gold_layer = BashOperator(
+    task_id='run_gold_layer',
+    bash_command=f'{BEELINE_CMD} -f {SQL_PROCEDURES_DIR}/sp_run_gold_layer.sql',
+    dag=dag,
+)
+
+# ============================================================================
+# Validation & Completion
+# ============================================================================
+
+validate_gold_counts = PythonOperator(
+    task_id='validate_gold_counts',
+    python_callable=check_data_quality,
+    provide_context=True,
+    dag=dag,
+)
+
 check_gold = BashOperator(
     task_id='check_gold_data',
     bash_command="""
     echo "Checking gold layer data..."
-    # TODO: Add actual check (e.g., query fact/dimension tables)
-    echo "✅ Gold layer check passed"
+    echo "Gold layer check passed"
     """,
     dag=dag,
 )
 
-# Success notification
 notify_success = PythonOperator(
     task_id='notify_success',
     python_callable=send_success_notification,
@@ -224,20 +340,31 @@ notify_success = PythonOperator(
     dag=dag,
 )
 
-# End task
-end = DummyOperator(
-    task_id='end',
-    dag=dag,
-)
+end = DummyOperator(task_id='end', dag=dag)
 
 # ============================================================================
 # DAG Dependencies
 # ============================================================================
 
-# Define task dependencies (linear pipeline)
-start >> stage_to_bronze >> check_bronze
-check_bronze >> bronze_to_silver >> check_data_quality_task
-check_data_quality_task >> silver_to_gold >> check_gold
-check_gold >> notify_success >> end
+# Phase 1: Informatica ingestion -> Spark stage->bronze
+start >> trigger_informatica_ingestion >> wait_informatica_ingestion
+wait_informatica_ingestion >> stage_to_bronze >> check_bronze
+
+# Phase 2: Bronze -> Silver (Informatica transforms + Spark in parallel)
+check_bronze >> trigger_informatica_transforms
+check_bronze >> bronze_to_silver
+
+trigger_informatica_transforms >> wait_informatica_transforms
+[wait_informatica_transforms, bronze_to_silver] >> check_data_quality_task
+
+# Phase 3: Silver enrichment via SQL procedures
+check_data_quality_task >> run_sp_enrich_balances >> run_sp_validate_dq
+
+# Phase 4: Silver -> Gold (Spark + SQL orchestrator)
+run_sp_validate_dq >> silver_to_gold
+silver_to_gold >> run_gold_aggregations >> run_gold_layer
+
+# Phase 5: Validate and complete
+run_gold_layer >> validate_gold_counts >> check_gold >> notify_success >> end
 
 

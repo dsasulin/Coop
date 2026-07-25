@@ -1,0 +1,117 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T08:30:18.000Z"
+  },
+  "ports": {
+    "total_ports": 40,
+    "widgets": {
+      "SQ_ACCOUNTS": [
+        {"field_name": "ACCOUNT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 2, "default_value": null},
+        {"field_name": "CONTRACT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "ACCOUNT_NUMBER", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "ACCOUNT_TYPE", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "CURRENCY", "datatype": 12, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 6, "default_value": null},
+        {"field_name": "OPEN_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 7, "default_value": null},
+        {"field_name": "CLOSE_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 8, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 9, "default_value": null},
+        {"field_name": "BRANCH_CODE", "datatype": 12, "precision": 20, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 10, "default_value": null}
+      ],
+      "EXP_ADD_METADATA": [
+        {"field_name": "ACCOUNT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "CONTRACT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 3, "default_value": null},
+        {"field_name": "ACCOUNT_NUMBER", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 4, "default_value": null},
+        {"field_name": "ACCOUNT_TYPE", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 5, "default_value": null},
+        {"field_name": "CURRENCY", "datatype": 12, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 6, "default_value": null},
+        {"field_name": "OPEN_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 7, "default_value": null},
+        {"field_name": "CLOSE_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 8, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 9, "default_value": null},
+        {"field_name": "BRANCH_CODE", "datatype": 12, "precision": 20, "scale": 0, "port_type": "INPUT", "order": 10, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "OUTPUT", "order": 11, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "OUTPUT", "order": 12, "default_value": null}
+      ],
+      "FIL_VALID_RECORDS": [
+        {"field_name": "ACCOUNT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 2, "default_value": null},
+        {"field_name": "CONTRACT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "ACCOUNT_NUMBER", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "ACCOUNT_TYPE", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "CURRENCY", "datatype": 12, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 6, "default_value": null},
+        {"field_name": "OPEN_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 7, "default_value": null},
+        {"field_name": "CLOSE_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 8, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 9, "default_value": null},
+        {"field_name": "BRANCH_CODE", "datatype": 12, "precision": 20, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 10, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT/OUTPUT", "order": 11, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 12, "default_value": null}
+      ],
+      "TGT_BRZ_ACCOUNTS": [
+        {"field_name": "ACCOUNT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "CONTRACT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 3, "default_value": null},
+        {"field_name": "ACCOUNT_NUMBER", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 4, "default_value": null},
+        {"field_name": "ACCOUNT_TYPE", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 5, "default_value": null},
+        {"field_name": "CURRENCY", "datatype": 12, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 6, "default_value": null},
+        {"field_name": "OPEN_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 7, "default_value": null},
+        {"field_name": "CLOSE_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 8, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 9, "default_value": null},
+        {"field_name": "BRANCH_CODE", "datatype": 12, "precision": 20, "scale": 0, "port_type": "INPUT", "order": 10, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT", "order": 11, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT", "order": 12, "default_value": null}
+      ]
+    }
+  },
+  "linkage": {
+    "mapping_name": "m_src_to_brz_accounts",
+    "total_links": 34,
+    "links": [
+      {"from": "SQ_ACCOUNTS.ACCOUNT_ID", "to": "EXP_ADD_METADATA.ACCOUNT_ID"},
+      {"from": "SQ_ACCOUNTS.CLIENT_ID", "to": "EXP_ADD_METADATA.CLIENT_ID"},
+      {"from": "SQ_ACCOUNTS.CONTRACT_ID", "to": "EXP_ADD_METADATA.CONTRACT_ID"},
+      {"from": "SQ_ACCOUNTS.ACCOUNT_NUMBER", "to": "EXP_ADD_METADATA.ACCOUNT_NUMBER"},
+      {"from": "SQ_ACCOUNTS.ACCOUNT_TYPE", "to": "EXP_ADD_METADATA.ACCOUNT_TYPE"},
+      {"from": "SQ_ACCOUNTS.CURRENCY", "to": "EXP_ADD_METADATA.CURRENCY"},
+      {"from": "SQ_ACCOUNTS.OPEN_DATE", "to": "EXP_ADD_METADATA.OPEN_DATE"},
+      {"from": "SQ_ACCOUNTS.CLOSE_DATE", "to": "EXP_ADD_METADATA.CLOSE_DATE"},
+      {"from": "SQ_ACCOUNTS.STATUS", "to": "EXP_ADD_METADATA.STATUS"},
+      {"from": "SQ_ACCOUNTS.BRANCH_CODE", "to": "EXP_ADD_METADATA.BRANCH_CODE"},
+      {"from": "EXP_ADD_METADATA.ACCOUNT_ID", "to": "FIL_VALID_RECORDS.ACCOUNT_ID"},
+      {"from": "EXP_ADD_METADATA.CLIENT_ID", "to": "FIL_VALID_RECORDS.CLIENT_ID"},
+      {"from": "EXP_ADD_METADATA.CONTRACT_ID", "to": "FIL_VALID_RECORDS.CONTRACT_ID"},
+      {"from": "EXP_ADD_METADATA.ACCOUNT_NUMBER", "to": "FIL_VALID_RECORDS.ACCOUNT_NUMBER"},
+      {"from": "EXP_ADD_METADATA.ACCOUNT_TYPE", "to": "FIL_VALID_RECORDS.ACCOUNT_TYPE"},
+      {"from": "EXP_ADD_METADATA.CURRENCY", "to": "FIL_VALID_RECORDS.CURRENCY"},
+      {"from": "EXP_ADD_METADATA.OPEN_DATE", "to": "FIL_VALID_RECORDS.OPEN_DATE"},
+      {"from": "EXP_ADD_METADATA.CLOSE_DATE", "to": "FIL_VALID_RECORDS.CLOSE_DATE"},
+      {"from": "EXP_ADD_METADATA.STATUS", "to": "FIL_VALID_RECORDS.STATUS"},
+      {"from": "EXP_ADD_METADATA.BRANCH_CODE", "to": "FIL_VALID_RECORDS.BRANCH_CODE"},
+      {"from": "EXP_ADD_METADATA.LOAD_TIMESTAMP", "to": "FIL_VALID_RECORDS.LOAD_TIMESTAMP"},
+      {"from": "EXP_ADD_METADATA.SOURCE_FILE", "to": "FIL_VALID_RECORDS.SOURCE_FILE"},
+      {"from": "FIL_VALID_RECORDS.ACCOUNT_ID", "to": "TGT_BRZ_ACCOUNTS.ACCOUNT_ID"},
+      {"from": "FIL_VALID_RECORDS.CLIENT_ID", "to": "TGT_BRZ_ACCOUNTS.CLIENT_ID"},
+      {"from": "FIL_VALID_RECORDS.CONTRACT_ID", "to": "TGT_BRZ_ACCOUNTS.CONTRACT_ID"},
+      {"from": "FIL_VALID_RECORDS.ACCOUNT_NUMBER", "to": "TGT_BRZ_ACCOUNTS.ACCOUNT_NUMBER"},
+      {"from": "FIL_VALID_RECORDS.ACCOUNT_TYPE", "to": "TGT_BRZ_ACCOUNTS.ACCOUNT_TYPE"},
+      {"from": "FIL_VALID_RECORDS.CURRENCY", "to": "TGT_BRZ_ACCOUNTS.CURRENCY"},
+      {"from": "FIL_VALID_RECORDS.OPEN_DATE", "to": "TGT_BRZ_ACCOUNTS.OPEN_DATE"},
+      {"from": "FIL_VALID_RECORDS.CLOSE_DATE", "to": "TGT_BRZ_ACCOUNTS.CLOSE_DATE"},
+      {"from": "FIL_VALID_RECORDS.STATUS", "to": "TGT_BRZ_ACCOUNTS.STATUS"},
+      {"from": "FIL_VALID_RECORDS.BRANCH_CODE", "to": "TGT_BRZ_ACCOUNTS.BRANCH_CODE"},
+      {"from": "FIL_VALID_RECORDS.LOAD_TIMESTAMP", "to": "TGT_BRZ_ACCOUNTS.LOAD_TIMESTAMP"},
+      {"from": "FIL_VALID_RECORDS.SOURCE_FILE", "to": "TGT_BRZ_ACCOUNTS.SOURCE_FILE"}
+    ]
+  },
+  "attributes": {
+    "mapping_name": "m_src_to_brz_accounts",
+    "total_attributes": 3,
+    "widgets": {
+      "EXP_ADD_METADATA": [
+        {"attr_id": 1, "value": "CURRENT_TIMESTAMP", "line_no": 1},
+        {"attr_id": 2, "value": "'oracle_banking_system'", "line_no": 2}
+      ],
+      "FIL_VALID_RECORDS": [
+        {"attr_id": 1, "value": "NOT ISNULL(ACCOUNT_ID)", "line_no": 1}
+      ]
+    }
+  }
+}

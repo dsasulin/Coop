@@ -2,6 +2,8 @@
 
 Use this checklist to quickly fill out `environment_config.yaml`.
 
+> Note: `environment_config*.yaml` is a planning template. No code in this repo reads it, so filling it in does not change any Spark job or DAG. The runtime configuration is environment variables loaded by `utils/config.py`. The `scripts/validate_config.py` and `scripts/generate_from_config.py` steps below are NOT implemented (there is no `scripts/` directory in this repo).
+
 ## ✅ Prerequisites
 
 - [ ] Access to Cloudera Manager
@@ -259,8 +261,9 @@ grep -n "FILL_IN" config/environment_config.yaml
 
 Expected: No results
 
-### Step 3: Validate Configuration
+### Step 3: Validate Configuration (NOT IMPLEMENTED)
 ```bash
+# NOT IMPLEMENTED - scripts/validate_config.py does not exist
 python scripts/validate_config.py
 ```
 
@@ -272,8 +275,9 @@ Expected: ✅ All checks passed
 
 Once configuration is complete:
 
-1. **Generate Spark jobs and Airflow DAGs**:
+1. **Generate Spark jobs and Airflow DAGs** (NOT IMPLEMENTED):
    ```bash
+   # NOT IMPLEMENTED - scripts/generate_from_config.py does not exist; Spark jobs and DAGs are edited by hand
    python scripts/generate_from_config.py --env production
    ```
 

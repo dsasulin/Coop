@@ -1,13 +1,20 @@
 # Environment Configuration Guide
 
-This document provides instructions for filling out `environment_config.yaml` and regenerating Spark jobs and Airflow DAGs.
+> **Important: this is a template, not the runtime config.**
+> The `environment_config*.yaml` files are documentation and planning templates only. No code in this repo reads them (there is no `yaml.load` of them anywhere in `utils/`, `spark_jobs/`, or `airflow_dags/`). The actual runtime configuration is read from environment variables (an `.env` file) by `utils/config.py`. These are two separate, unrelated config systems.
+>
+> **The regeneration workflow below is not implemented.** There is no `scripts/` directory in this repo, and the referenced `scripts/generate_from_config.py` and `scripts/validate_config.py` do not exist. Treat the code-generation and validation steps as aspirational examples, not working commands.
+
+This document describes how the `environment_config.yaml` template is organized. Filling it in does not change any Spark job or Airflow DAG.
 
 ## Overview
 
-The `environment_config.yaml` file is the **single source of truth** for all environment-specific parameters used by:
-- ✅ PySpark ETL Jobs
-- ✅ Airflow DAGs
-- ✅ NiFi Flows (configuration reference)
+The `environment_config.yaml` file is intended as a reference template for environment-specific parameters related to:
+- PySpark ETL Jobs
+- Airflow DAGs
+- NiFi Flows (configuration reference)
+
+Note: nothing in the codebase parses this file. Runtime settings for the Spark jobs and DAGs come from environment variables via `utils/config.py`.
 
 ## Quick Start
 
@@ -37,17 +44,15 @@ All fields marked with `<FILL_IN>` must be populated before regenerating code.
 - `airflow.default_args.email`
 - `data_sources.csv_input.base_path`
 
-### 3. Regenerate Code
+### 3. Regenerate Code (not implemented)
 
-After filling in the configuration:
+The commands below describe a generator that does not exist in this repo. There is no `scripts/` directory. Kept here only to document the intended design.
 
 ```bash
-# Regenerate Spark jobs and Airflow DAGs
+# NOT IMPLEMENTED - scripts/generate_from_config.py does not exist
 python scripts/generate_from_config.py
 
-# This will update:
-# - spark_jobs/*.py
-# - airflow_dags/*.py
+# The Spark jobs and Airflow DAGs are maintained by hand, not generated.
 ```
 
 ## Configuration Sections
@@ -385,12 +390,10 @@ environments:
     airflow.schedules.full_etl: "0 2 * * *"
 ```
 
-**Usage**:
+**Usage** (not implemented, the generator script does not exist):
 ```bash
-# Generate for production
+# NOT IMPLEMENTED
 python scripts/generate_from_config.py --env production
-
-# Generate for development
 python scripts/generate_from_config.py --env development
 ```
 
@@ -438,90 +441,23 @@ cdp:
 
 ## Validation
 
-Before regenerating code, validate your configuration:
+You can still check that the YAML parses, but there is no project validator script:
 
 ```bash
 # Check YAML syntax
 python -c "import yaml; yaml.safe_load(open('environment_config.yaml'))"
 
-# Validate configuration
+# NOT IMPLEMENTED - scripts/validate_config.py does not exist
 python scripts/validate_config.py
-
-# Expected output:
-# ✅ All required fields filled
-# ✅ YAML syntax valid
-# ✅ Values within acceptable ranges
 ```
 
 ---
 
-## Regeneration Process
+## Regeneration Process (not implemented)
 
-### Step 1: Update Configuration
+This whole section describes a design that was never built. There is no `scripts/generate_from_config.py`, and the Spark jobs and Airflow DAGs are edited by hand rather than generated from this YAML. Kept for reference only.
 
-```bash
-vim config/environment_config.yaml
-```
-
-### Step 2: Run Generator Script
-
-```bash
-cd /Users/dsasulin/Documents/GitHub/Coop
-
-# Generate for production
-python scripts/generate_from_config.py --env production
-
-# Generate for development
-python scripts/generate_from_config.py --env development
-```
-
-### Step 3: Review Generated Files
-
-The script will update:
-
-**PySpark Jobs** (`spark_jobs/`):
-- `01_stage_to_bronze.py`
-- `02_bronze_to_silver.py`
-- `03_silver_to_gold.py`
-
-**Airflow DAGs** (`airflow_dags/`):
-- `full_etl_pipeline.py`
-- `incremental_etl.py`
-
-**Changes**:
-- Connection strings
-- Resource allocations
-- File paths
-- Schedule intervals
-- Email recipients
-
-### Step 4: Test Generated Code
-
-```bash
-# Dry run Spark job
-spark-submit --help spark_jobs/01_stage_to_bronze.py
-
-# Validate Airflow DAG
-airflow dags test full_etl_pipeline 2025-01-06
-
-# Check syntax
-python -m py_compile spark_jobs/*.py
-python -m py_compile airflow_dags/*.py
-```
-
-### Step 5: Deploy
-
-```bash
-# Copy to Airflow dags folder
-cp airflow_dags/*.py /opt/airflow/dags/
-
-# Copy Spark jobs to shared location
-cp spark_jobs/*.py /opt/spark_jobs/
-
-# Restart Airflow (if needed)
-systemctl restart airflow-scheduler
-systemctl restart airflow-webserver
-```
+The intended flow was: edit `config/environment_config.yaml`, run a generator to rewrite `spark_jobs/*.py` and `airflow_dags/*.py`, test with `py_compile` and `airflow dags test`, then deploy. None of the generator commands exist in this repo.
 
 ---
 

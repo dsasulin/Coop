@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T08:30:21.000Z"
+  },
+  "session_config": {
+    "sessions": [
+      {
+        "session_name": "s_load_products",
+        "mapping_name": "m_src_to_brz_products",
+        "sort_order": 1,
+        "is_partitioned": 0,
+        "is_recovery": 0
+      }
+    ],
+    "widget_instances": {
+      "s_load_products": [
+        {"instance_name": "SQ_PRODUCTS", "widget_type": 1, "partition_type": 0, "stage_id": 0, "pipeline_id": 0},
+        {"instance_name": "EXP_ADD_METADATA", "widget_type": 5, "partition_type": 0, "stage_id": 0, "pipeline_id": 0},
+        {"instance_name": "FIL_VALID_RECORDS", "widget_type": 8, "partition_type": 0, "stage_id": 0, "pipeline_id": 0},
+        {"instance_name": "TGT_BRZ_PRODUCTS", "widget_type": 2, "partition_type": 0, "stage_id": 0, "pipeline_id": 0}
+      ]
+    },
+    "connections": {
+      "s_load_products": [
+        {"connection_name": "CONN_ORACLE_BANKING", "connection_num": 1, "ref_object_id": 1, "ref_object_type": 73},
+        {"connection_name": "CONN_HIVE_BRONZE", "connection_num": 2, "ref_object_id": 2, "ref_object_type": 73}
+      ]
+    }
+  },
+  "mapping_parameters": {
+    "mapping_name": "m_src_to_brz_products",
+    "total_parameters": 0,
+    "parameters": []
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T08:30:15.000Z"
+  },
+  "connections": [
+    {
+      "cnx_id": 1,
+      "cnx_name": "CONN_ORACLE_BANKING",
+      "cnx_type": 73,
+      "connect_string": "banking-oracle.corp.internal:1521/BANKPROD",
+      "user_name": "etl_reader",
+      "db_type": 101
+    },
+    {
+      "cnx_id": 2,
+      "cnx_name": "CONN_HIVE_BRONZE",
+      "cnx_type": 73,
+      "connect_string": "metastore-service.warehouse.svc:9083",
+      "user_name": "hive_loader",
+      "db_type": 601301
+    }
+  ]
+}

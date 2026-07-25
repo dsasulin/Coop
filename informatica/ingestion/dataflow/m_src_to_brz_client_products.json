@@ -1,0 +1,96 @@
+{
+  "metadata": {
+    "export_date": "2026-03-01T08:30:19.000Z"
+  },
+  "ports": {
+    "total_ports": 36,
+    "widgets": {
+      "SQ_CLIENT_PRODUCTS": [
+        {"field_name": "RELATIONSHIP_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 2, "default_value": null},
+        {"field_name": "PRODUCT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "RELATIONSHIP_TYPE", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "START_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "END_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 6, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 7, "default_value": null}
+      ],
+      "EXP_ADD_METADATA": [
+        {"field_name": "RELATIONSHIP_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "PRODUCT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 3, "default_value": null},
+        {"field_name": "RELATIONSHIP_TYPE", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 4, "default_value": null},
+        {"field_name": "START_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 5, "default_value": null},
+        {"field_name": "END_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 6, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 7, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "OUTPUT", "order": 8, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "OUTPUT", "order": 9, "default_value": null}
+      ],
+      "FIL_VALID_RECORDS": [
+        {"field_name": "RELATIONSHIP_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 2, "default_value": null},
+        {"field_name": "PRODUCT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 3, "default_value": null},
+        {"field_name": "RELATIONSHIP_TYPE", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 4, "default_value": null},
+        {"field_name": "START_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 5, "default_value": null},
+        {"field_name": "END_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 6, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 7, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT/OUTPUT", "order": 8, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT/OUTPUT", "order": 9, "default_value": null}
+      ],
+      "TGT_BRZ_CLIENT_PRODUCTS": [
+        {"field_name": "RELATIONSHIP_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 1, "default_value": null},
+        {"field_name": "CLIENT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 2, "default_value": null},
+        {"field_name": "PRODUCT_ID", "datatype": 4, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 3, "default_value": null},
+        {"field_name": "RELATIONSHIP_TYPE", "datatype": 12, "precision": 50, "scale": 0, "port_type": "INPUT", "order": 4, "default_value": null},
+        {"field_name": "START_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 5, "default_value": null},
+        {"field_name": "END_DATE", "datatype": 91, "precision": 10, "scale": 0, "port_type": "INPUT", "order": 6, "default_value": null},
+        {"field_name": "STATUS", "datatype": 12, "precision": 30, "scale": 0, "port_type": "INPUT", "order": 7, "default_value": null},
+        {"field_name": "LOAD_TIMESTAMP", "datatype": 93, "precision": 29, "scale": 9, "port_type": "INPUT", "order": 8, "default_value": null},
+        {"field_name": "SOURCE_FILE", "datatype": 12, "precision": 255, "scale": 0, "port_type": "INPUT", "order": 9, "default_value": null}
+      ]
+    }
+  },
+  "linkage": {
+    "mapping_name": "m_src_to_brz_client_products",
+    "total_links": 25,
+    "links": [
+      {"from": "SQ_CLIENT_PRODUCTS.RELATIONSHIP_ID", "to": "EXP_ADD_METADATA.RELATIONSHIP_ID"},
+      {"from": "SQ_CLIENT_PRODUCTS.CLIENT_ID", "to": "EXP_ADD_METADATA.CLIENT_ID"},
+      {"from": "SQ_CLIENT_PRODUCTS.PRODUCT_ID", "to": "EXP_ADD_METADATA.PRODUCT_ID"},
+      {"from": "SQ_CLIENT_PRODUCTS.RELATIONSHIP_TYPE", "to": "EXP_ADD_METADATA.RELATIONSHIP_TYPE"},
+      {"from": "SQ_CLIENT_PRODUCTS.START_DATE", "to": "EXP_ADD_METADATA.START_DATE"},
+      {"from": "SQ_CLIENT_PRODUCTS.END_DATE", "to": "EXP_ADD_METADATA.END_DATE"},
+      {"from": "SQ_CLIENT_PRODUCTS.STATUS", "to": "EXP_ADD_METADATA.STATUS"},
+      {"from": "EXP_ADD_METADATA.RELATIONSHIP_ID", "to": "FIL_VALID_RECORDS.RELATIONSHIP_ID"},
+      {"from": "EXP_ADD_METADATA.CLIENT_ID", "to": "FIL_VALID_RECORDS.CLIENT_ID"},
+      {"from": "EXP_ADD_METADATA.PRODUCT_ID", "to": "FIL_VALID_RECORDS.PRODUCT_ID"},
+      {"from": "EXP_ADD_METADATA.RELATIONSHIP_TYPE", "to": "FIL_VALID_RECORDS.RELATIONSHIP_TYPE"},
+      {"from": "EXP_ADD_METADATA.START_DATE", "to": "FIL_VALID_RECORDS.START_DATE"},
+      {"from": "EXP_ADD_METADATA.END_DATE", "to": "FIL_VALID_RECORDS.END_DATE"},
+      {"from": "EXP_ADD_METADATA.STATUS", "to": "FIL_VALID_RECORDS.STATUS"},
+      {"from": "EXP_ADD_METADATA.LOAD_TIMESTAMP", "to": "FIL_VALID_RECORDS.LOAD_TIMESTAMP"},
+      {"from": "EXP_ADD_METADATA.SOURCE_FILE", "to": "FIL_VALID_RECORDS.SOURCE_FILE"},
+      {"from": "FIL_VALID_RECORDS.RELATIONSHIP_ID", "to": "TGT_BRZ_CLIENT_PRODUCTS.RELATIONSHIP_ID"},
+      {"from": "FIL_VALID_RECORDS.CLIENT_ID", "to": "TGT_BRZ_CLIENT_PRODUCTS.CLIENT_ID"},
+      {"from": "FIL_VALID_RECORDS.PRODUCT_ID", "to": "TGT_BRZ_CLIENT_PRODUCTS.PRODUCT_ID"},
+      {"from": "FIL_VALID_RECORDS.RELATIONSHIP_TYPE", "to": "TGT_BRZ_CLIENT_PRODUCTS.RELATIONSHIP_TYPE"},
+      {"from": "FIL_VALID_RECORDS.START_DATE", "to": "TGT_BRZ_CLIENT_PRODUCTS.START_DATE"},
+      {"from": "FIL_VALID_RECORDS.END_DATE", "to": "TGT_BRZ_CLIENT_PRODUCTS.END_DATE"},
+      {"from": "FIL_VALID_RECORDS.STATUS", "to": "TGT_BRZ_CLIENT_PRODUCTS.STATUS"},
+      {"from": "FIL_VALID_RECORDS.LOAD_TIMESTAMP", "to": "TGT_BRZ_CLIENT_PRODUCTS.LOAD_TIMESTAMP"},
+      {"from": "FIL_VALID_RECORDS.SOURCE_FILE", "to": "TGT_BRZ_CLIENT_PRODUCTS.SOURCE_FILE"}
+    ]
+  },
+  "attributes": {
+    "mapping_name": "m_src_to_brz_client_products",
+    "total_attributes": 3,
+    "widgets": {
+      "EXP_ADD_METADATA": [
+        {"attr_id": 1, "value": "CURRENT_TIMESTAMP", "line_no": 1},
+        {"attr_id": 2, "value": "'oracle_banking_system'", "line_no": 2}
+      ],
+      "FIL_VALID_RECORDS": [
+        {"attr_id": 1, "value": "NOT ISNULL(RELATIONSHIP_ID)", "line_no": 1}
+      ]
+    }
+  }
+}
